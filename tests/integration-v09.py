@@ -19,4 +19,11 @@ with sync_playwright() as p:
  pg.evaluate("go('home'); selected='2026-11-15'; v5().mode='day'; openTimeDetail9('resource')")
  pg.locator('.timeRow9').first.click()
  assert pg.evaluate("view==='calendar' && selected==='2026-11-15' && v5().mode==='day'")
+ assert pg.locator("#nav .subnav9 [aria-current=page]").inner_text().endswith("Ajanda")
+ assert not pg.locator(".areaTabs9").is_visible()
+ pg.set_viewport_size({"width":390,"height":844})
+ assert pg.get_by_role("navigation",name="Bu alanın sayfaları").is_visible()
+ pg.get_by_role("navigation",name="Bu alanın sayfaları").get_by_role("button",name="Yol Haritam").click()
+ assert pg.evaluate("view==='english'")
+ assert pg.locator(".areaTabs9 [aria-current=page]").inner_text()=="Yol Haritam"
  print('PASS: resource clock, reader->resource, resource->reader, unique reading log, reader scoped goal, source coverage',errors);assert not errors;b.close()
