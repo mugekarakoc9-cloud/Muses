@@ -286,3 +286,56 @@ function installLocalLibraryMX(){
 }
 const originalStudioInstallMXLibrary = installStudioP1;
 installStudioP1 = function(){originalStudioInstallMXLibrary();installLocalLibraryMX();};
+
+
+/* Unit controls and multi-section goals. */
+function installPacedGoalsMX(){
+ if(window.mxPacedGoalsInstalled)return;window.mxPacedGoalsInstalled=true;
+ const state=()=>S.mxGoalControls??={},prefs=()=>state().habitUnits??={},scopes=()=>state().scopes??={},H=x=>esc(String(x??''));
+ const units={adet:['count',1],kez:['count',1],oturum:['session',1],bardak:['glass',1],fincan:['cup',1],ml:['volume',1],litre:['volume',1000],L:['volume',1000],dakika:['time',1],saat:['time',60],saniye:['time',1/60],metre:['distance',1],km:['distance',1000],cm:['distance',.01],gram:['mass',1],kg:['mass',1000],sayfa:['page',1],bölüm:['chapter',1],kelime:['word',1],tekrar:['rep',1]};
+ const daysUI=()=>`<div style="display:flex;flex-wrap:wrap;gap:10px">${['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'].map((d,i)=>`<label style="display:flex;align-items:center;gap:4px"><input type="checkbox" name="mxDay" value="${i}" checked>${d}</label>`).join('')}</div>`;
+ const daysOf=f=>[...f.querySelectorAll('[name=mxDay]:checked')].map(x=>Number(x.value));
+ function eligible(start,n,days){if(!/^\d{4}-\d\d-\d\d$/.test(start)||!Number.isInteger(n)||n<1||n>3660||!days.length)return [];let dates=[];for(let i=0;i<3660&&dates.length<n;i++){let d=add(start,i);if(days.includes(new Date(d+'T12:00:00').getDay()))dates.push(d);}return dates;}
+ function applyUnits(){for(const h of habits){const p=prefs()[h[0]];if(p){h[1]=p.target;h[2]=p.unit;h[3]=p.step;}}}
+ applyUnits();
+ window.mxHabitUnits=function(){
+  const entries=habits.map(h=>[h[0],h[0]]);
+  modal5(`<div class="modalhead5"><h2>Alışkanlık birimleri</h2><button onclick="close5()">×</button></div><form id="mx-unit-form" class="card"><label>Alışkanlık<select name="habit">${opt5(entries,entries[0]?.[0])}</select></label><label>Ölçü birimi<select name="unit">${opt5(Object.keys(units).map(u=>[u,u]),'adet')}</select></label><label>Günlük hedef<input name="target" type="number" min="0" step="any" required></label><label>Artış miktarı<input name="step" type="number" min="0.000001" step="any" required></label><p class="muted">Uyumlu birimler eski kayıtları sayısal olarak dönüştürür. Bardak/fincan hacmi bilinmediği için otomatik litre dönüşümü yapılmaz. Ortak kayda bağlı oturumlar korunur.</p><button class="primary">Kaydet</button></form>`);
+  const f=document.querySelector('#mx-unit-form'),find=()=>habits.find(h=>h[0]===f.elements.habit.value);
+  function load(){const h=find();if(!h)return;const sel=f.elements.unit;if(![...sel.options].some(x=>x.value===h[2]))sel.add(new Option(h[2],h[2]));sel.value=h[2];f.elements.target.value=h[1];f.elements.step.value=h[3];}
+  f.elements.habit.onchange=load;f.elements.unit.onchange=()=>{const h=find(),a=units[h?.[2]],b=units[f.elements.unit.value];if(a&&b&&a[0]===b[0]){const factor=a[1]/b[1];f.elements.target.value=Number((h[1]*factor).toPrecision(12));f.elements.step.value=Number((h[3]*factor).toPrecision(12));}};load();
+  f.onsubmit=e=>{e.preventDefault();const h=find();if(!h)return;const n=h[0],old=h[2],u=f.elements.unit.value,target=Number(f.elements.target.value),step=Number(f.elements.step.value),a=units[old],b=units[u];if(!Number.isFinite(target)||target<0||!Number.isFinite(step)||step<=0)return toast('Geçerli miktar ve artış gir.');
+   if(['P90X','İngilizce','Kitap okuma','Piyano','Effortless English','Konuşma pratiği'].includes(n)&&u!==old)return toast('Bu sayaç ortak etkinlik kayıtlarına bağlı; birimi değiştirilemez.');
+   const records=Object.values(S.habits).filter(row=>row&&Object.hasOwn(row,n)),goals=v5().challenges.filter(g=>g.module==='habit'&&g.target===n),tasks=S.tasks.filter(t=>t.module==='habit'&&t.target===n);
+   if(u!==old&&(records.length||goals.length||tasks.length)&&(!a||!b||a[0]!==b[0]))return toast('Eski kayıtlarla uyumsuz birim. Farklı isimle yeni alışkanlık oluştur.');
+   if(u!==old&&a&&b&&a[0]===b[0]){const factor=a[1]/b[1],convert=v=>Number((Number(v)*factor).toPrecision(12));if(!confirm('Eski miktarlar ve bağlı hedefler '+old+' biriminden '+u+' birimine dönüştürülsün mü?'))return;records.forEach(r=>r[n]=convert(r[n]));for(const g of goals){g.amount=convert(g.amount);const p=v9().plans[g.id];if(p)for(const d of Object.values(p.dates||{}))d.amount=convert(d.amount);}tasks.forEach(t=>{if(Number.isFinite(Number(t.amount)))t.amount=convert(t.amount);});}
+   prefs()[n]={unit:u,target,step};applyUnits();close5();persist();
+  };
+ };
+ const habitUI=habitCards;habitCards=function(){applyUnits();return `<div class="flex"><button onclick="mxHabitUnits()">Ölçü birimini düzenle</button></div>`+habitUI();};
+ const prevScope=scope6;scope6=function(key){const s=scopes()[String(key)];if(!s)return prevScope(key);const base=prevScope(s.resource);if(!base.r)return base;const ids=new Set(s.ids),items=base.items.filter(n=>ids.has(n.id));return {...base,items,tree:items,node:{id:s.id,title:s.title,children:items}};};
+ const prevChoices=choices5;choices5=function(m){const rows=prevChoices(m);if(m==='resource')for(const [key,s] of Object.entries(scopes())){const r=scope6(key).r;if(r&&!rows.some(a=>a[0]===key))rows.push([key,r.title+' › '+s.title]);}return rows;};
+ const prevDays=challengeDays5;challengeDays5=function(g){return Array.isArray(g.mxWeekdays)&&g.mxWeekdays.length?range5(g.start,g.end).filter(d=>g.mxWeekdays.includes(new Date(d+'T12:00:00').getDay())):prevDays(g);};
+ const prevSchedule=schedule9;schedule9=function(g){if(!g?.mxPace||v9().plans[g.id])return prevSchedule(g);const dates={},ds=challengeDays5(g),itemMode=g.module==='resource',items=itemMode?scope6(g.target).items.filter(x=>!leafDone(x)).slice(0,g.amount):[],total=itemMode?items.length:g.amount;let i=0;for(const d of ds){if(i>=total)break;const amount=Math.min(g.mxPace,total-i);dates[d]={amount,ids:itemMode?items.slice(i,i+amount).map(n=>n.id):[]};i+=amount;}return v9().plans[g.id]={dates,itemMode,created:today(),unallocated:itemMode?items.slice(i).map(x=>x.id):[]};};
+ const prevRoute=route5;route5=function(m,t,d){if(m==='resource'&&scopes()[t]){const s=scopes()[t],g=v5().challenges.find(x=>x.target===t),items=scope6(t).items,ids=g?schedule9(g).dates?.[d]?.ids||[]:[],item=ids.map(id=>items.find(x=>x.id===id)).find(x=>x&&!leafDone(x))||items.find(x=>!leafDone(x));return prevRoute(m,s.resource+(item?'~'+item.id:''),d);}return prevRoute(m,t,d);};
+ window.mxFinishGoal=function(mode='resource'){
+  const isBook=mode==='book',rs=resourceRows(),bs=bookRows().filter(b=>!b.reader&&Number(b.pages)>Number(v2().books[b.id]||0)),entries=isBook?bs.map(b=>[b.id,b.title]):rs.map(r=>[r.id,r.title]);
+  modal5(`<div class="modalhead5"><h2>${isBook?'Sayfa bazlı kitap hedefi':'Birden fazla alt bölümü bitir'}</h2><button onclick="close5()">×</button></div><form id="mx-finish" class="card"><label>${isBook?'Kitap':'Kaynak'}<select name="source">${opt5(entries,entries.some(x=>x[0]===(isBook?bookSelected:sourceSelected))?(isBook?bookSelected:sourceSelected):entries[0]?.[0])}</select></label>${isBook?'<p class="muted">Yalnızca toplam sayfa sayısı bilinen bitmemiş kitaplar.</p>':'<p class="muted">Bir veya daha fazla gerçek alt bölüm seç. Tamamlananlar tekrar planlanmaz.</p><div class="flex"><button type="button" data-all>Tümünü seç</button><button type="button" data-none>Temizle</button></div><div data-list style="max-height:300px;overflow:auto;border:1px solid var(--line);padding:10px;border-radius:12px"></div>'}<label>Hedef adı<input name="title" maxlength="120"></label><label>Başlangıç tarihi<input name="start" type="date" value="${today()}" required></label><label>Her çalışma gününde ${isBook?'sayfa':'bölüm'}<input type="number" name="pace" min="1" max="10000" step="1" value="1" required></label>${daysUI()}<p role="status"></p><button class="primary">Hedefi oluştur</button></form>`);
+  const f=document.querySelector('#mx-finish'),list=f.querySelector('[data-list]'),status=f.querySelector('[role=status]');
+  const chosen=()=>list?[...list.querySelectorAll('input:checked')].map(x=>x.value):[];
+  function calc(){const source=f.elements.source.value,ids=chosen(),b=isBook?bs.find(x=>x.id===source):null,total=isBook?(b?Number(b.pages)-Number(v2().books[b.id]||0):0):ids.length,pace=Number(f.elements.pace.value),days=daysOf(f),n=Math.ceil(total/pace),dates=eligible(f.elements.start.value,n,days);status.textContent=total>0&&Number.isInteger(pace)&&pace>0&&dates.length===n?`${total} ${isBook?'sayfa':'bölüm'} · ${n} çalışma günü · Bitiş: ${dates.at(-1)}`:'Miktar, kaynak ve çalışma günlerini seç.';return {source,ids,b,total,pace,days,dates,n};}
+  function load(){if(list){list.replaceChildren();const x=prevScope(f.elements.source.value);for(const n of x.items.filter(x=>!leafDone(x))){const label=document.createElement('label'),cb=document.createElement('input');label.style.cssText='display:flex;gap:9px;padding:5px;align-items:flex-start';cb.type='checkbox';cb.value=n.id;label.append(cb,document.createTextNode(n.title));list.append(label);}}calc();}
+  f.elements.source.onchange=load;f.addEventListener('input',calc);if(list){f.querySelector('[data-all]').onclick=()=>{list.querySelectorAll('input').forEach(x=>x.checked=true);calc();};f.querySelector('[data-none]').onclick=()=>{list.querySelectorAll('input').forEach(x=>x.checked=false);calc();};}load();
+  f.onsubmit=e=>{e.preventDefault();const p=calc(),start=f.elements.start.value;if(!p.total||!Number.isInteger(p.pace)||p.pace<1||!p.dates.length||p.dates.length!==p.n)return toast('Geçerli bir hedef seç.');const end=p.dates.at(-1),wanted=new Set(p.ids);
+   if(v5().challenges.some(g=>g.module===mode&&g.start<=end&&g.end>=start&&(isBook?g.target===p.source:scope6(g.target).items.some(n=>wanted.has(n.id)))))return toast('Seçili içerikler mevcut hedefle çakışıyor.');
+   const name=f.elements.title.value.trim()||(isBook?p.b.title+' · Bitirme':(prevScope(p.source).r?.title||'Kaynak')+' · Seçili bölümler'),id='mx-goal-'+uid();let target=p.source;
+   if(!isBook){const sid='mx-scope-'+uid();target=p.source+'~'+sid;scopes()[target]={id:sid,resource:p.source,ids:p.ids,title:name};}
+   const goal={id,title:name,module:mode,target,kind:'total',amount:p.total,start,end,rhythm:'all',time:'',alarm:'',mxPace:p.pace,mxWeekdays:p.days};v5().challenges.push(goal);schedule9(goal);close5();persist();
+  };
+ };
+ const prevGoals=goalsView;goalsView=function(){return `<section class="card"><h3>Otomatik bitiş tarihi</h3><div class="flex"><button class="primary" onclick="mxFinishGoal('resource')">Seçili alt bölümleri bitir</button><button onclick="mxFinishGoal('book')">Sayfa bazlı kitap hedefi</button></div></section>`+prevGoals();};
+ const prevResources=resourcesView;resourcesView=function(){return `<div class="flex"><button onclick="mxFinishGoal('resource')">Seçili alt bölümlerden hedef oluştur</button></div>`+prevResources();};
+ const prevDelete=challengeDelete5;challengeDelete5=function(k){const id=dec5(k);prevDelete(k);if(!v5().challenges.some(g=>g.id===id)){delete v9().plans[id];save();}};
+}
+const originalStudioInstallMXGoals = installStudioP1;
+installStudioP1 = function(){originalStudioInstallMXGoals();installPacedGoalsMX();};
