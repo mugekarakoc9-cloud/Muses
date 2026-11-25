@@ -26,4 +26,38 @@ with sync_playwright() as p:
  pg.get_by_role("navigation",name="Bu alanın sayfaları").get_by_role("button",name="Yol Haritam").click()
  assert pg.evaluate("view==='english'")
  assert pg.locator(".areaTabs9 [aria-current=page]").inner_text()=="Yol Haritam"
+ pg.evaluate("""() => {
+  const monday=parseSmart6('Her pazartesi 20:00 İngilizce','2026-11-16');
+  const twoDays=parseSmart6('every Monday and Thursday Study','2026-11-16');
+  if(monday.time!=='20:00'||monday.days6.join()!=='1'||twoDays.days6.join()!=='1,4')throw Error('Repeat parsing');
+  const series={id:'test-repeat',start:monday.date,repeat:twoDays.repeat,days6:twoDays.days6,
+    template:{title:'Test repeat',module:'task',time:monday.time,alarm:'0',series:'test-repeat'},
+    until:'2026-11-15',excluded:['2026-11-19']};
+  v6().series.push(series);
+  materialize6('2027-11-15');
+  materialize6('2027-11-15');
+  const tasks=S.tasks.filter(t=>t.series===series.id);
+  if(tasks.length!==104||new Set(tasks.map(t=>t.date)).size!==104)throw Error('Repeat materialization');
+  if(scheduledTime5(tasks[0].date,tasks[0].time)!==Date.parse('2026-11-16T17:00:00Z'))throw Error('Istanbul reminder');
+  go('calendar'); daySelect5('2026-11-16','day');
+ }""")
+ assert pg.evaluate("""() => {
+  const planned=filtered5(selected,'plan').length;
+  return document.querySelector('.calstats5 b').textContent===String(planned) &&
+         agendaRows5(selected).some(row=>row.id==='time9:resource:test-clock');
+ }""")
+ assert pg.evaluate("""async () => {
+  S.tasks.push({id:'ics-test',title:'Export test',date:'2099-01-12',time:'20:00',alarm:'0'});
+  const original=URL.createObjectURL,click=HTMLAnchorElement.prototype.click;
+  let calendar;
+  try{
+   URL.createObjectURL=blob=>{calendar=blob;return 'blob:preview'};
+   HTMLAnchorElement.prototype.click=()=>{};
+   exportAlarms5();
+   return (await calendar.text()).includes('DTSTART:20990112T170000Z');
+  }finally{
+   URL.createObjectURL=original;
+   HTMLAnchorElement.prototype.click=click;
+  }
+ }""")
  print('PASS: resource clock, reader->resource, resource->reader, unique reading log, reader scoped goal, source coverage',errors);assert not errors;b.close()

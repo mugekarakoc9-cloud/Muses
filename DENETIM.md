@@ -59,3 +59,9 @@ Bozuk veya geçersiz localStorage kopyası bulunduğunda geçerli IndexedDB kopy
 | Düğmeler ve sade gezinme | Kısmi | Ayarlar'daki yinelenen yedek düğmeleri azaltıldı. Masaüstünde etkin alanın sayfaları kenar çubuğunda gösterilir. Mobilde alan sekmeleri korunur ve etkin sayfa ekran okuyucuya bildirilir. Süre ayrıntısındaki tarih düğmesi ve DVD ayar düğmesinin erişilebilir adı güncellendi. Kalan ekranların görev bazlı etkileşim ve erişilebilirlik denetimi açık. |
 | Güvenli canlı önizleme | Bağlantı eksik | Bulut ortamında doğrulanmış bir HTTP önizleme portu yok. Uygulama özel veri içerdiğinden genel yayın yapılmadı. |
 | P2 öğrenme, P3 spor/yaşam, P4 üretim | Kısmi veya doğrulanmadı | Yukarıdaki v0.10 envanteri geçerli. PDF/EPUB ve OCR kapsamı, kaynak eşleştirmeleri, gerçek cihaz bildirimi, eşitleme ve asistan bağlantısı ayrıca doğrulanmalı. |
+
+### P1 — Ajanda sayımı ve tekrarlanan hatırlatmalar
+
+- Gün, hafta ve ay görünümündeki planlanan ve tamamlanan görev toplamları yalnızca plan satırlarından hesaplanır. Otomatik çalışma süreleri gerçekleşen görünümünde yer alır ve yıllık görünümde plan dışı kayıt sayısını artırmaz.
+- Saatli hatırlatmalar modern İstanbul saatine göre hesaplanır. ICS dışa aktarımı aynı saati UTC olarak kodlar, böylece başka saat dilimindeki bir cihaz zamanı doğru yorumlayabilir.
+- Chromium testi Türkçe ve İngilizce tekrar girişini, 12 aylık Pazartesi/Perşembe serisini, hariç tutulan tarihi, mükerrer üretimi ve Los Angeles saat dilimindeki İstanbul hatırlatma hesabını kapsar. Tek tekrar düzenleme akışı ve fiziksel cihaz bildirimleri ayrı doğrulama bekliyor.
