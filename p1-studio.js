@@ -825,7 +825,7 @@ function installNotesMX(){
   function point(e){const r=canvas.getBoundingClientRect();return {x:Math.max(0,Math.min(W,(e.clientX-r.left)*W/r.width)),y:Math.max(0,Math.min(HEIGHT,(e.clientY-r.top)*HEIGHT/r.height)),p:e.pointerType==='pen'&&e.pressure>0?e.pressure:.5};}
   function erase(q){p.strokes=p.strokes.filter(s=>!notesStrokeMX(s.points,q.x,q.y,Math.max(7,width)+s.width/2));}
   canvas.onpointerdown=e=>{if(working||e.button!==0||(penOnly&&e.pointerType==='touch'))return;e.preventDefault();canvas.setPointerCapture(e.pointerId);snapshot();const q=point(e);working={tool,color,width:tool==='highlight'?Math.max(12,width):tool==='brush'?Math.max(5,width):width,points:[q],pointer:e.pointerId};if(tool==='eraser')erase(q);redraw();};
-  canvas.onpointermove=e=>{if(!working||e.pointerId!==working.pointer)return;e.preventDefault();for(const event of e.getCoalescedEvents?.()||[e]){const q=point(event);if(working.tool==='eraser')erase(q);else if(working.points.length<20000)working.points.push(q);}redraw();};
+  canvas.onpointermove=e=>{if(!working||e.pointerId!==working.pointer)return;e.preventDefault();const coalesced=e.getCoalescedEvents?.();for(const event of coalesced?.length?coalesced:[e]){const q=point(event);if(working.tool==='eraser')erase(q);else if(working.points.length<20000)working.points.push(q);}redraw();};
   const finish=e=>{if(!working||e.pointerId!==working.pointer)return;if(working.tool!=='eraser'){delete working.pointer;p.strokes.push(working);}working=null;save();redraw();};canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=finish;
  }
  window.mxNotesHome=function(){modal5(`<div class="modalhead5"><h2>MUSES Notes</h2><button onclick="close5()">×</button></div><div id="mx-notes-host"></div>`);show();};
