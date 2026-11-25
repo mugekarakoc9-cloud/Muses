@@ -328,7 +328,7 @@ function installFocusSessionsMX(){
   let before=a.phase,r=focusStepMX(a,now,prefs().auto&&!document.hidden&&now-a.end<2000);
   if(r.credit)credit(a,...r.credit);
   if(r.changed){
-   if(before==="work"&&notify){try{sound("win");}catch{}toast(r.finished?"Pomodoro setleri tamamlandı.":"Odak seti tamamlandı. Mola zamanı.");}
+   if(before==="work"&&notify){try{sound("win");if(typeof window.mxPalaceReact==="function")window.mxPalaceReact("focus");}catch{}toast(r.finished?"Pomodoro setleri tamamlandı.":"Odak seti tamamlandı. Mola zamanı.");}
    if(r.finished){archive(a,"sets-complete");D().active=null;clock9=null;paused9=true;}
    save();lastSave=now;
   }else if(r.credit&&now-lastSave>=10000){save();lastSave=now;}
@@ -409,6 +409,23 @@ function installFocusSessionsMX(){
  focusFinish7=function(){if(v7().focusActive)return oldFinish7();stop();close5();render();};focusCancel7=function(){if(v7().focusActive)return oldCancel7();stop();close5();render();};
  function endSelected(){if(fs()&&active()?.session===fs().id)return finish("manual",true);stop();}
  window.mxPauseFocus=()=>{pause();close5();render();};window.mxStopFocus=()=>{endSelected();close5();render();};
+ // Resource workspaces use the same focus ledger without rebuilding their media player.
+ window.mxStartLinkedFocus=function(module,target){
+   const t=String(target),a=active();
+   if(a?.module===module&&a.target===t){
+     if(a.status==="paused")pause();
+     else toast("Bu çalışmanın Pomodoro sayacı zaten çalışıyor.");
+     return true;
+   }
+   const ok=start(module,t,label(module,t));
+   if(ok&&typeof window.mxPalaceReact==="function")window.mxPalaceReact("focus");
+   return ok;
+ };
+ window.mxStopLinkedFocus=function(module,target){
+   const a=active();if(!a||a.module!==module||a.target!==String(target))return false;
+   endSelected();return true;
+ };
+
  window.toggleActivityP1=function(m,k){let t=dec5(k),a=active();if(a?.module===m&&a.target===t)endSelected();else start(m,t,label(m,t));render();};
  clockToggle9=function(){if(active()){pause();render();}else focusOpen7();};
  const titleBase=titleTime9;titleTime9=function(r){return ["task","habit","general","resource","book","vocab"].includes(r.m)?label(r.m,r.t):titleBase(r);};
