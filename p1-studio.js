@@ -1068,7 +1068,7 @@ installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractio
 /* Live build indicator and manual update: no local record migration. */
 function installLiveBuildMX(){
  if(window.mxLiveBuildInstalled)return;window.mxLiveBuildInstalled=true;
- const version='0.13.0';
+ const version='0.14.0';
  const oldHome=home;
  const css=document.createElement('style');css.textContent=`
  .mx-home-banner{padding:clamp(16px,3vw,28px);border-radius:22px;background:linear-gradient(128deg,#e6dcef,#e3eddf);color:#3c3450;border:1px solid #b8abc83b}
@@ -1169,3 +1169,46 @@ function installQuietWorkspaceMX(){
 }
 const previousStudioInstallerQuietMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerQuietMX();installQuietWorkspaceMX();};
+
+
+/* Shared task records, day/week hourly grid, no overlapping absolute-positioned cards. */
+function mxHourSlot(time){const m=String(time||'').match(/^(\d{1,2}):(\d{2})$/);return m&&+m[1]<24&&+m[2]<60?+m[1]:-1;}
+function installHourlyAgendaMX(){
+ if(window.mxHourlyReady)return;window.mxHourlyReady=true;
+ const P=()=>S.mxHourly??={mode:'week',filter:'',hideDone:false},H=v=>esc(String(v??'')),K=v=>enc5(String(v??''));
+ function date(){return /^\d{4}-\d{2}-\d{2}$/.test(selected||'')?selected:today();}
+ function monday(d){return add(d,-((new Date(d+'T12:00:00Z').getUTCDay()+6)%7));}
+ function dates(){return P().mode==='day'?[date()]:Array.from({length:7},(_,i)=>add(monday(date()),i));}
+ const labels={general:'Görev',resource:'İngilizce',vocab:'Flashcard',book:'Okuma',p90:'P90X',pole:'Pole',swim:'Yüzme',piano:'Piyano',habit:'Alışkanlık'};
+ const colors={general:'#77849a',resource:'#8173bc',vocab:'#9774cb',book:'#c38f53',p90:'#c96983',pole:'#ae78aa',swim:'#4a9cb2',piano:'#8d8c68',habit:'#62a68b'};
+ const tasks=()=>S.tasks.filter(t=>(!P().filter||(t.module||'general')===P().filter)&&(!P().hideDone||!taskDone5(t)));
+ const old=calendar;
+ window.mxHourlyMode=m=>{if(['day','week','month'].includes(m)){P().mode=m;save();render();}};
+ window.mxHourlyMove=n=>{selected=add(date(),n*(P().mode==='day'?1:7));calMonth=selected.slice(0,7);render();};
+ window.mxHourlyToday=()=>{selected=today();calMonth=selected.slice(0,7);render();};
+ window.mxHourlyCreate=(d,time='')=>{q5Id='';q5Date=d;q5Module='general';q5Target='';q5Draft={title:'',date:d,time,priority:'Orta',note:'',amount:1};quickForm5();};
+ function card(t){const done=taskDone5(t),color=colors[t.module]||colors.general;return '<button class="mx-hour-task'+(done?' is-done':'')+'" draggable="'+(!done)+'" data-mx-hour-task="'+H(K(t.id))+'" style="--task-color:'+color+'" onclick="showQuick5(\''+H(t.date)+'\',\''+H(K(t.id))+'\')" title="'+H(t.title)+'"><small>'+H(t.time||'')+'</small><span>'+H(t.title)+'</span></button>';}
+ function switches(){return '<div class="mx-agenda-switch">'+[['day','Gün'],['week','Hafta'],['month','Ay']].map(([m,l])=>'<button class="'+(P().mode===m?'primary':'')+'" onclick="mxHourlyMode(\''+m+'\')">'+l+'</button>').join('')+'</div>';}
+ calendar=function(){
+  if(P().mode==='month')return switches()+old();
+  const ds=dates(),rows=tasks(),range=ds.length===1?dateLabel5(ds[0]):dateLabel5(ds[0])+' – '+dateLabel5(ds.at(-1)),count=rows.filter(t=>ds.includes(t.date)),opts=[...new Set(S.tasks.map(t=>t.module||'general'))];
+  function cell(d,h){const found=rows.filter(t=>t.date===d&&mxHourSlot(t.time)===h).sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));return '<div class="mx-hour-cell" data-mx-drop-date="'+d+'" data-mx-drop-hour="'+h+'">'+found.map(card).join('')+'<button class="mx-hour-add" title="Görev ekle" aria-label="Görev ekle" onclick="mxHourlyCreate(\''+d+'\',\''+(h<0?'':String(h).padStart(2,'0')+':00')+'\')">+</button></div>';}
+  return '<section class="card mx-hour-agenda"><header class="mx-hour-header"><div><small>PLANLA · UYGULA · İLERLE</small><h2>'+H(range)+'</h2></div><button class="primary" onclick="mxHourlyCreate(\''+date()+'\')">＋ Görev</button></header><div class="mx-hour-tools">'+switches()+'<div class="flex"><button onclick="mxHourlyMove(-1)" aria-label="Önceki">‹</button><button onclick="mxHourlyToday()">Bugün</button><button onclick="mxHourlyMove(1)" aria-label="Sonraki">›</button></div><details><summary>Filtreler</summary><label>Tür<select id="mx-hour-filter">'+opt5([['','Tümü'],...opts.map(m=>[m,labels[m]||m])],P().filter)+'</select></label><label><input type="checkbox" id="mx-hour-hide" '+(P().hideDone?'checked':'')+'> Tamamlananları gizle</label></details></div><p class="muted">'+count.filter(taskDone5).length+'/'+count.length+' tamamlandı · Görevi gün veya saate sürükle.</p><div class="mx-hour-scroll"><div class="mx-hour-grid" style="--days:'+ds.length+'"><div class="mx-hour-label mx-hour-head">Saat</div>'+ds.map(d=>'<div class="mx-hour-head '+(d===today()?'is-today':'')+'">'+H(dateLabel5(d))+'</div>').join('')+'<div class="mx-hour-label">Saati yok</div>'+ds.map(d=>cell(d,-1)).join('')+Array.from({length:24},(_,h)=>'<div class="mx-hour-label" data-mx-hour-label="'+h+'">'+String(h).padStart(2,'0')+':00</div>'+ds.map(d=>cell(d,h)).join('')).join('')+'</div></div></section>';
+ };
+ function move(key,d,h){const t=S.tasks.find(x=>x.id===dec5(key));if(!t||taskDone5(t)||!Number.isInteger(h)||h< -1||h>23)return false;if(t.date!==d&&linked5(t)&&S.tasks.some(x=>x!==t&&x.date===d&&x.module===t.module&&x.target===t.target)){toast('Bu çalışma o gün zaten planlı.');return false;}const old=t.date;if(old!==d)t.deferredFrom=[...(Array.isArray(t.deferredFrom)?t.deferredFrom:[]),old];t.date=d;t.time=h<0?'':String(h).padStart(2,'0')+':'+(mxHourSlot(t.time)>=0?String(t.time).split(':')[1]:'00');save();render();return true;}
+ let drag='',touch=null,swallow=false;
+ document.addEventListener('dragstart',e=>{const t=e.target.closest('[data-mx-hour-task][draggable=true]');if(t){drag=t.dataset.mxHourTask;e.dataTransfer.setData('text/plain',drag);e.dataTransfer.effectAllowed='move';}});
+ document.addEventListener('dragover',e=>{const d=e.target.closest('[data-mx-drop-date]');if(d&&drag){e.preventDefault();d.classList.add('mx-drop-hover');}});
+ document.addEventListener('dragleave',e=>e.target.closest('[data-mx-drop-date]')?.classList.remove('mx-drop-hover'));
+ document.addEventListener('drop',e=>{const d=e.target.closest('[data-mx-drop-date]');if(d&&drag){e.preventDefault();const k=drag;drag='';move(k,d.dataset.mxDropDate,+d.dataset.mxDropHour);}});
+ const clear=()=>{for(const e of document.querySelectorAll('.mx-drop-hover'))e.classList.remove('mx-drop-hover');};
+ document.addEventListener('dragend',()=>{drag='';clear();});
+ document.addEventListener('pointerdown',e=>{const t=e.target.closest('[data-mx-hour-task][draggable=true]');if(e.pointerType==='touch'&&t){touch={id:e.pointerId,k:t.dataset.mxHourTask,x:e.clientX,y:e.clientY};swallow=false;t.setPointerCapture(e.pointerId);}});
+ document.addEventListener('pointermove',e=>{if(!touch||touch.id!==e.pointerId)return;if(Math.hypot(e.clientX-touch.x,e.clientY-touch.y)>12){swallow=true;const d=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-mx-drop-date]');clear();d?.classList.add('mx-drop-hover');}});
+ document.addEventListener('pointerup',e=>{if(!touch||touch.id!==e.pointerId)return;const d=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-mx-drop-date]');const k=touch.k;touch=null;if(swallow&&d)move(k,d.dataset.mxDropDate,+d.dataset.mxDropHour);clear();});
+ document.addEventListener('pointercancel',()=>{touch=null;swallow=false;clear();});
+ document.addEventListener('click',e=>{if(swallow&&e.target.closest('[data-mx-hour-task]')){e.preventDefault();e.stopImmediatePropagation();}swallow=false;},true);
+ const oldRender=render;render=function(){oldRender();const filter=document.querySelector('#mx-hour-filter'),hide=document.querySelector('#mx-hour-hide');if(filter)filter.onchange=()=>{P().filter=filter.value;save();render();};if(hide)hide.onchange=()=>{P().hideDone=hide.checked;save();render();};};
+}
+const previousStudioInstallerHourlyMX=installStudioP1;
+installStudioP1=function(){previousStudioInstallerHourlyMX();installHourlyAgendaMX();};
