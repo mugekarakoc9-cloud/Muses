@@ -593,7 +593,7 @@ function installMimoRewardsMX(){
  const sounds={purr:'cat_purractive_loop.wav',sleep:'cat_purrsleepy_loop.wav',greet:'cat_mewpurr.wav',sad:'cat_softmew.wav',happy:'cat_mewfood.wav'};
  const audioBase='https://opengameart.org/sites/default/files/';
  const modes=['idle','happy','love','knead','walk','still','greet','sad','play','sleep','gift'];
- let urls={},audioURLs={},loaded=false,loading=false,lastLoad=0,pose='idle',until=0,player=null,lastSound=0,checking=false,notice=null;
+ let urls={},audioURLs={},loaded=false,loading=false,lastLoad=0,pose='greet',until=Date.now()+6000,player=null,lastSound=0,checking=false,notice=null;
  const key='mx-mimo-character-pack-v2';window.mxMimoHasPack=()=>!!urls.idle;
  let observedDay='',previousDone=null,previousMiss=null;
  const css=document.createElement('style');css.textContent=`
@@ -622,11 +622,28 @@ function installMimoRewardsMX(){
  }
  async function load(){
   if(loaded||loading||Date.now()-lastLoad<3000)return;loading=true;lastLoad=Date.now();
-  try{const x=await get6('media',key);if(x){setPack(x);}else loaded=true;
-   for(const k of Object.keys(sounds)){const b=await get6('media','mx-mimo-audio-'+k);if(b instanceof Blob)audioURLs[k]=URL.createObjectURL(b);}
-  }catch{}finally{loading=false;}
+  try{
+   const local=await get6('media',key).catch(()=>null);
+   if(local){try{setPack(local);}catch{}}
+   if(!loaded){
+    const cached=await get6('media','mx-mimo-bundled-v1').catch(()=>null);
+    if(cached){try{setPack(cached);}catch{}}
+   }
+   if(!loaded){
+    const read=async k=>{const r=await fetch('./assets/mimo/'+k+'.json',{credentials:'same-origin'});if(!r.ok)throw Error('Mimo '+k);return r.json();};
+    const pack={format:'muses-mimo-v1',name:'Mimo',animations:{idle:await read('idle')}};
+    setPack(pack);
+    const rest=await Promise.allSettled(modes.filter(k=>k!=='idle').map(async k=>[k,await read(k)]));
+    for(const row of rest)if(row.status==='fulfilled')pack.animations[row.value[0]]=row.value[1];
+    const latest=await get6('media',key).catch(()=>null);
+    if(latest)setPack(latest);else setPack(pack);
+    if(Object.keys(pack.animations).length<modes.length&&!latest)loaded=false;
+    if(!latest&&Object.keys(pack.animations).length===modes.length)await put6('media','mx-mimo-bundled-v1',pack).catch(()=>{});
+   }
+   for(const k of Object.keys(sounds)){if(audioURLs[k])continue;const b=await get6('media','mx-mimo-audio-'+k).catch(()=>null);if(b instanceof Blob)audioURLs[k]=URL.createObjectURL(b);}
+  }catch{loaded=false;}finally{loading=false;}
  }
- function effectivePose(){return !db().motion||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'still':Date.now()<until?pose:S.mxFocus?.active?.phase==='break'?'sleep':!S.mxFocus?.active&&previousMiss>0?'sad':'idle';}
+ function effectivePose(){return !db().motion||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'still':Date.now()<until?pose:S.mxFocus?.active?.phase==='break'?'sleep':'idle';}
  function src(p){return urls[p]||urls.idle||'';}
  function paint(){const u=src(effectivePose());if(u)for(const img of document.querySelectorAll('img.mx-real-cat'))if(img.src!==u)img.src=u;
   const p=document.querySelector('.mx-floating-cat');if(p){p.onclick=()=>window.mxMimoHome();if(u&&!p.querySelector('.mx-real-cat'))p.innerHTML=catSvg();}
@@ -653,7 +670,7 @@ function installMimoRewardsMX(){
   document.body.append(notice);notice.querySelector('[data-close]').onclick=()=>{notice?.remove();notice=null;};notice.querySelector('[data-shop]').onclick=()=>{notice?.remove();notice=null;window.mxMimoHome();};
   react('gift','happy');rewardChime();
  }
- function observeDay(){const d=today(),tasks=S.tasks.filter(t=>t.date===d),done=tasks.filter(t=>taskDone5(t)).length,miss=S.tasks.filter(t=>t.date<d&&!taskDone5(t)).length;if(observedDay===d&&previousDone!==null&&done>previousDone)react('happy','happy');if(observedDay===d&&previousMiss!==null&&miss>previousMiss)react('sad',null);observedDay=d;previousDone=done;previousMiss=miss;}
+ function observeDay(){const d=today(),tasks=S.tasks.filter(t=>t.date===d),done=tasks.filter(t=>taskDone5(t)).length,miss=S.tasks.filter(t=>t.date<d&&!taskDone5(t)).length;if(observedDay===d&&previousDone!==null&&done>previousDone)react('happy','happy');if(previousMiss!==null&&miss>previousMiss)react('sad','sad');observedDay=d;previousDone=done;previousMiss=miss;}
  function checkRewards(){
   if(checking)return;checking=true;try{observeDay();const p=db(),newly=[];
    for(const [id,r] of Object.entries(p.rules)){const g=r.type==='goal'?v5().challenges.find(x=>x.id===id):null;if(r.type==='goal'&&!g)continue;
