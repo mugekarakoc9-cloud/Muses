@@ -645,7 +645,10 @@ function installMimoRewardsMX(){
  }
  function effectivePose(){return !db().motion||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'still':Date.now()<until?pose:S.mxFocus?.active?.phase==='break'?'sleep':'idle';}
  function src(p){return urls[p]||urls.idle||'';}
- function paint(){const u=src(effectivePose());if(u)for(const img of document.querySelectorAll('img.mx-real-cat'))if(img.src!==u)img.src=u;
+ function paint(){const u=src(effectivePose());if(u){
+   for(const svg of document.querySelectorAll('svg.mimo')){const img=document.createElement('img');img.className='mimo mx-real-cat';img.alt='Mimo';img.draggable=false;img.src=u;svg.replaceWith(img);}
+   for(const img of document.querySelectorAll('img.mx-real-cat'))if(img.src!==u)img.src=u;
+  }
   const p=document.querySelector('.mx-floating-cat');if(p){p.onclick=()=>window.mxMimoHome();if(u&&!p.querySelector('.mx-real-cat'))p.innerHTML=catSvg();}
  }
  const baseCat=catSvg;catSvg=function(){const u=src(effectivePose());return u?`<img class="mimo mx-real-cat" src="${H(u)}" alt="Mimo" draggable="false">`:baseCat();};
@@ -656,6 +659,7 @@ function installMimoRewardsMX(){
   try{player?.pause();player=new Audio(u);player.volume=Math.max(0,Math.min(1,db().volume));player.play().catch(()=>{});}catch{}
  }
  window.mxMimoPose=(p)=>{if(modes.includes(p))react(p,p==='sleep'?'sleep':p==='sad'?'sad':p==='happy'||p==='gift'?'happy':p==='love'||p==='knead'?'purr':'greet');};
+ document.addEventListener('pointerdown',()=>{if(Date.now()<until&&pose==='greet'&&lastSound===0)react('greet','greet');},{once:true});
  const oldReact=window.mxPalaceReact;window.mxPalaceReact=function(kind){react(kind==='win'?'gift':kind==='focus'?'greet':'walk',kind==='win'?'happy':'greet');if(!Object.keys(urls).length&&typeof oldReact==='function')oldReact(kind);};
  function item(id){return catalog.find(x=>x[0]===id)||catalog.at(-1);}
  function actual(rule,g){
@@ -897,7 +901,7 @@ function installTrainingWorkspaceMX(){
  const f=document.querySelector('#mx-training-link'),suggest=document.querySelector('#mx-training-suggest');if(suggest)suggest.onclick=()=>{f.elements.url.value='https://www.dailymotion.com/video/x941iya';};
  f.onsubmit=e=>{e.preventDefault();const raw=f.elements.url.value.trim(),m=raw?pathVideoMX(raw):null;if(raw&&(!m||m.kind==='audio'))return toast('Geçerli video adresi gir.');if(m)v6().videoLinks[d]=raw;else delete v6().videoLinks[d];save();close5();render();};
  document.querySelector('#mx-training-file').onchange=e=>{const f=e.target.files[0];if(f)saveLocalVideo6(f,d);};};
- const oldSet=setDVD6;setDVD6=function(d){return window.mxTrainingSettings(d);};
+ setDVD6=function(d){return window.mxTrainingSettings(d);};
  playDVD6=async function(d){
   if(!DVD[d])return;clearMedia();
   const n=pday,run=v2().p90Run,key=String(run)+'-'+n+'-'+d;
