@@ -289,6 +289,17 @@ function installActivityP1() {
 
 
 /* Linked focus timer and finite Flashcard session. No personal data. */
+function mxWordSchedule(prior,date,grade,correct,addDate){
+ const intervals={1:[14,45,120,240,365],2:[7,21,60,150,300],3:[4,12,35,90,240],4:[2,6,18,54,150],5:[1,3,7,21,60]};
+ if(!Number.isInteger(grade)||!intervals[grade])throw Error("Invalid SRS grade");
+ const success=grade<=3&&correct!==false,same=prior.last===date,early=!!prior.next&&prior.next>date;
+ let stage=Number.isInteger(prior.stage)?Math.max(0,Math.min(4,prior.stage)):-1;
+ let next=prior.next||"";
+ if(!success){stage=0;const failure=addDate(date,correct===false?1:intervals[grade][0]);next=next&&next>date&&next<failure?next:failure;}
+ else if(!same&&!early||stage<0){stage=Math.min(4,stage+1);next=addDate(date,intervals[grade][stage]);}
+ const days=[...new Set(prior.days||[])];if(success&&!days.includes(date))days.push(date);days.sort();
+ return {level:grade,stage:Math.max(0,stage),last:date,next,days,attempts:(prior.attempts||0)+1,correct:(prior.correct||0)+(success?1:0),...(success?{}:{lastFail:date})};
+}
 function focusStepMX(a,now,auto){
  if(!a||a.status!=="running")return {};
  const end=Math.min(now,a.end),start=Math.min(a.at,a.end),credit=a.phase==="work"&&end>start?[start,end]:null;
@@ -451,7 +462,7 @@ function installFocusSessionsMX(){
   const sid=session4.id,t=s4().levels.join(",")||"All",a=active();
   if(a?.module==="task"&&S.tasks.some(x=>x.id===a.target&&x.module==="vocab")){a.session=sid;save();}
   else if(!start("vocab",t,label("vocab",t),sid))return;
-  const linked=active();D().flash={id:sid,keys:[...new Set(queue4)],answers:{},mode:s4().mode,module:linked?.module||"vocab",target:linked?.target||t,title:linked?.title||label("vocab",t)};lastSpoken="";tab4="study";save();render();
+  const linked=active();D().flash={id:sid,keys:[...new Set(queue4)],answers:{},rated:{},mode:s4().mode,module:linked?.module||"vocab",target:linked?.target||t,title:linked?.title||label("vocab",t)};lastSpoken="";tab4="study";save();render();
  }
  window.mxStartFlashSession=()=>begin(true);
  window.mxStartFlashKeys=function(keys,mode="type"){
@@ -468,10 +479,24 @@ function installFocusSessionsMX(){
   attemptBase(a);let f=fs();if(!f||session4?.id!==f.id||!f.keys.includes(a.key))return;
   let ok=(f.mode==="flash"&&a.mode==="srs")||(f.mode==="match"&&a.mode==="match"&&a.ok)||(!["flash","match"].includes(f.mode)&&!["srs","match"].includes(a.mode));
   if(ok&&!Object.hasOwn(f.answers,a.key))f.answers[a.key]={mode:a.mode,ok:!!a.ok};save();
-  if(Object.keys(f.answers).length>=f.keys.length&&!endTimer){const sid=f.id;endTimer=setTimeout(()=>{endTimer=0;if(fs()?.id===sid)finish("complete",true);},1000);}
+  if(Object.keys(f.answers).length>=f.keys.length&&!endTimer){const sid=f.id,finalKey=a.key;endTimer=setTimeout(()=>{endTimer=0;const current=fs();if(current?.id!==sid)return;if(!["flash","match"].includes(current.mode)&&!current.rated?.[finalKey]){const answer=current.answers[finalKey];if(answer)applyWordRating(finalKey,answer.ok?3:5,answer.ok,false);}finish("complete",true);},f.mode==="flash"||f.mode==="match"?900:4000);}
  };
- const rateBase=rating4;rating4=function(n){let f=fs(),w=cur4();if(f&&w){const answered=Object.hasOwn(f.answers,key4(w));if(Object.keys(f.answers).length>=f.keys.length)return;if(f.mode==="flash"&&answered)return toast("Bu kart bu oturumda zaten değerlendirildi.");if(f.mode!=="flash"&&!answered)return toast("Önce soruyu yanıtla.");}return rateBase(n);};
- const evaluateBase=evaluate4;evaluate4=function(...args){const f=fs();if(f&&Object.keys(f.answers).length>=f.keys.length)return;return evaluateBase(...args);};
+ function applyWordRating(k,n,correct,advance=true){
+  const w=by4.get(k);if(!w||!Number.isInteger(n)||n<1||n>5)return;
+  const f=fs();if(f){f.rated??={};if(f.rated[k])return;f.rated[k]=n;}
+  const a=st4(k),d=today(),success=n<=3&&correct!==false,was=master4(a),p=mxWordSchedule(a,d,n,correct,add);
+  attempt6({key:k,word:w["Word / Phrase"],mode:"srs",answer:["Çok kolay","Kolay","Orta","Zor","Çok zor"][n-1],expected:"Öz değerlendirme",ok:success,rating:n});
+  update4(k,p);S.reviews.push({key:k,date:d,level:n,mode:"v4-"+s4().mode,result:success?"correct":"incorrect"});
+  if(session4){session4.count++;session4.correct+=success?1:0;}save();
+  if(!was&&master4(st4(k))){sound("unlock");toast("Kelime uzmanlığı: "+w["Word / Phrase"]);}else{sound(success?"win":"tap");toast("Sonraki SRS: "+p.next);}
+  if(advance)move4(1);
+ }
+ rating4=function(n){const f=fs(),w=cur4();if(!w)return;const k=key4(w);if(f&&f.mode!=="flash"&&!Object.hasOwn(f.answers,k))return toast("Önce soruyu yanıtla.");if(f?.rated?.[k])return toast("Bu kart bu oturumda zaten değerlendirildi.");
+  const correct=f&&f.mode!=="flash"?f.answers[k]?.ok:result4?.ok;
+  applyWordRating(k,n,correct,true);
+  if(f&&f.mode!=="flash"&&Object.keys(f.answers).length>=f.keys.length){clearTimeout(endTimer);endTimer=0;finish("complete",true);}
+ };
+ const evaluateBase=evaluate4;evaluate4=function(...args){const f=fs();if(f&&Object.keys(f.answers).length>=f.keys.length)return;const w=cur4();if(f&&w&&Object.hasOwn(f.answers,key4(w)))return toast("Bu soru zaten yanıtlandı.");return evaluateBase(...args);};
  const moveBase=move4;move4=function(n){let f=fs();if(!f)return moveBase(n);if(n>0){let i=1;while(i<=queue4.length&&Object.hasOwn(f.answers,queue4[(pos4+i)%queue4.length]))i++;if(i>queue4.length)return;n=i;}const was=auto4;auto4=false;try{return moveBase(n);}finally{auto4=was;autoSchedule4();}};
  const matchBase=match4;match4=function(){let f=fs();if(!f||f.mode!=="match")return matchBase();let remaining=queue4.filter(k=>!matchDone4.has(k));if(!remaining.length)return `<p>${queue4.length}/${queue4.length} eşleşti.</p>`;let group=remaining.slice(0,6),old=queue4,order=matchOrder4;try{queue4=group;matchOrder4=order.filter(k=>group.includes(k));if(matchOrder4.length!==group.length)matchOrder4=mix4(group.slice());return matchBase().replace(/\d+\/\d+ eşleşti/,`${matchDone4.size}/${old.length} eşleşti`);}finally{queue4=old;matchOrder4=order;}};
  function voiceParts(field,value){
