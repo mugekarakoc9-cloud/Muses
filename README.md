@@ -59,3 +59,13 @@ Depo dizininde `python -m http.server 8765 --bind 127.0.0.1` çalıştır ve [lo
 - **Ajanda**, erteleme geçmişini ve dört dönem görünümünde etkinlik süresini gösterir.
 - **Yaşam → Ayarlar → Görünüm ve komut kısayolu** görünüm tercihlerini kaydeder.
 - Kabul testi için Playwright ve Chromium ile `python tests/p1-studio.py` çalıştır.
+
+## Planlanan özellik — MUSES kedi arkadaşı / ödül ekonomisi (25 Kasım 2026)
+
+Bu bölüm uygulanmış özellik değil, geliştirme gereksinimidir.
+- Tamamlanan her benzersiz planlı görev örneği için 1 mama hakkı. Tekrarlı görevler tarih ve örnek kimliğiyle ayrılır; yeniden işaretlemek ödülü çoğaltmaz, ana ve alt görevler çift ödül üretmez. Geçmiş kayıtlar otomatik mama üretmez.
+- Mama cüzdanı; kullanıcı isteyince bir hak harcayarak kediyi besler. Hediye, oyuncak, etkinlik ve ödül geçmişi aynı kompakt menüde. Görev yapılmadığında kedi cezalandırılmaz.
+- Kısa dokunma miyavlama, okşama mırlama, sürükleme pati animasyonu. Masaüstünde sağ tık, mobilde uzun basma, klavye ile erişilebilir ikon menüsü: mama, hediye, oyun, ruh hali, ses ve geçmiş. Dışarı dokunma/Escape ile kapanır.
+- Uyku, neşe, oyun, sakin, merak, kutlama modları; farklı sesler, ses seviyesi, sessiz mod ve azaltılmış hareket tercihi.
+- Pointer Events ile dokunmatik sürükleme; tıklama ve sürükleme ayrımı, ekran sınırları ve güvenli alanlar, ajanda görevleri ve kedi katmanları çakışmaz; menü ekran dışına taşmaz.
+- Mama bakiyesi, ödül geçmişi, mod, konum ve ses tercihleri mevcut yerel kayıt/yedek sistemine geriye uyumlu eklenir. Eski kayıtlar korunur. Mobil sürükleme, çift ödül engeli, yedek geri yükleme, ses ve çakışma testleri gereklidir.
