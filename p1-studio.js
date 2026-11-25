@@ -642,7 +642,7 @@ function installMimoRewardsMX(){
  const oldReact=window.mxPalaceReact;window.mxPalaceReact=function(kind){react(kind==='win'?'gift':kind==='focus'?'greet':'walk',kind==='win'?'happy':'greet');if(!Object.keys(urls).length&&typeof oldReact==='function')oldReact(kind);};
  function item(id){return catalog.find(x=>x[0]===id)||catalog.at(-1);}
  function actual(rule,g){
-  if(rule.type==='focus'){const d=today();return (S.mxFocus?.history||[]).filter(x=>x.days?.[d]&&Object.keys(x.days).length===1).reduce((n,x)=>n+(Number(x.done)||0),0)+(S.mxFocus?.active?.days?.[d]&&Object.keys(S.mxFocus.active.days).length===1?Number(S.mxFocus.active.done)||0:0);}
+  if(rule.type==='focus'){const d=today(),rows=[...(S.mxFocus?.history||[]),...(S.mxFocus?.active?[S.mxFocus.active]:[])],unique=new Map(rows.map(x=>[x.id,x]));return [...unique.values()].reduce((n,x)=>n+(x.roundEvents?.length?x.roundEvents.filter(e=>e.date===d).length:x.days?.[d]&&Object.keys(x.days).length===1?Number(x.done)||0:0),0);}
   if(rule.type==='tasks')return S.tasks.filter(t=>t.date===today()&&taskDone5(t)).length;
   if(!g||today()<g.start)return 0;const s=challengeInfo5(g);return Math.min(Number(s.target)||0,Number(s.count)||0);
  }
