@@ -480,6 +480,7 @@ function installPalaceMX(){
  const cat=()=>catSvg();
  let pet=null,petTimer=null,blobURL=null,localVideo=null;
  function meow(kind='step'){
+   if(typeof window.mxMimoPose==='function'&&window.mxMimoHasPack?.()){window.mxMimoPose(kind==='win'?'gift':kind==='focus'?'greet':'walk');return;}
    if(pet){pet.dataset.win=kind==='win'?'true':'false';clearTimeout(petTimer);petTimer=setTimeout(()=>{if(pet)pet.dataset.win='false';},1600);}
    if(!P().sound||!v2().sound)return;
    try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const c=window.musesAudio||(window.musesAudio=new A());if(c.state==='suspended')c.resume().catch(()=>{});
@@ -593,7 +594,8 @@ function installMimoRewardsMX(){
  const audioBase='https://opengameart.org/sites/default/files/';
  const modes=['idle','happy','love','knead','walk','still','greet','sad','play','sleep','gift'];
  let urls={},audioURLs={},loaded=false,loading=false,lastLoad=0,pose='idle',until=0,player=null,lastSound=0,checking=false,notice=null;
- const key='mx-mimo-character-pack-v2';
+ const key='mx-mimo-character-pack-v2';window.mxMimoHasPack=()=>!!urls.idle;
+ let observedDay='',previousDone=null,previousMiss=null;
  const css=document.createElement('style');css.textContent=`
  img.mx-real-cat{object-fit:contain;object-position:center bottom;max-width:100%;height:auto!important;aspect-ratio:1;background:transparent;vertical-align:middle;filter:drop-shadow(0 3px 3px #0002)}
  .mx-floating-cat:has(.mx-real-cat){width:94px;height:94px;bottom:88px}.mx-floating-cat .mx-real-cat{width:100%!important}
@@ -624,7 +626,7 @@ function installMimoRewardsMX(){
    for(const k of Object.keys(sounds)){const b=await get6('media','mx-mimo-audio-'+k);if(b instanceof Blob)audioURLs[k]=URL.createObjectURL(b);}
   }catch{}finally{loading=false;}
  }
- function effectivePose(){return !db().motion||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'still':Date.now()<until?pose:S.mxFocus?.active?.phase==='break'?'sleep':S.mxFocus?.active?'idle':'idle';}
+ function effectivePose(){return !db().motion||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'still':Date.now()<until?pose:S.mxFocus?.active?.phase==='break'?'sleep':!S.mxFocus?.active&&previousMiss>0?'sad':'idle';}
  function src(p){return urls[p]||urls.idle||'';}
  function paint(){const u=src(effectivePose());if(u)for(const img of document.querySelectorAll('img.mx-real-cat'))if(img.src!==u)img.src=u;
   const p=document.querySelector('.mx-floating-cat');if(p){p.onclick=()=>window.mxMimoHome();if(u&&!p.querySelector('.mx-real-cat'))p.innerHTML=catSvg();}
@@ -645,13 +647,15 @@ function installMimoRewardsMX(){
   if(!g||today()<g.start)return 0;const s=challengeInfo5(g);return Math.min(Number(s.target)||0,Number(s.count)||0);
  }
  function earnedKey(rule,id){return rule.type==='goal'?id+':'+rule.version:id+':'+rule.version+':'+today();}
+ function rewardChime(){if(!db().sound||!v2().sound)return;try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const ctx=window.musesAudio||(window.musesAudio=new A());if(ctx.state==='suspended')ctx.resume().catch(()=>{});for(const [i,f] of [523.25,659.25,783.99,1046.5].entries()){const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+i*.13;o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,db().volume*.07),t+.035);g.gain.exponentialRampToValueAtTime(.0001,t+.32);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+.34);}}catch{}}
  function showReward(e){
   notice?.remove();notice=document.createElement('aside');notice.className='mx-mimo-reward';notice.setAttribute('role','status');notice.innerHTML=`<button style="float:right" aria-label="Kapat" data-close>×</button>${src('gift')?`<img alt="Mimo hediye açıyor" src="${H(src('gift'))}">`:''}<small>HEDEF ÖDÜLÜ</small><h3>${H(e.title)}</h3><p>${H(item(e.item)[1])} Mimo'nun koleksiyonuna eklendi.</p>${e.real?`<p>Kendine ödülün: <b>${H(e.real)}</b></p>`:''}<button data-shop>Petshop / ödüller</button>`;
   document.body.append(notice);notice.querySelector('[data-close]').onclick=()=>{notice?.remove();notice=null;};notice.querySelector('[data-shop]').onclick=()=>{notice?.remove();notice=null;window.mxMimoHome();};
-  react('gift','happy');
+  react('gift','happy');rewardChime();
  }
+ function observeDay(){const d=today(),tasks=S.tasks.filter(t=>t.date===d),done=tasks.filter(t=>taskDone5(t)).length,miss=S.tasks.filter(t=>t.date<d&&!taskDone5(t)).length;if(observedDay===d&&previousDone!==null&&done>previousDone)react('happy','happy');if(observedDay===d&&previousMiss!==null&&miss>previousMiss)react('sad',null);observedDay=d;previousDone=done;previousMiss=miss;}
  function checkRewards(){
-  if(checking)return;checking=true;try{const p=db(),newly=[];
+  if(checking)return;checking=true;try{observeDay();const p=db(),newly=[];
    for(const [id,r] of Object.entries(p.rules)){const g=r.type==='goal'?v5().challenges.find(x=>x.id===id):null;if(r.type==='goal'&&!g)continue;
     const k=earnedKey(r,id),a=actual(r,g),target=g?Number(challengeInfo5(g).target):Number(r.target);
     if(!p.earned[k]&&mimoRewardEligibleMX({...r,target},a)){const e={id:k,title:g?.title||r.title,item:r.item,real:r.real,date:today(),claimed:false};p.earned[k]=e;newly.push(e);}
@@ -671,12 +675,12 @@ function installMimoRewardsMX(){
  window.mxMimoClaim=k=>{const x=db().earned[D(k)];if(x){x.claimed=true;save();window.mxMimoHome();}};
  window.mxMimoHome=function(){
   const p=db(),earned=Object.values(p.earned),owned=new Set(['bluebed',...earned.map(x=>x.item)]);
-  modal5(`<div class="modalhead5"><h2>Mimo · Petshop</h2><button onclick="close5()">×</button></div><div style="text-align:center">${src('idle')?`<img src="${H(src('idle'))}" alt="Mimo" style="width:140px">`:baseCat()}</div><div class="flex">${[['greet','Pati'],['play','Top'],['knead','Yoğurma'],['sleep','Mavi yatak'],['love','Sevgi'],['sad','Sakin tepki']].map(([k,t])=>`<button onclick="mxMimoPose('${k}')">${t}</button>`).join('')}</div><div class="flex"><button class="primary" onclick="mxMimoRewardRule()">Hedefe ödül seç</button><button onclick="mxMimoMedia()">Animasyon ve sesler</button></div><h3>Petshop koleksiyonu</h3><div class="mx-mimo-shop">${catalog.map(x=>`<article><span class="mx-item-icon">${x[2]}</span><strong>${H(x[1])}</strong><small>${owned.has(x[0])?'Koleksiyonda':'Hedef ödülü olarak seçilebilir'}</small></article>`).join('')}</div><h3>Kazanılan ödüller</h3>${earned.map(x=>`<div class="card"><b>${H(x.title)} · ${H(item(x.item)[1])}</b><p>${H(x.date)} ${x.real?H(x.real):''}</p>${x.real&&!x.claimed?`<button onclick="mxMimoClaim('${K(x.id)}')">Gerçek ödülümü aldım</button>`:''}</div>`).join('')||'<p>Henüz kazanılan ödül yok.</p>'}`);
+  modal5(`<div class="modalhead5"><h2>Mimo · Petshop</h2><button onclick="close5()">×</button></div><div style="text-align:center">${src('idle')?`<img class="mx-real-cat" src="${H(src(effectivePose()))}" alt="Mimo" style="width:140px">`:baseCat()}</div><div class="flex">${[['greet','Pati'],['play','Top'],['knead','Yoğurma'],['sleep','Mavi yatak'],['love','Sevgi'],['sad','Sakin tepki']].map(([k,t])=>`<button onclick="mxMimoPose('${k}')">${t}</button>`).join('')}</div><div class="flex"><button class="primary" onclick="mxMimoRewardRule()">Hedefe ödül seç</button><button onclick="mxMimoMedia()">Animasyon ve sesler</button></div><h3>Petshop koleksiyonu</h3><div class="mx-mimo-shop">${catalog.map(x=>`<article><span class="mx-item-icon">${x[2]}</span><strong>${H(x[1])}</strong><small>${owned.has(x[0])?'Koleksiyonda':'Hedef ödülü olarak seçilebilir'}</small></article>`).join('')}</div><h3>Kazanılan ödüller</h3>${earned.map(x=>`<div class="card"><b>${H(x.title)} · ${H(item(x.item)[1])}</b><p>${H(x.date)} ${x.real?H(x.real):''}</p>${x.real&&!x.claimed?`<button onclick="mxMimoClaim('${K(x.id)}')">Gerçek ödülümü aldım</button>`:''}</div>`).join('')||'<p>Henüz kazanılan ödül yok.</p>'}`);
  };
  window.mxMimoMedia=function(){
   modal5(`<div class="modalhead5"><h2>Mimo · kişisel medya</h2><button onclick="close5()">×</button></div><p>Karakter dosyası ve sesler bu cihazda saklanır. ${Object.keys(urls).length} görsel hazır.</p><label>Karakter paketi (JSON)<input id="mx-mimo-pack" type="file" accept=".json,application/json"></label><button onclick="mxMimoDownloadSounds()">CC0 kedi seslerini cihaza al</button><p><a href="https://opengameart.org/content/cat-purr-meow" target="_blank" rel="noopener noreferrer">Kerzoven · Cat Purr &amp; Meow · CC0</a></p>${Object.entries(sounds).map(([k,f])=>`<label>${H(k)} · ${audioURLs[k]?'Hazır':'Eksik'} <input type="file" data-sound="${k}" accept="audio/*,.wav,.mp3,.ogg"></label>`).join('')}<label><input type="checkbox" id="mx-mimo-sound" ${db().sound?'checked':''}> Kedi sesleri</label><label><input type="checkbox" id="mx-mimo-motion" ${db().motion?'checked':''}> Animasyon</label><label>Ses düzeyi<input type="range" id="mx-mimo-volume" min="0" max="1" step=".05" value="${db().volume}"></label><p role="status" id="mx-mimo-status"></p>`);
-  const status=document.querySelector('#mx-mimo-status');document.querySelector('#mx-mimo-pack').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(f.size>12000000)throw Error('Paket çok büyük.');const p=JSON.parse(await f.text());if(!p.animations||!p.animations.idle)throw Error('Karakter paketi değil.');for(const k of modes)if(p.animations[k])blobFrom(p.animations[k]);await put6('media',key,p);setPack(p);status.textContent='Karakter paketi kaydedildi.';}catch(e){status.textContent=e.message;}};
-  for(const input of document.querySelectorAll('[data-sound]'))input.onchange=async()=>{try{const f=input.files[0];if(!f||f.size>5000000||!f.type.startsWith('audio/'))throw Error('Geçerli ses dosyası seç.');const k=input.dataset.sound;await put6('media','mx-mimo-audio-'+k,f);if(audioURLs[k])URL.revokeObjectURL(audioURLs[k]);audioURLs[k]=URL.createObjectURL(f);status.textContent='Ses kaydedildi.';}catch(e){status.textContent=e.message;}};
+  const status=document.querySelector('#mx-mimo-status');document.querySelector('#mx-mimo-pack').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(f.size>12000000)throw Error('Paket çok büyük.');const p=JSON.parse(await f.text());if(!p.animations||!p.animations.idle)throw Error('Karakter paketi değil.');for(const k of modes)if(p.animations[k])blobFrom(p.animations[k]);await put6('media',key,p);setPack(p);status.textContent='Karakter paketi kaydedildi. Sonraki ekranlarda aynı kedi kullanılacak.';}catch(e){status.textContent=e.message;}};
+  for(const input of document.querySelectorAll('[data-sound]'))input.onchange=async()=>{try{const f=input.files[0];if(!f||f.size>5000000||!(f.type.startsWith('audio/')||/\.(wav|mp3|ogg|m4a)$/i.test(f.name)))throw Error('Geçerli ses dosyası seç.');const k=input.dataset.sound;await put6('media','mx-mimo-audio-'+k,f);if(audioURLs[k])URL.revokeObjectURL(audioURLs[k]);audioURLs[k]=URL.createObjectURL(f);status.textContent='Ses kaydedildi.';}catch(e){status.textContent=e.message;}};
   document.querySelector('#mx-mimo-sound').onchange=e=>{db().sound=e.target.checked;if(!db().sound)player?.pause();save();};document.querySelector('#mx-mimo-motion').onchange=e=>{db().motion=e.target.checked;save();paint();};document.querySelector('#mx-mimo-volume').oninput=e=>{db().volume=+e.target.value;if(player)player.volume=db().volume;save();};
  };
  window.mxMimoDownloadSounds=async function(){
