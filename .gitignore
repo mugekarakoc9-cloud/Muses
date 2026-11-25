@@ -8,3 +8,5 @@ private/
 backups/
 
 tests/screenshots/
+
+tests/artifacts/

@@ -41,3 +41,11 @@ Split the embedded personal catalog from reusable application code; add browser 
 
 ### Verification and limitations
 Controlled Chromium with mocked localStorage and blocked external requests: 16 screens, active-duration accounting, four calendar views, stable seven-unit goal allocation, reader marks in both directions, unique reading logs, scoped reader goal, dark theme and mobile width. Real device storage persistence, TTS voices, background notifications and microphone/audio quality are not validated. Five reader files are private user-source derivatives; never publish this repository or bundle.
+
+## v0.10 — Reader Lens & Live Goal Tree
+
+- Click text words or select phrases and sentences in the local reader. The popup shows existing Turkish meanings, POS, IPA, English definitions, synonyms, antonyms, examples, usage and etymology where available. Select the expression type and save a single normalized entry or associate an existing lexical sense with a book deck. Book context and contextual translation are selectable flashcard fields.
+- Browser Translator API (when available) and opt-in MyMemory translation; Free Dictionary API for missing lexical fields. Translation and dictionary results are saved locally. External access defaults off. Live provider availability and quality are not guaranteed. Image-only scans are not selectable.
+- Parallel TR-left/EN-right reading, selection translation, keyboard word selection, return from card to same book page.
+- Today → Yol Haritam: goal, period and date branches for all modules and agenda plans; date leaf routes to the appropriate study or workout. Daily/limit goal counts are days, not units.
+- Tests: syntax/catalog, 16-screen controlled browser smoke, duplicate prevention, source-linked completion, P90X routing, reader return, keyboard/selection, simulated dictionary and translation API responses and cache. Actual external services, native notifications and physical-device persistence are not verified.
