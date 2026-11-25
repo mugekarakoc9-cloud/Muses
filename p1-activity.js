@@ -454,6 +454,15 @@ function installFocusSessionsMX(){
   const linked=active();D().flash={id:sid,keys:[...new Set(queue4)],answers:{},mode:s4().mode,module:linked?.module||"vocab",target:linked?.target||t,title:linked?.title||label("vocab",t)};lastSpoken="";tab4="study";save();render();
  }
  window.mxStartFlashSession=()=>begin(true);
+ window.mxStartFlashKeys=function(keys,mode="type"){
+   const valid=[...new Set(keys)].filter(k=>by4.has(k));
+   if(!valid.length)return toast("Çalışılabilir kart bulunamadı.");
+   if(fs()&&!confirm("Mevcut oturumu kaydedip yeni kart grubuna geçilsin mi?"))return;
+   if(fs())finish("new-session",false);
+   if(mode==="type"){s4().write="Word / Phrase";s4().prompt="Türkçe Anlam";}
+   s4().mode=mode;go("flash");restart4(valid);begin(false);
+ };
+
  const selectBase=startSelected4;startSelected4=function(){if(!chosen4.size)return selectBase();let keys=[...chosen4],n=Number(s4().limit);if(n>0)keys=keys.slice(0,n);restart4(keys);tab4="study";begin(false);};
  const attemptBase=attempt6;attempt6=function(a){
   attemptBase(a);let f=fs();if(!f||session4?.id!==f.id||!f.keys.includes(a.key))return;
