@@ -320,14 +320,15 @@ function installFocusSessionsMX(){
  }
  function archive(a,reason){
   if(D().history.some(x=>x.id===a.id))return;
-  D().history.push({id:a.id,module:a.module,target:a.target,title:a.title,started:a.started,ended:Date.now(),seconds:a.seconds||0,done:a.done,rounds:a.rounds,session:a.session||"",days:a.days||{},reason});
+  D().history.push({id:a.id,module:a.module,target:a.target,title:a.title,started:a.started,ended:Date.now(),seconds:a.seconds||0,done:a.done,rounds:a.rounds,session:a.session||"",days:a.days||{},roundEvents:a.roundEvents||[],reason});
   for(const [date,seconds] of Object.entries(a.days||{}))if(seconds>0&&!v7().focus.some(x=>x.id===a.id+":"+date))v7().focus.push({id:a.id+":"+date,title:a.title,date,seconds,linked:true,module:a.module,target:a.target});
  }
  function tick(now=Date.now(),notify=true){
   let a=active();if(!a){paint();return;}
-  let before=a.phase,r=focusStepMX(a,now,prefs().auto&&!document.hidden&&now-a.end<2000);
+  let before=a.phase,previousEnd=a.end,r=focusStepMX(a,now,prefs().auto&&!document.hidden&&now-a.end<2000);
   if(r.credit)credit(a,...r.credit);
   if(r.changed){
+   if(before==="work"){a.roundEvents??=[];if(!a.roundEvents.some(x=>x.round===a.done))a.roundEvents.push({round:a.done,date:day(Math.min(now,previousEnd)),at:Math.min(now,previousEnd)});}
    if(before==="work"&&notify){try{sound("win");if(typeof window.mxPalaceReact==="function")window.mxPalaceReact("focus");}catch{}toast(r.finished?"Pomodoro setleri tamamlandı.":"Odak seti tamamlandı. Mola zamanı.");}
    if(r.finished){archive(a,"sets-complete");D().active=null;clock9=null;paused9=true;}
    save();lastSave=now;
