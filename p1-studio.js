@@ -11,17 +11,24 @@ function installStudioP1() {
   let treeScale = 1;
 
   function options() {
-    return [
-      ...nav.map(([id, icon, label]) => ({label, open: () => go(id)})),
-      ...S.tasks.map(task => ({label: task.title, open: () => showQuick5(task.date, enc5(task.id))})),
-      ...v5().challenges.map(goal => ({label: goal.title, open: () => {
-        v10().treeDate = goal.start;
-        v10().treeOpen[goal.id] = true;
-        v10().treeFilter = 'All';
-        go('english');
-      }})),
-      ...resourceRows().map(resource => ({label: resource.title, open: () => startSource9(resource.id)}))
-    ];
+    const entries=[],add=(kind,label,open,detail='',keywords='')=>{if(label)entries.push({kind,label:String(label),open,detail:String(detail||''),keywords:String(keywords||'')});};
+    for(const [id,icon,label] of nav)add('Ekran',label,()=>go(id),'Modül',id);
+    add('Ekran','Pomodoro / Odak',()=>focusOpen7(),'Sayaç','timer hedef');
+    add('Ekran','Mimo / Petshop',()=>window.mxMimoHome?.(),'Kedi ve ödüller','gif ses animasyon');
+    for(const task of S.tasks)add('Görev',task.title,()=>showQuick5(task.date,enc5(task.id)),task.date,task.note);
+    for(const goal of v5().challenges)add('Hedef',goal.title,()=>{v10().treeDate=goal.start;v10().treeOpen[goal.id]=true;v10().treeFilter='All';go('english');if(typeof window.mxJourneyGoal==='function')window.mxJourneyGoal(enc5(goal.id));},goal.start+' – '+goal.end,goal.module);
+    for(const resource of resourceRows()){
+      const open=(id='')=>{if(typeof window.mxPalaceOpen==='function')window.mxPalaceOpen(enc5(resource.id),enc5(id));else route5('resource',resource.id+(id?'~'+id:''),today());};
+      add('Kaynak',resource.title,()=>open(),resource.type);
+      function walk(nodes,parent){for(const node of nodes||[]){const path=parent+' / '+node.title;add('Alt bölüm',node.title,()=>open(node.id),parent,path+' '+(node.note||''));walk(node.children,path);}}
+      try{walk(sourceTree(resource),resource.title);}catch{}
+    }
+    try{const readers=new Map(readerList9().map(b=>[b.id,b]));for(const b of readers.values())add('Kitap',b.title,()=>openReader9(b.id),b.author,b.category);for(const b of bookRows())if(!readers.has(b.id))add('Kitap',b.title,()=>route5('book',b.id,today()),b.author,b.category);}catch{}
+    try{for(const w of S.words||[]){const word=w['Word / Phrase'];if(!word)continue;const key=key4(w);add('Kelime',word,()=>{go('flash');chooseEncoded4(enc5(key));},w['Türkçe Anlam'],[w['Part of Speech'],w['English Definition'],w.Source,w.Category].filter(Boolean).join(' '));}}catch{}
+    try{for(const m of ATLAS_SEED||[])add('Pole hareketi',m.name,()=>{atlasSelected=m.id;go('atlas');},m.level||m.category,m.nameTr||'');}catch{}
+    try{for(const h of habits||[]){const name=Array.isArray(h)?h[0]:h.name||h.title;add('Alışkanlık',name,()=>go('habits'));}}catch{}
+    try{for(let d=1;d<=12;d++){if(!DVD[d])continue;add('P90X',DVD[d],()=>{go('p90');playDVD6(d);},'DVD '+d);for(const move of P90_MOVES[d]||[])add('P90X',move,()=>{go('p90');playDVD6(d);},DVD[d]);}for(let d=1;d<=90;d++)add('P90X','P90X · '+d+'. gün',()=>route5('p90',String(d),today()),'Program');}catch{}
+    return entries;
   }
 
   function normalize(value) {
@@ -35,22 +42,34 @@ function installStudioP1() {
       <form id="paletteP1"><label>Arama veya yeni görev
         <input name="query" autocomplete="off" placeholder="Örn. Yarın 18:30 piyano" required>
       </label><button class="primary">Görev taslağı oluştur</button></form>
-      <div id="resultsP1" class="p1-results"></div>`);
+      <label>Sonuç türü <select id="paletteKindP1"><option value="">Tümü</option></select></label><p id="paletteCountP1" role="status"></p><div id="resultsP1" class="p1-results" style="max-height:48vh;overflow:auto"></div><button type="button" id="paletteMoreP1" hidden>Daha fazla sonuç</button>`);
     const form = document.querySelector('#paletteP1');
     const input = form.elements.query;
     const results = document.querySelector('#resultsP1');
+    const kind=document.querySelector('#paletteKindP1'),count=document.querySelector('#paletteCountP1'),more=document.querySelector('#paletteMoreP1');
+    for(const name of [...new Set(entries.map(x=>x.kind))]){const o=document.createElement('option');o.value=name;o.textContent=name;kind.append(o);}
+    for(const item of entries){item.norm=normalize(item.label);item.search=normalize([item.label,item.kind,item.detail,item.keywords].join(' '));}
+    let limit=30;
     const update = () => {
-      const words = normalize(input.value.trim()).split(/\s+/);
+      const query=normalize(input.value.trim()),words=query.split(/\s+/).filter(Boolean);
+      const list=entries.filter(item=>(!kind.value||item.kind===kind.value)&&words.every(word=>item.search.includes(word)));
+      if(query){const score=x=>x.norm===query?0:x.norm.startsWith(query)?1:x.norm.includes(query)?2:3;list.sort((a,b)=>score(a)-score(b)||a.label.localeCompare(b.label,'tr'));}
+      else if(!kind.value)list.sort((a,b)=>Number(b.kind==='Ekran')-Number(a.kind==='Ekran'));
       results.replaceChildren();
-      for (const entry of entries.filter(item => words.every(word => normalize(item.label).includes(word))).slice(0, 10)) {
-        const button = document.createElement('button');
-        button.textContent = entry.label;
-        button.addEventListener('click', () => { close5(); entry.open(); });
+      for (const entry of list.slice(0,limit)) {
+        const button=document.createElement('button'),label=document.createElement('b'),detail=document.createElement('small');
+        button.style.cssText='display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:3px;white-space:normal';
+        label.textContent=entry.label;detail.textContent=entry.kind+(entry.detail?' · '+entry.detail:'');button.append(label,detail);
+        button.addEventListener('click',()=>{close5();try{entry.open();}catch{toast('Bu kayda doğrudan geçilemedi. İlgili modülü aç.');}});
         results.append(button);
       }
-      if (!results.childElementCount) results.textContent = 'Eşleşme bulunmadı.';
+      count.textContent=list.length+' eşleşme · '+entries.length+' aranabilir kayıt';
+      more.hidden=list.length<=limit;
+      if(!list.length)results.textContent='Eşleşme bulunamadı.';
     };
-    input.addEventListener('input', update);
+    input.addEventListener('input',()=>{limit=30;update();});
+    kind.addEventListener('change',()=>{limit=30;update();});
+    more.addEventListener('click',()=>{limit+=30;update();});
     form.addEventListener('submit', event => {
       event.preventDefault();
       const draft = parseSmart6(input.value, today());
