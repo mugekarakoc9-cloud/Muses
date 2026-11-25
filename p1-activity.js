@@ -388,7 +388,7 @@ function installFocusSessionsMX(){
   const a=active(),p=prefs(),remaining=a?(a.status==="running"?a.end-Date.now():a.left):p.work*60000;
   dock.querySelector(".mx-time").textContent=fmt(remaining);dock.querySelector(".mx-name").textContent=a?.title||"Pomodoro";dock.querySelector(".mx-name").title=a?.title||"Pomodoro";
   dock.querySelector(".mx-state").textContent=a?(a.phase==="work"?"Odak":"Mola")+" · "+Math.min(a.rounds,a.done+(a.phase==="work"?1:0))+"/"+a.rounds+(a.status==="paused"?" · Duraklatıldı":""):"Çalışmanı seç";
-  dock.querySelector("[data-pause]").textContent=a?.status==="running"?"Ⅱ":"▶";dock.querySelector("[data-stop]").disabled=!a;
+  dock.querySelector("[data-pause]").textContent=a?.status==="running"?"Ⅱ":"▶";dock.querySelector("[data-stop]").disabled=!a&&!fs();
   const inline=document.querySelector("[data-mx-clock]");if(inline)inline.textContent=a?fmt(remaining):"—";
  }
  function options(m){
@@ -415,11 +415,11 @@ function installFocusSessionsMX(){
   function flattenSections(tree,depth=0){return (tree||[]).flatMap(x=>[[x.id,"  ".repeat(depth)+x.title],...flattenSections(x.children||[],depth+1)]);}
   function leaf(){let r=f.elements.kind.value==="resource";f.querySelector("[data-leaf]").hidden=!r;if(r)f.elements.leaf.innerHTML=opt5([["","Kaynağın tamamı"],...flattenSections(scope6(f.elements.target.value).tree)],"");}
   function targets(preferred=""){let k=f.elements.kind.value,l=options(k);f.elements.target.innerHTML=opt5(l,l.some(x=>x[0]===preferred)?preferred:l[0]?.[0]);f.querySelector("[data-custom]").hidden=k!=="general";leaf();}
-  f.elements.kind.onchange=()=>targets();f.elements.target.onchange=leaf;targets(t);
+  f.elements.kind.onchange=()=>targets();f.elements.target.onchange=leaf;const [resourceId,sectionId]=m==="resource"?String(t).split("~"):[t,""];targets(resourceId);if(sectionId&&[...f.elements.leaf.options].some(o=>o.value===sectionId))f.elements.leaf.value=sectionId;
   f.onsubmit=e=>{e.preventDefault();const k=f.elements.kind.value;let target=f.elements.target.value;if(!target)return toast("Bir çalışma seç.");if(k==="resource"&&f.elements.leaf.value)target+="~"+f.elements.leaf.value;if(k==="general")target=f.elements.title.value.trim()||"Odak çalışması";const cfg={work:+f.elements.work.value,rest:+f.elements.rest.value,rounds:+f.elements.rounds.value,auto:f.elements.auto.checked,voice:f.elements.voice.checked};if(!start(k,target,label(k,target),"",cfg))return;Object.assign(prefs(),cfg);s4().autoVoice=cfg.voice;save();close5();if(k==="vocab"){route5("vocab",target,today());begin(false);}else if(k==="task"){const task=S.tasks.find(x=>x.id===target);if(task?.module==="vocab"){route5("vocab",task.target||"All",task.date);begin(false);}else if(task&&linked5(task))route5(task.module,task.target,task.date);else render();}else render();};
  };
  focusFinish7=function(){if(v7().focusActive)return oldFinish7();stop();close5();render();};focusCancel7=function(){if(v7().focusActive)return oldCancel7();stop();close5();render();};
- function endSelected(){if(fs()&&active()?.session===fs().id)return finish("manual",true);stop();}
+ function endSelected(){if(fs()&&(!active()||active()?.session===fs().id))return finish("manual",true);stop();}
  window.mxPauseFocus=()=>{pause();close5();render();};window.mxStopFocus=()=>{endSelected();close5();render();};
  // Resource workspaces use the same focus ledger without rebuilding their media player.
  window.mxStartLinkedFocus=function(module,target){
@@ -448,7 +448,7 @@ function installFocusSessionsMX(){
  function finish(reason,show){
   const f=fs();if(!f||ending)return;ending=true;clearTimeout(endTimer);endTimer=0;
   try{if(active()?.session===f.id)stop(reason);let answers=Object.values(f.answers),objective=answers.filter(x=>x.mode!=="srs"),seconds=D().history.filter(x=>x.session===f.id).reduce((n,x)=>n+x.seconds,0),rows=v6().attempts.filter(x=>x.session===f.id);
-   if(!D().flashHistory.some(x=>x.id===f.id))D().flashHistory.push({id:f.id,date:day(Date.now()),planned:f.keys.length,answered:answers.length,correct:objective.filter(x=>x.ok).length,objective:objective.length,attempts:rows.length,seconds,reason});
+   if(!D().flashHistory.some(x=>x.id===f.id))D().flashHistory.push({id:f.id,date:day(Date.now()),planned:f.keys.length,answered:answers.length,correct:objective.filter(x=>x.ok).length,objective:objective.length,attempts:rows.length,seconds,reason,answers:Object.entries(f.answers).map(([key,value])=>({key,...value}))});
    if(!s4().sessions.some(x=>x.id===f.id))s4().sessions.push({id:f.id,date:day(Date.now()),count:answers.length,correct:objective.filter(x=>x.ok).length,objective:objective.length,minutes:seconds/60,seconds,reason});
    D().flash=null;lastSpoken="";auto4=false;clearTimeout(timer4);session4=null;save();
    if(show&&view==="flash")finishBase();else if(show)toast("Flashcard oturumu kaydedildi.");
@@ -478,7 +478,7 @@ function installFocusSessionsMX(){
  const attemptBase=attempt6;attempt6=function(a){
   attemptBase(a);let f=fs();if(!f||session4?.id!==f.id||!f.keys.includes(a.key))return;
   let ok=(f.mode==="flash"&&a.mode==="srs")||(f.mode==="match"&&a.mode==="match"&&a.ok)||(!["flash","match"].includes(f.mode)&&!["srs","match"].includes(a.mode));
-  if(ok&&!Object.hasOwn(f.answers,a.key))f.answers[a.key]={mode:a.mode,ok:!!a.ok};save();
+  if(ok&&!Object.hasOwn(f.answers,a.key))f.answers[a.key]={mode:a.mode,ok:!!a.ok,word:String(a.word??""),answer:String(a.answer??""),expected:String(a.expected??""),at:Date.now()};save();
   if(Object.keys(f.answers).length>=f.keys.length&&!endTimer){const sid=f.id,finalKey=a.key;endTimer=setTimeout(()=>{endTimer=0;const current=fs();if(current?.id!==sid)return;if(!["flash","match"].includes(current.mode)&&!current.rated?.[finalKey]){const answer=current.answers[finalKey];if(answer)applyWordRating(finalKey,answer.ok?3:5,answer.ok,false);}finish("complete",true);},f.mode==="flash"||f.mode==="match"?900:4000);}
  };
  function applyWordRating(k,n,correct,advance=true){
@@ -515,7 +515,7 @@ function installFocusSessionsMX(){
  }
  const autoBase=autoSchedule4;autoSchedule4=function(){if(!fs())return autoBase();clearTimeout(timer4);if(auto4&&view==="flash"&&tab4==="study"&&s4().mode==="flash"&&!side4)timer4=setTimeout(()=>{if(fs()&&!side4){side4=true;render();}},1000*Math.max(1,Number(s4().seconds)||3));};
  const autoToggleBase=autoToggle4;autoToggle4=function(){if(!fs())return autoToggleBase();if(s4().mode!=="flash")return toast("Otomatik çevirme kart modunda çalışır.");auto4=!auto4;render();autoSchedule4();};
- const studyBase=study4;study4=function(){const f=fs(),h=studyBase();return `<div class="mx-flash-session"><button class="primary" onclick="mxStartFlashSession()">${f?"Yeni oturum":"Oturumu başlat · Pomodoro"}</button>${f?`<b>${Object.keys(f.answers).length}/${f.keys.length} soru</b><span>◷ <b data-mx-clock>—</b></span><small>Yanıtlar anında kaydedilir.</small>`:"<small>Seçili filtre ve soru sayısını kullanır.</small>"}</div>`+h.replace(/<button class="mini" onclick="restart4\(\);render\(\)"[^>]*>Yeni oturum<\/button>/g,"");};
+ const studyBase=study4;study4=function(){const f=fs(),h=studyBase();return `<div class="mx-flash-session"><button class="primary" onclick="mxStartFlashSession()">${f?"Yeni oturum":"Oturumu başlat · Pomodoro"}</button>${f?`<b>${Object.keys(f.answers).length}/${f.keys.length} soru</b><span>◷ <b data-mx-clock>—</b></span><button onclick="mxStopFocus()">Oturumu kaydet ve bitir</button><small>Yanıtlar anında kaydedilir.</small>`:"<small>Seçili filtre ve soru sayısını kullanır.</small>"}</div>`+h.replace(/<button class="mini" onclick="restart4\(\);render\(\)"[^>]*>Yeni oturum<\/button>/g,"");};
  const flashBase=flash;flash=function(){return flashBase().replaceAll('onclick="restart4();tab4=\'study\';render()"','onclick="mxStartFlashSession()"');};
  // Keep stored attempts if a browser reload interrupted a session; never fabricate completion.
  if(fs()&&session4?.id!==fs().id)finish("reload",false);
