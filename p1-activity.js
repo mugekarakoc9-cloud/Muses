@@ -322,7 +322,29 @@ function installFocusSessionsMX(){
  prefs();
  const active=()=>D().active,fs=()=>D().flash, id=()=>String(uid()), fmt=n=>{let s=Math.max(0,Math.ceil(n/1000));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");};
  const day=t=>{let p=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Istanbul",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(t).map(x=>[x.type,x.value]));return p.year+"-"+p.month+"-"+p.day;};
- let lastSave=0,dock=null,mini=false,lastSpoken="",endTimer=0,ending=false;
+ let lastSave=0,dock=null,mini=!!prefs().dockMini,lastSpoken="",endTimer=0,ending=false;
+ const soundEvents=[["start","Odak başlangıcı"],["break","Mola başlangıcı"],["resume","Mola bitti / yeni odak"],["complete","Tüm setler tamamlandı"],["task","Görev tamamlandı"],["trophy","Kupa / hedef başarısı"]];
+ const soundThemes={bell:[659,880],glass:[1047,1319,1568],wood:[330,440],spark:[523,659,784,1047],soft:[440,554,659],victory:[392,523,659,784,1047],silent:[]};
+ const soundDefaults={start:"soft",break:"bell",resume:"wood",complete:"spark",task:"glass",trophy:"victory"};
+ const soundPrefs=()=>prefs().eventSounds??={...soundDefaults};
+ const imported={};let audioContext=null,customPlayer=null;
+ function unlockAudio(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;audioContext??=new A();if(audioContext.state==="suspended")audioContext.resume().catch(()=>{});}catch{}}
+ document.addEventListener("pointerdown",unlockAudio,{passive:true});document.addEventListener("keydown",unlockAudio);
+ async function customSound(event){try{const b=await get6("media","mx-focus-sound-"+event);if(b instanceof Blob){if(imported[event])URL.revokeObjectURL(imported[event]);imported[event]=URL.createObjectURL(b);}}catch{}}
+ for(const [event] of soundEvents)customSound(event);
+ window.mxPlayEventSound=function(event,preview=false){
+  if(!preview&&(!v2().sound||prefs().eventMute))return;const theme=soundPrefs()[event]||soundDefaults[event]||"soft";if(theme==="silent")return;
+  const volume=Math.max(0,Math.min(1,Number(prefs().eventVolume??.4)));
+  if(theme==="custom"&&imported[event]){try{customPlayer?.pause();customPlayer=new Audio(imported[event]);customPlayer.volume=volume;customPlayer.play().catch(()=>{});return;}catch{}}
+  unlockAudio();if(!audioContext)return;const notes=soundThemes[theme]||soundThemes[soundDefaults[event]]||soundThemes.soft;
+  for(const [i,f] of notes.entries()){const t=audioContext.currentTime+i*.13,o=audioContext.createOscillator(),g=audioContext.createGain();o.type=theme==="wood"?"triangle":"sine";o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,volume*.12),t+.018);g.gain.exponentialRampToValueAtTime(.0001,t+.28);o.connect(g);g.connect(audioContext.destination);o.start(t);o.stop(t+.3);}
+ };
+ window.mxFocusSoundSettings=function(){modal5('<div class="modalhead5"><h2>Bildirim sesleri</h2><button onclick="close5()">×</button></div><label>Ses düzeyi <input id="mx-event-volume" type="range" min="0" max="1" step=".05" value="'+Number(prefs().eventVolume??.4)+'"></label><label><input id="mx-event-mute" type="checkbox" '+(prefs().eventMute?'checked':'')+'> Bildirimleri sessize al</label>'+soundEvents.map(([k,title])=>'<section class="card"><b>'+H(title)+'</b><div class="flex"><select data-event-theme="'+k+'">'+opt5([["bell","Çan"],["glass","Kristal"],["wood","Ahşap"],["spark","Parıltı"],["soft","Yumuşak"],["victory","Zafer"],["silent","Sessiz"],["custom","Kendi sesim"]],soundPrefs()[k]||soundDefaults[k])+'</select><button data-event-preview="'+k+'">Dinle</button></div><label>Yerel ses dosyası <input type="file" accept="audio/*,.wav,.mp3,.ogg,.m4a" data-event-file="'+k+'"></label><small data-event-status="'+k+'">'+(imported[k]?'Yerel ses hazır':'Hazır tonlar çevrimdışı çalışır')+'</small></section>').join(''));
+  document.querySelector("#mx-event-volume").oninput=e=>{prefs().eventVolume=+e.target.value;save();};document.querySelector("#mx-event-mute").onchange=e=>{prefs().eventMute=e.target.checked;save();};
+  for(const el of document.querySelectorAll("[data-event-theme]"))el.onchange=()=>{soundPrefs()[el.dataset.eventTheme]=el.value;save();};
+  for(const el of document.querySelectorAll("[data-event-preview]"))el.onclick=()=>window.mxPlayEventSound(el.dataset.eventPreview,true);
+  for(const el of document.querySelectorAll("[data-event-file]"))el.onchange=async()=>{const k=el.dataset.eventFile,f=el.files[0],status=document.querySelector('[data-event-status="'+k+'"]');if(!f)return;try{if(f.size>5000000||!f.type.startsWith("audio/")&&!/\.(wav|mp3|ogg|m4a)$/i.test(f.name))throw Error("Geçerli ses dosyası seç (en fazla 5 MB).");await put6("media","mx-focus-sound-"+k,f);await customSound(k);soundPrefs()[k]="custom";document.querySelector('[data-event-theme="'+k+'"]').value="custom";save();status.textContent="Yerel ses kaydedildi.";}catch(e){status.textContent=e.message;}};
+ };
  const baseContext=context9;context9=function(){return active()||fs()?null:baseContext();};
  function credit(a,start,end){
   // One common actual-time ledger, split at Istanbul midnight; focus history is its subset.
@@ -340,7 +362,7 @@ function installFocusSessionsMX(){
   if(r.credit)credit(a,...r.credit);
   if(r.changed){
    if(before==="work"){a.roundEvents??=[];if(!a.roundEvents.some(x=>x.round===a.done))a.roundEvents.push({round:a.done,date:day(Math.min(now,previousEnd)),at:Math.min(now,previousEnd)});}
-   if(before==="work"&&notify){try{sound("win");if(typeof window.mxPalaceReact==="function")window.mxPalaceReact("focus");}catch{}toast(r.finished?"Pomodoro setleri tamamlandı.":"Odak seti tamamlandı. Mola zamanı.");}
+   if(notify){window.mxPlayEventSound(r.finished?"complete":before==="work"?"break":"resume");if(typeof window.mxMimoPose==="function")window.mxMimoPose(r.finished?"gift":before==="work"?"sleep":"greet",true);if(r.finished&&typeof window.mxCelebrate==="function")window.mxCelebrate("focus","Pomodoro tamamlandı",true);toast(r.finished?"Pomodoro setleri tamamlandı.":before==="work"?"Odak seti tamamlandı. Mola zamanı.":"Mola bitti. Yeni odak zamanı.");}
    if(r.finished){archive(a,"sets-complete");D().active=null;clock9=null;paused9=true;}
    save();lastSave=now;
   }else if(r.credit&&now-lastSave>=10000){save();lastSave=now;}
@@ -365,27 +387,39 @@ function installFocusSessionsMX(){
   if(a){const attached=fs()&&a.session===fs().id;stop("switch");if(attached&&!ending)finish("switch",false);}clockFlush9();clock9=null;paused9=false;
   const now=Date.now(),clamp=(v,max,def)=>Number.isFinite(+v)?Math.max(1,Math.min(max,Math.round(+v))):def,work=clamp(cfg.work,180,25)*60000,rest=clamp(cfg.rest,60,5)*60000;
   D().active={id:id(),module:m,target:String(t),title:name||label(m,t),session,started:now,at:now,end:now+work,left:work,work,rest,rounds:clamp(cfg.rounds,30,5),done:0,phase:"work",status:"running",seconds:0,days:{}};
-  lastSave=now;save();paint();return true;
+  lastSave=now;save();paint();window.mxPlayEventSound("start");return true;
  }
  const style=document.createElement("style");style.textContent=`
- .mx-focus-dock{position:fixed;right:16px;bottom:18px;z-index:9000;display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid var(--line);border-radius:15px;background:transparent!important;color:var(--ink);backdrop-filter:blur(12px);box-shadow:none;max-width:calc(100vw - 32px);font-size:.8rem}
+ .mx-focus-dock{position:fixed;right:16px;bottom:18px;z-index:9000;display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid var(--line);border-radius:15px;background:var(--paper,#fff)!important;color:var(--ink);backdrop-filter:blur(12px);box-shadow:0 6px 24px #31284326;max-width:calc(100vw - 32px);font-size:.8rem}
  .mx-focus-dock button{background:transparent!important;border:0!important;box-shadow:none!important;padding:5px 8px!important;min-height:32px}
  .mx-focus-dock button:hover{background:var(--soft)!important}
  .mx-focus-dock .mx-time{font-size:1.14rem;font-weight:750;font-variant-numeric:tabular-nums;color:var(--accent)}
  .mx-focus-dock .mx-name{max-width:155px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .mx-focus-dock small{display:block;font-size:.72rem;opacity:.8}
- .mx-focus-mini .mx-info,.mx-focus-mini [data-stop]{display:none}
+ .mx-focus-mini .mx-info,.mx-focus-mini [data-stop],.mx-focus-mini [data-open]{display:none}
+ .mx-focus-dock .mx-focus-grip{cursor:grab;touch-action:none;user-select:none;min-width:24px;font-weight:700}
+ .mx-focus-dock[data-dragging=true] .mx-focus-grip{cursor:grabbing}
+ .mx-focus-dock .mx-time{cursor:pointer;user-select:none}
+ .mx-focus-dock[data-phase=break] .mx-time{color:#498870}
+ .mx-focus-dock[data-phase=work] .mx-time{color:var(--accent)}
+ .mx-focus-mini{border-radius:999px;padding:4px 8px;gap:3px}
  .mx-focus-form label{display:block;margin:8px 0}.mx-focus-form select,.mx-focus-form input{max-width:100%}
  .mx-flash-session{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0;padding:8px;border:1px solid var(--line);border-radius:12px}
  @media(max-width:920px){.mx-focus-dock{right:10px;bottom:82px;max-width:calc(100vw - 20px);gap:3px}.mx-focus-dock .mx-name{max-width:100px}}
  `;document.head.append(style);
  function paint(){
   const parent=document.fullscreenElement||document.querySelector("#dialog5[open]")||document.body;
-  if(!dock){dock=document.createElement("aside");dock.className="mx-focus-dock";dock.setAttribute("aria-label","Pomodoro");dock.innerHTML='<button data-open title="Pomodoro ayarları">◷</button><div class="mx-info"><div class="mx-name"></div><small class="mx-state"></small></div><b class="mx-time">25:00</b><button data-pause title="Başlat / duraklat">▶</button><button data-stop title="Kaydet ve bitir">■</button><button data-mini title="Küçült">−</button>';
-   dock.querySelector("[data-open]").onclick=()=>focusOpen7();dock.querySelector("[data-pause]").onclick=()=>active()?pause():fs()?start(fs().module||"vocab",fs().target||"All",fs().title||"Flashcard",fs().id):focusOpen7();dock.querySelector("[data-stop]").onclick=()=>{endSelected();render();};dock.querySelector("[data-mini]").onclick=()=>{mini=!mini;dock.classList.toggle("mx-focus-mini",mini);};
+  if(!dock){dock=document.createElement("aside");dock.className="mx-focus-dock";dock.setAttribute("aria-label","Pomodoro");dock.innerHTML='<button class="mx-focus-grip" title="Sürükle veya küçült" aria-label="Pomodoro taşı veya küçült">⠿</button><button data-open title="Pomodoro ayarları">⚙</button><div class="mx-info"><div class="mx-name"></div><small class="mx-state"></small></div><button class="mx-time" title="Küçült / büyüt">25:00</button><button data-pause title="Başlat / duraklat">▶</button><button data-stop title="Kaydet ve bitir">■</button><button data-mini title="Küçült">−</button>';
+   dock.querySelector("[data-open]").onclick=()=>focusOpen7();dock.querySelector("[data-pause]").onclick=()=>active()?pause():fs()?start(fs().module||"vocab",fs().target||"All",fs().title||"Flashcard",fs().id):focusOpen7();dock.querySelector("[data-stop]").onclick=()=>{endSelected();render();};const clampDock=()=>{const p=prefs().dockPosition;if(!p||!dock.isConnected)return;const maxX=Math.max(6,innerWidth-dock.offsetWidth-6),maxY=Math.max(6,innerHeight-dock.offsetHeight-6);dock.style.left=Math.max(6,Math.min(maxX,p.x))+"px";dock.style.top=Math.max(6,Math.min(maxY,p.y))+"px";dock.style.right="auto";dock.style.bottom="auto";};
+   const toggleMini=()=>{mini=!mini;prefs().dockMini=mini;dock.classList.toggle("mx-focus-mini",mini);dock.querySelector("[data-mini]").textContent=mini?"+":"−";clampDock();save();};
+   dock.classList.toggle("mx-focus-mini",mini);dock.querySelector("[data-mini]").textContent=mini?"+":"−";dock.querySelector("[data-mini]").onclick=toggleMini;dock.querySelector(".mx-time").onclick=toggleMini;
+   const grip=dock.querySelector(".mx-focus-grip");let drag=null,moved=false;grip.onpointerdown=e=>{if(e.button!==0)return;const r=dock.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX,y:e.clientY,l:r.left,t:r.top};moved=false;grip.setPointerCapture(e.pointerId);};
+   grip.onpointermove=e=>{if(!drag||drag.id!==e.pointerId)return;if(!moved&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<5)return;moved=true;dock.dataset.dragging="true";prefs().dockPosition={x:drag.l+e.clientX-drag.x,y:drag.t+e.clientY-drag.y};clampDock();};
+   grip.onpointerup=grip.onpointercancel=e=>{if(!drag)return;drag=null;dock.dataset.dragging="false";if(moved)save();};grip.onclick=()=>{if(!moved)toggleMini();moved=false;};
+   window.addEventListener("resize",clampDock);window.mxResetFocusDock=()=>{delete prefs().dockPosition;dock.style.removeProperty("left");dock.style.removeProperty("top");dock.style.removeProperty("right");dock.style.removeProperty("bottom");save();};requestAnimationFrame(clampDock);
   }
   if(dock.parentNode!==parent)parent.append(dock);
-  const a=active(),p=prefs(),remaining=a?(a.status==="running"?a.end-Date.now():a.left):p.work*60000;
+  const a=active(),p=prefs();dock.dataset.phase=a?.phase||"idle";const remaining=a?(a.status==="running"?a.end-Date.now():a.left):p.work*60000;
   dock.querySelector(".mx-time").textContent=fmt(remaining);dock.querySelector(".mx-name").textContent=a?.title||"Pomodoro";dock.querySelector(".mx-name").title=a?.title||"Pomodoro";
   dock.querySelector(".mx-state").textContent=a?(a.phase==="work"?"Odak":"Mola")+" · "+Math.min(a.rounds,a.done+(a.phase==="work"?1:0))+"/"+a.rounds+(a.status==="paused"?" · Duraklatıldı":""):"Çalışmanı seç";
   dock.querySelector("[data-pause]").textContent=a?.status==="running"?"Ⅱ":"▶";dock.querySelector("[data-stop]").disabled=!a&&!fs();
@@ -411,7 +445,7 @@ function installFocusSessionsMX(){
  focusOpen7=function(name=""){
   if(v7().focusActive){toast("Önce eski odak oturumunu bitir veya kaydet.");return oldOpen(name);}
   const a=active(),p=prefs(),[m,t]=currentTarget(),types=[["goal","Hedeflerim"],["task","Görev"],["resource","Kaynak / bölüm"],["book","Kitap"],["vocab","Flashcard"],["habit","Alışkanlık"],["p90","P90X"],["pole","Pole Dance"],["swim","Yüzme"],["piano","Piyano"],["speaking","Konuşma"],["listening","Dinleme"],["general","Serbest çalışma"]];
-  modal5(`<div class="modalhead5"><h2>Pomodoro</h2><button onclick="close5()">×</button></div>${a?`<div class="card"><b>${H(a.title)}</b><p>${H(fmtTime9(a.seconds))} · ${a.done}/${a.rounds} set</p><button onclick="mxPauseFocus()">${a.status==="running"?"Duraklat":"Devam et"}</button><button onclick="mxStopFocus()">Kaydet ve bitir</button></div>`:""}<form id="mx-focus-form" class="mx-focus-form"><label>Çalışma türü<select name="kind">${opt5(types,m)}</select></label><label>Hedef ara<input name="targetSearch" type="search" placeholder="Hedef, kitap, görev veya kaynak adı" autocomplete="off"></label><label>Hedef<select name="target" required></select></label><p data-target-status role="status"></p><label data-leaf hidden>Alt bölüm<select name="leaf"></select></label><label data-custom hidden>Başlık<input name="title" value="${H(name)}" maxlength="140"></label><div class="grid three"><label>Odak (dk)<input name="work" type="number" min="1" max="180" value="${p.work}" required></label><label>Mola (dk)<input name="rest" type="number" min="1" max="60" value="${p.rest}" required></label><label>Set<input name="rounds" type="number" min="1" max="30" value="${p.rounds}" required></label></div><label><input type="checkbox" name="auto" ${p.auto?"checked":""}> Sonraki sete otomatik geç</label><label><input type="checkbox" name="voice" ${p.voice?"checked":""}> Flashcard otomatik ses</label><p class="muted">Molalar çalışma süresine eklenmez. Kapalı tarayıcıda yalnız başlamış setin sonuna kadar süre hesaplanır.</p><button class="primary">Başlat</button></form>`);
+  modal5(`<div class="modalhead5"><h2>Pomodoro</h2><button onclick="close5()">×</button></div><div class="flex"><button onclick="mxFocusSoundSettings()">Ses ayarları</button><button onclick="mxResetFocusDock()">Pencere konumunu sıfırla</button></div>${a?`<div class="card"><b>${H(a.title)}</b><p>${H(fmtTime9(a.seconds))} · ${a.done}/${a.rounds} set</p><button onclick="mxPauseFocus()">${a.status==="running"?"Duraklat":"Devam et"}</button><button onclick="mxStopFocus()">Kaydet ve bitir</button></div>`:""}<form id="mx-focus-form" class="mx-focus-form"><label>Çalışma türü<select name="kind">${opt5(types,m)}</select></label><label>Hedef ara<input name="targetSearch" type="search" placeholder="Hedef, kitap, görev veya kaynak adı" autocomplete="off"></label><label>Hedef<select name="target" required></select></label><p data-target-status role="status"></p><label data-leaf hidden>Alt bölüm<select name="leaf"></select></label><label data-custom hidden>Başlık<input name="title" value="${H(name)}" maxlength="140"></label><div class="grid three"><label>Odak (dk)<input name="work" type="number" min="1" max="180" value="${p.work}" required></label><label>Mola (dk)<input name="rest" type="number" min="1" max="60" value="${p.rest}" required></label><label>Set<input name="rounds" type="number" min="1" max="30" value="${p.rounds}" required></label></div><label><input type="checkbox" name="auto" ${p.auto?"checked":""}> Sonraki sete otomatik geç</label><label><input type="checkbox" name="voice" ${p.voice?"checked":""}> Flashcard otomatik ses</label><p class="muted">Molalar çalışma süresine eklenmez. Kapalı tarayıcıda yalnız başlamış setin sonuna kadar süre hesaplanır.</p><button class="primary">Başlat</button></form>`);
   const f=document.querySelector("#mx-focus-form");
   function flattenSections(tree,depth=0){return (tree||[]).flatMap(x=>[[x.id,"  ".repeat(depth)+x.title],...flattenSections(x.children||[],depth+1)]);}
   const norm=x=>String(x??"").toLocaleLowerCase("tr").normalize("NFD").replace(/\p{M}/gu,"").replace(/ı/g,"i");
