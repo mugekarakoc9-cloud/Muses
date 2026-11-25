@@ -50,3 +50,46 @@ body[data-theme="dark"] .mobileNav3 button.active {
   border: 1px dashed currentColor;
   background: transparent;
 }
+
+/* v0.12: quiet navigation, curved progression, separate celebration choreography */
+.mx-palace .mx-road-view{max-height:72vh!important;background:radial-gradient(ellipse at 25% 20%,#b5cfb724,transparent 65%),radial-gradient(ellipse at 80% 80%,#b6a2db22,transparent 65%),var(--bg)!important}
+.mx-palace .mx-road{max-width:780px;margin-inline:auto;padding-block:38px 62px!important}
+.mx-palace .mx-stop{min-height:138px!important;grid-template-columns:minmax(0,1fr) 122px minmax(0,1fr)!important;gap:12px!important}
+.mx-palace .mx-stop .mx-node{width:72px!important;height:65px!important;border-radius:50%!important;transform:translateX(var(--mx-shift,0px))!important;box-shadow:0 7px 0 color-mix(in srgb,var(--mx-color) 60%,#30253b),0 12px 20px #30253b21!important;font-size:1.6rem}
+.mx-palace .mx-stop .mx-node:hover{transform:translateX(var(--mx-shift,0px)) translateY(-3px)!important}
+.mx-palace .mx-stop[data-state=open] .mx-node{outline:3px solid #b2a0dd70;outline-offset:5px}
+.mx-palace .mx-stop[data-state=locked] .mx-node{opacity:.48;box-shadow:0 4px 0 #8a939f!important}
+.mx-palace .mx-stop-label{padding:9px 12px!important;box-shadow:none!important}
+.mx-palace .mx-stop-label button{display:block;width:100%}
+.mx-next-tag{position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:.66rem;letter-spacing:.04em;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px 8px;pointer-events:none}
+.mx-path-walker{position:absolute;left:0;top:0;width:92px;height:92px;z-index:5;pointer-events:none;offset-rotate:0deg}
+.mx-path-walker img{width:100%!important;height:100%!important;object-fit:contain}
+.mx-floating-cat.mx-floating-cat{--mx-pet-size:132px;left:0!important;right:auto!important;bottom:62px!important;width:var(--mx-pet-size)!important;height:var(--mx-pet-size)!important;animation:mx-pet-patrol 32s linear infinite;box-shadow:none!important;cursor:pointer;transform:translateX(12px)}
+.mx-floating-cat .mx-real-cat{width:100%!important;height:100%!important;object-fit:contain;animation:mx-pet-direction 32s steps(1,end) infinite!important}
+.mx-floating-cat:hover,.mx-floating-cat:focus-visible,.mx-floating-cat[data-pose=happy],.mx-floating-cat[data-pose=gift],.mx-floating-cat[data-pose=sleep],.mx-floating-cat[data-pose=love],.mx-floating-cat[data-pose=greet],.mx-floating-cat[data-pose=knead],.mx-floating-cat[data-pose=sad],.mx-floating-cat[data-pose=play],.mx-floating-cat[data-pose=still]{animation-play-state:paused!important}
+.mx-floating-cat:hover img,.mx-floating-cat:focus-visible img,.mx-floating-cat:not([data-pose=idle]) img{animation-play-state:paused!important}
+@keyframes mx-pet-patrol{0%{transform:translateX(12px)}48%,50%{transform:translateX(calc(100vw - var(--mx-pet-size) - 16px))}98%,100%{transform:translateX(12px)}}
+@keyframes mx-pet-direction{0%,48%{transform:scaleX(1)}50%,98%{transform:scaleX(-1)}100%{transform:scaleX(1)}}
+body[data-mx-cat-hidden=yes] .mx-floating-cat,body[data-mx-cat-hidden=yes] .mx-mimo-home,body[data-mx-cat-hidden=yes] .mx-path-walker,body[data-mx-cat-hidden=yes] .mx-palace-hero .mimo,body[data-mx-cat-hidden=yes] .mx-next-cat{display:none!important}
+.mx-celebration{position:fixed;z-index:99995;left:50%;top:18%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:9px;pointer-events:none;padding:16px 26px;border-radius:22px;background:var(--paper,#fff);color:var(--ink,#332b43);box-shadow:0 12px 44px #3d335337;max-width:calc(100vw - 30px);text-align:center}
+.mx-celebrate-emblem{display:grid;place-items:center;width:68px;height:68px;font-size:42px;font-weight:700;border-radius:50%;background:#e1f3e7;color:#408969}
+.mx-celebrate-task .mx-celebrate-emblem{animation:mx-task-pop .6s cubic-bezier(.2,1.5,.5,1)}
+.mx-celebrate-focus .mx-celebrate-emblem{color:#7155b3;background:#e9dff9;animation:mx-focus-spin .85s ease-out}
+.mx-celebrate-trophy .mx-celebrate-emblem{background:#fff0ce;animation:mx-trophy-rise 1.1s ease-out}
+.mx-celebration i{position:absolute;top:42px;left:50%;width:7px;height:12px;border-radius:3px;background:#74b493;opacity:0;animation:mx-celebrate-burst 1.1s ease-out}
+.mx-celebrate-focus i{background:#a790d8;border-radius:50%}
+.mx-celebrate-trophy i{background:#e6b550;animation-duration:1.6s}
+@keyframes mx-task-pop{0%{transform:scale(.1)}70%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes mx-focus-spin{0%{transform:scale(.3) rotate(-160deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes mx-trophy-rise{0%{transform:translateY(38px) scale(.2)}65%{transform:translateY(-12px) scale(1.14)}100%{transform:translateY(0) scale(1)}}
+@keyframes mx-celebrate-burst{0%{opacity:1;transform:rotate(var(--angle)) translateY(0)}80%{opacity:1}100%{opacity:0;transform:rotate(var(--angle)) translateY(-92px) rotate(90deg)}}
+@media(max-width:720px){
+ .mx-palace .mx-stop{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)!important;min-height:124px!important;gap:5px!important}
+ .mx-palace .mx-stop .mx-node{width:56px!important;height:50px!important;transform:translateX(calc(var(--mx-shift,0px)*.36))!important}
+ .mx-palace .mx-stop .mx-node:hover{transform:translateX(calc(var(--mx-shift,0px)*.36))!important}
+ .mx-palace .mx-stop-label{padding:7px!important;font-size:.8rem}
+ .mx-path-walker{width:66px;height:66px}
+ .mx-floating-cat.mx-floating-cat{--mx-pet-size:94px;bottom:108px!important}
+}
+@media(prefers-reduced-motion:reduce){.mx-floating-cat.mx-floating-cat,.mx-floating-cat .mx-real-cat,.mx-celebration *{animation:none!important}}
+body[data-studio-motion=off] .mx-floating-cat,body[data-studio-motion=off] .mx-floating-cat .mx-real-cat{animation:none!important}
