@@ -161,3 +161,11 @@ body[data-mx-quiet] .mx-lesson-layout{grid-template-columns:minmax(0,1.3fr) minm
 .mx-hour-cell:hover .mx-hour-add,.mx-hour-add:focus-visible{opacity:1}
 .mx-hour-cell.mx-drop-hover{background:color-mix(in srgb,var(--accent) 15%,var(--paper))!important;outline:2px dashed var(--accent);outline-offset:-3px}
 @media(max-width:720px){.mx-hour-grid{grid-template-columns:52px repeat(var(--days),minmax(128px,1fr));min-width:calc(52px + var(--days)*128px)}.mx-hour-header,.mx-hour-tools{gap:6px}.mx-hour-scroll{max-height:68vh}}
+
+/* Tap the empty calendar surface rather than a visible plus icon. The native button remains keyboard accessible. */
+.mx-hour-cell .mx-hour-add{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;min-height:0!important;padding:0!important;border-radius:0!important;opacity:1!important;cursor:pointer;z-index:0}
+.mx-hour-cell .mx-hour-add:hover{background:color-mix(in srgb,var(--accent) 7%,transparent)!important}
+.mx-hour-cell .mx-hour-add:focus-visible{outline:2px solid var(--accent)!important;outline-offset:-3px}
+.mx-hour-cell .mx-hour-task{position:relative;z-index:1}
+.mx-hour-header>button.primary{display:none}
+.mx-month-grid .cell5[data-p1-date]{cursor:pointer}
