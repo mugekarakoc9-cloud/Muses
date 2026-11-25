@@ -380,7 +380,7 @@ function installFocusSessionsMX(){
  @media(max-width:920px){.mx-focus-dock{right:10px;bottom:82px;max-width:calc(100vw - 20px);gap:3px}.mx-focus-dock .mx-name{max-width:100px}}
  `;document.head.append(style);
  function paint(){
-  const parent=document.fullscreenElement||document.body;
+  const parent=document.fullscreenElement||document.querySelector("#dialog5[open]")||document.body;
   if(!dock){dock=document.createElement("aside");dock.className="mx-focus-dock";dock.setAttribute("aria-label","Pomodoro");dock.innerHTML='<button data-open title="Pomodoro ayarları">◷</button><div class="mx-info"><div class="mx-name"></div><small class="mx-state"></small></div><b class="mx-time">25:00</b><button data-pause title="Başlat / duraklat">▶</button><button data-stop title="Kaydet ve bitir">■</button><button data-mini title="Küçült">−</button>';
    dock.querySelector("[data-open]").onclick=()=>focusOpen7();dock.querySelector("[data-pause]").onclick=()=>active()?pause():fs()?start(fs().module||"vocab",fs().target||"All",fs().title||"Flashcard",fs().id):focusOpen7();dock.querySelector("[data-stop]").onclick=()=>{endSelected();render();};dock.querySelector("[data-mini]").onclick=()=>{mini=!mini;dock.classList.toggle("mx-focus-mini",mini);};
   }
