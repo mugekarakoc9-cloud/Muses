@@ -350,7 +350,7 @@ function installFocusSessionsMX(){
   const a=active();
   if(a&&a.module===m&&a.target===t&&(!session||!a.session||a.session===session)){if(session)a.session=session;save();paint();return true;}
   if(a&&!confirm("Mevcut Pomodoro kaydedilsin ve yeni çalışma başlatılsın mı?"))return false;
-  if(a)stop("switch");clockFlush9();clock9=null;paused9=false;
+  if(a){const attached=fs()&&a.session===fs().id;stop("switch");if(attached&&!ending)finish("switch",false);}clockFlush9();clock9=null;paused9=false;
   const now=Date.now(),clamp=(v,max,def)=>Number.isFinite(+v)?Math.max(1,Math.min(max,Math.round(+v))):def,work=clamp(cfg.work,180,25)*60000,rest=clamp(cfg.rest,60,5)*60000;
   D().active={id:id(),module:m,target:String(t),title:name||label(m,t),session,started:now,at:now,end:now+work,left:work,work,rest,rounds:clamp(cfg.rounds,30,5),done:0,phase:"work",status:"running",seconds:0,days:{}};
   lastSave=now;save();paint();return true;
@@ -370,7 +370,7 @@ function installFocusSessionsMX(){
  function paint(){
   const parent=document.fullscreenElement||document.body;
   if(!dock){dock=document.createElement("aside");dock.className="mx-focus-dock";dock.setAttribute("aria-label","Pomodoro");dock.innerHTML='<button data-open title="Pomodoro ayarları">◷</button><div class="mx-info"><div class="mx-name"></div><small class="mx-state"></small></div><b class="mx-time">25:00</b><button data-pause title="Başlat / duraklat">▶</button><button data-stop title="Kaydet ve bitir">■</button><button data-mini title="Küçült">−</button>';
-   dock.querySelector("[data-open]").onclick=()=>focusOpen7();dock.querySelector("[data-pause]").onclick=()=>active()?pause():focusOpen7();dock.querySelector("[data-stop]").onclick=()=>{stop();render();};dock.querySelector("[data-mini]").onclick=()=>{mini=!mini;dock.classList.toggle("mx-focus-mini",mini);};
+   dock.querySelector("[data-open]").onclick=()=>focusOpen7();dock.querySelector("[data-pause]").onclick=()=>active()?pause():fs()?start(fs().module||"vocab",fs().target||"All",fs().title||"Flashcard",fs().id):focusOpen7();dock.querySelector("[data-stop]").onclick=()=>{endSelected();render();};dock.querySelector("[data-mini]").onclick=()=>{mini=!mini;dock.classList.toggle("mx-focus-mini",mini);};
   }
   if(dock.parentNode!==parent)parent.append(dock);
   const a=active(),p=prefs(),remaining=a?(a.status==="running"?a.end-Date.now():a.left):p.work*60000;
@@ -384,7 +384,7 @@ function installFocusSessionsMX(){
   if(m==="resource")return resourceRows().map(x=>[x.id,x.title]);
   if(m==="book")return bookRows().map(x=>[x.id,x.title]);
   if(m==="habit")return habits.map(x=>[x[0],x[0]]);
-  if(m==="vocab")return [...new Set(["All",...(s4().levels||[])])].map(x=>[x,x==="All"?"Tüm seviyeler":x]);
+  if(m==="vocab")return [...new Set(["All",...(typeof LV4!=="undefined"?LV4:[]),...(s4().levels||[])])].map(x=>[x,x==="All"?"Tüm seviyeler":x]);
   if(m==="p90")return Array.from({length:90},(_,i)=>[String(i+1),"P90X · "+(i+1)+". gün"]);
   if(m==="pole")return [["all","Pole Dance"],...(typeof ATLAS_SEED!=="undefined"?ATLAS_SEED.map(x=>[x.id,x.name]):[])];
   if(m==="general")return [["Odak çalışması","Serbest çalışma"]];
@@ -404,11 +404,12 @@ function installFocusSessionsMX(){
   function leaf(){let r=f.elements.kind.value==="resource";f.querySelector("[data-leaf]").hidden=!r;if(r)f.elements.leaf.innerHTML=opt5([["","Kaynağın tamamı"],...flattenSections(scope6(f.elements.target.value).tree)],"");}
   function targets(preferred=""){let k=f.elements.kind.value,l=options(k);f.elements.target.innerHTML=opt5(l,l.some(x=>x[0]===preferred)?preferred:l[0]?.[0]);f.querySelector("[data-custom]").hidden=k!=="general";leaf();}
   f.elements.kind.onchange=()=>targets();f.elements.target.onchange=leaf;targets(t);
-  f.onsubmit=e=>{e.preventDefault();const k=f.elements.kind.value;let target=f.elements.target.value;if(!target)return toast("Bir çalışma seç.");if(k==="resource"&&f.elements.leaf.value)target+="~"+f.elements.leaf.value;if(k==="general")target=f.elements.title.value.trim()||"Odak çalışması";const cfg={work:+f.elements.work.value,rest:+f.elements.rest.value,rounds:+f.elements.rounds.value,auto:f.elements.auto.checked,voice:f.elements.voice.checked};if(!start(k,target,label(k,target),"",cfg))return;Object.assign(prefs(),cfg);save();close5();if(k==="vocab"){route5("vocab",target,today());begin(false);}else if(k==="task"){const task=S.tasks.find(x=>x.id===target);if(task?.module==="vocab"){route5("vocab",task.target||"All",task.date);begin(false);}else if(task&&linked5(task))route5(task.module,task.target,task.date);else render();}else render();};
+  f.onsubmit=e=>{e.preventDefault();const k=f.elements.kind.value;let target=f.elements.target.value;if(!target)return toast("Bir çalışma seç.");if(k==="resource"&&f.elements.leaf.value)target+="~"+f.elements.leaf.value;if(k==="general")target=f.elements.title.value.trim()||"Odak çalışması";const cfg={work:+f.elements.work.value,rest:+f.elements.rest.value,rounds:+f.elements.rounds.value,auto:f.elements.auto.checked,voice:f.elements.voice.checked};if(!start(k,target,label(k,target),"",cfg))return;Object.assign(prefs(),cfg);s4().autoVoice=cfg.voice;save();close5();if(k==="vocab"){route5("vocab",target,today());begin(false);}else if(k==="task"){const task=S.tasks.find(x=>x.id===target);if(task?.module==="vocab"){route5("vocab",task.target||"All",task.date);begin(false);}else if(task&&linked5(task))route5(task.module,task.target,task.date);else render();}else render();};
  };
  focusFinish7=function(){if(v7().focusActive)return oldFinish7();stop();close5();render();};focusCancel7=function(){if(v7().focusActive)return oldCancel7();stop();close5();render();};
- window.mxPauseFocus=()=>{pause();close5();render();};window.mxStopFocus=()=>{stop();close5();render();};
- window.toggleActivityP1=function(m,k){let t=dec5(k),a=active();if(a?.module===m&&a.target===t)stop();else start(m,t,label(m,t));render();};
+ function endSelected(){if(fs()&&active()?.session===fs().id)return finish("manual",true);stop();}
+ window.mxPauseFocus=()=>{pause();close5();render();};window.mxStopFocus=()=>{endSelected();close5();render();};
+ window.toggleActivityP1=function(m,k){let t=dec5(k),a=active();if(a?.module===m&&a.target===t)endSelected();else start(m,t,label(m,t));render();};
  clockToggle9=function(){if(active()){pause();render();}else focusOpen7();};
  const titleBase=titleTime9;titleTime9=function(r){return ["task","habit","general","resource","book","vocab"].includes(r.m)?label(r.m,r.t):titleBase(r);};
  const actionBase=rowAction5;rowAction5=function(d,k){const v=dec5(k);if(v.startsWith("time9:task:")){let t=S.tasks.find(x=>x.id===v.slice(11));if(t)return showQuick5(t.date,enc5(t.id));}if(v.startsWith("time9:habit:"))return go("habits");if(v.startsWith("time9:general:"))return focusOpen7();return actionBase(d,k);};
@@ -432,7 +433,7 @@ function installFocusSessionsMX(){
   const sid=session4.id,t=s4().levels.join(",")||"All",a=active();
   if(a?.module==="task"&&S.tasks.some(x=>x.id===a.target&&x.module==="vocab")){a.session=sid;save();}
   else if(!start("vocab",t,label("vocab",t),sid))return;
-  D().flash={id:sid,keys:[...new Set(queue4)],answers:{},mode:s4().mode};lastSpoken="";tab4="study";save();render();
+  const linked=active();D().flash={id:sid,keys:[...new Set(queue4)],answers:{},mode:s4().mode,module:linked?.module||"vocab",target:linked?.target||t,title:linked?.title||label("vocab",t)};lastSpoken="";tab4="study";save();render();
  }
  window.mxStartFlashSession=()=>begin(true);
  const selectBase=startSelected4;startSelected4=function(){if(!chosen4.size)return selectBase();let keys=[...chosen4],n=Number(s4().limit);if(n>0)keys=keys.slice(0,n);restart4(keys);tab4="study";begin(false);};
