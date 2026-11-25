@@ -734,13 +734,14 @@ installStudioP1=function(){previousStudioInstallerReviewMX();installUniversalRev
 /* Daily learning and word universe; uses existing private vocabulary, no new personal data. */
 function dailyNewKeysMX(candidates,existing,limit){
  const picked=[],seen=new Set(existing);
+ if(!Number.isInteger(limit)||limit<=0)return picked;
  for(const key of candidates){if(seen.has(key))continue;seen.add(key);picked.push(key);if(picked.length>=limit)break;}
  return limit>0?picked:[];
 }
 function installDailyLearningMX(){
  if(window.mxDailyLearningReady)return;window.mxDailyLearningReady=true;
- const H=x=>esc(String(x??'')),K=x=>enc5(String(x??'')),D=x=>dec5(x),db=()=>{const s=S.mxDailyLearning??={};s.days??={};s.first??={};s.target??=10;s.daysOfWeek??=[0,1,2,3,4,5,6];return s;};
- const day=d=>db().days[d]??={keys:[],learned:{}};
+ const H=x=>esc(String(x??'')),K=x=>enc5(String(x??'')),D=x=>dec5(x),db=()=>{const s=S.mxDailyLearning??={};s.days??={};s.first??={};s.target??=10;s.start??=today();s.daysOfWeek??=[0,1,2,3,4,5,6];return s;};
+ const day=d=>db().days[d]??={keys:[],learned:{},target:db().target};
  const word=k=>by4.get(k),eligible=k=>{const w=word(k);if(!w||!label4(w,'Türkçe Anlam')||!label4(w,'Word / Phrase'))return false;const p=st4(k);return !db().first[k]&&!p.last&&!p.next&&!p.days.length&&!p.level;};
  const due=()=>all4.map(key4).filter(k=>{const p=st4(k);return p.next&&p.next<=today();}).sort((a,b)=>String(st4(a).next).localeCompare(String(st4(b).next)));
  const count=d=>Object.keys(db().days[d]?.learned||{}).length;
@@ -758,7 +759,7 @@ function installDailyLearningMX(){
   search.oninput=update;input.oninput=update;list.onchange=e=>{if(e.target.type!=='checkbox')return;const k=D(e.target.value);if(e.target.checked){if(picked.size>=cap()){e.target.checked=false;return toast('Günlük miktar doldu.');}picked.add(k);}else picked.delete(k);label.textContent=picked.size+'/'+cap();};
   document.querySelector('#mx-daily-suggest').onclick=()=>{for(const k of dailyNewKeysMX(pool4().map(key4).filter(eligible),picked,cap()-picked.size))picked.add(k);update();};
   document.querySelector('#mx-daily-clear').onclick=()=>{picked.clear();Object.keys(r.learned).forEach(k=>picked.add(k));update();};
-  document.querySelector('#mx-daily-save').onclick=()=>{const days=[...document.querySelectorAll('[data-weekday]:checked')].map(x=>Number(x.dataset.weekday));if(!days.length||picked.size>cap()||count(today())>cap())return toast('Miktarı veya çalışma günlerini düzenle.');a.target=cap();a.daysOfWeek=days;r.keys=[...picked];save();close5();render();};update();
+  document.querySelector('#mx-daily-save').onclick=()=>{const days=[...document.querySelectorAll('[data-weekday]:checked')].map(x=>Number(x.dataset.weekday));if(!days.length||picked.size>cap()||count(today())>cap())return toast('Miktarı veya çalışma günlerini düzenle.');a.target=cap();r.target=a.target;a.daysOfWeek=days;r.keys=[...picked];save();close5();render();};update();
  };
  window.mxDailyStart=function(){const r=day(today()),keys=r.keys.filter(k=>!r.learned[k]&&eligible(k));if(!keys.length)return toast('Önce yeni kelimeleri seç veya bugünkü çalışman tamamlandı.');if(typeof window.mxStartFlashKeys!=='function')return toast('Oturum modülü yüklenemedi.');window.mxStartFlashKeys(keys,'type');};
  window.mxDailyDue=function(){const keys=due();if(!keys.length)return toast('Vadesi gelen kelime yok.');if(typeof window.mxStartFlashKeys!=='function')return toast('Oturum modülü yüklenemedi.');window.mxStartFlashKeys(keys.slice(0,Math.max(1,Number(s4().limit)||30)),'flash');};
@@ -775,7 +776,7 @@ function installDailyLearningMX(){
  };
  const oldFlash=flash;flash=function(){return (!full4?dailyPanel():'')+oldFlash();};
  const oldHome=home;home=function(){return dailyPanel()+oldHome();};
- const oldAgenda=agendaRows5;agendaRows5=function(d){const rows=oldAgenda(d),s=db(),n=count(d);if(s.daysOfWeek.includes(new Date(d+'T12:00:00').getDay())||n){rows.push({id:'mx-daily-new:'+d,kind:'mx-daily-new',date:d,label:'Yeni kelimeler · '+n+'/'+s.target,done:n>=s.target,module:'vocab',target:'All'});}return rows;};
+ const oldAgenda=agendaRows5;agendaRows5=function(d){const rows=oldAgenda(d),s=db(),n=count(d);const target=s.days[d]?.target||s.target;if((d>=s.start&&s.daysOfWeek.includes(new Date(d+'T12:00:00').getDay()))||s.days[d]){rows.push({id:'mx-daily-new:'+d,kind:'mx-daily-new',date:d,label:'Yeni kelimeler · '+n+'/'+target,done:n>=target,module:'vocab',target:'All'});}return rows;};
  const oldRow=row5;row5=function(r,compact=false){if(r.kind!=='mx-daily-new')return oldRow(r,compact);return `<div class="event5 ${r.done?'completed5':''}"><button class="eventtext5" onclick="go('flash')">${H(r.label)}</button></div>`;};
 }
 const previousStudioInstallerDailyMX=installStudioP1;
