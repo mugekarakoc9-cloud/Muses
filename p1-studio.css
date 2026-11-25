@@ -1,0 +1,32 @@
+.p1-tools,
+.p1-results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-block: .75rem;
+}
+.p1-results { flex-direction: column; }
+.p1-results button { text-align: start; overflow-wrap: anywhere; }
+.p1-appearance label,
+.p1-planner label { display: block; margin-block: .75rem; }
+.p1-plan-actions { grid-column: auto; }
+.p1-status { font-size: .75rem; opacity: .85; }
+.p1-defer { flex: none; }
+[data-p1-task] { cursor: grab; }
+.p1-tree-viewport { max-height: 75vh; overflow: auto; }
+.p1-tree-viewport .treeStudio10 { min-width: 0; }
+.p1-tree-viewport:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+[data-studio-font="system"] { font-family: system-ui, sans-serif; }
+[data-studio-font="serif"] { font-family: Georgia, serif; }
+[data-studio-font] button,
+[data-studio-font] input,
+[data-studio-font] select { font-family: inherit; }
+[data-studio-palette="ocean"] { --accent: #236f92; }
+[data-studio-palette="plum"] { --accent: #89508d; }
+[data-studio-motion="off"] *,
+[data-studio-motion="off"] *::before,
+[data-studio-motion="off"] *::after {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
