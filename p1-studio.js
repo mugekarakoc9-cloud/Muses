@@ -621,16 +621,16 @@ function installMimoRewardsMX(){
   Object.values(urls).forEach(x=>URL.revokeObjectURL(x));urls=next;loaded=true;paint();
  }
  async function load(){
-  if(loaded||loading||Date.now()-lastLoad<3000)return;loading=true;lastLoad=Date.now();
+  if(loaded||loading||Date.now()-lastLoad<8000)return;loading=true;lastLoad=Date.now();
   try{
    const local=await get6('media',key).catch(()=>null);
    if(local){try{setPack(local);}catch{}}
    if(!loaded){
     const cached=await get6('media','mx-mimo-bundled-v1').catch(()=>null);
-    if(cached){try{setPack(cached);}catch{}}
+    if(cached){try{setPack(cached);if(!modes.every(k=>cached.animations?.[k]))loaded=false;}catch{}}
    }
    if(!loaded){
-    const read=async k=>{const r=await fetch('./assets/mimo/'+k+'.json',{credentials:'same-origin'});if(!r.ok)throw Error('Mimo '+k);return r.json();};
+    const read=async k=>{const r=await fetch('./assets/mimo/'+k+'.json',{credentials:'same-origin',cache:'no-store'});if(!r.ok)throw Error('Mimo '+k);return r.json();};
     const pack={format:'muses-mimo-v1',name:'Mimo',animations:{idle:await read('idle')}};
     setPack(pack);
     const rest=await Promise.allSettled(modes.filter(k=>k!=='idle').map(async k=>[k,await read(k)]));
@@ -647,7 +647,7 @@ function installMimoRewardsMX(){
  function src(p){return urls[p]||urls.idle||'';}
  function paint(){const u=src(effectivePose());if(u){
    for(const svg of document.querySelectorAll('svg.mimo')){const img=document.createElement('img');img.className='mimo mx-real-cat';img.alt='Mimo';img.draggable=false;img.src=u;svg.replaceWith(img);}
-   for(const img of document.querySelectorAll('img.mx-real-cat'))if(img.src!==u)img.src=u;
+   for(const img of document.querySelectorAll('img.mx-real-cat'))if(img.getAttribute('src')!==u)img.src=u;
   }
   const p=document.querySelector('.mx-floating-cat');if(p){p.onclick=()=>window.mxMimoHome();if(u&&!p.querySelector('.mx-real-cat'))p.innerHTML=catSvg();}
  }
@@ -656,7 +656,7 @@ function installMimoRewardsMX(){
   pose=p;until=Date.now()+(p==='sleep'?14000:6000);paint();
   if(!db().sound||!v2().sound||!s||Date.now()-lastSound<1500)return;
   const u=audioURLs[s]||(db().onlineSounds!==false&&sounds[s]&&navigator.onLine!==false?audioBase+sounds[s]:'');if(!u)return;lastSound=Date.now();
-  try{player?.pause();player=new Audio(u);player.volume=Math.max(0,Math.min(1,db().volume));player.play().catch(()=>{});}catch{}
+  try{player?.pause();player=new Audio(u);player.volume=Math.max(0,Math.min(1,db().volume));player.play().catch(()=>{if(document.querySelector('#mx-mimo-status'))document.querySelector('#mx-mimo-status').textContent='Ses oynatılamadı. Cihazdaki ses dosyasını veya bağlantıyı kontrol et.';});}catch{}
  }
  window.mxMimoPose=(p)=>{if(modes.includes(p))react(p,p==='sleep'?'sleep':p==='sad'?'sad':p==='happy'||p==='gift'?'happy':p==='love'||p==='knead'?'purr':'greet');};
  document.addEventListener('pointerdown',()=>{if(Date.now()<until&&pose==='greet'&&lastSound===0)react('greet','greet');},{once:true});
@@ -699,7 +699,7 @@ function installMimoRewardsMX(){
   modal5(`<div class="modalhead5"><h2>Mimo · Petshop</h2><button onclick="close5()">×</button></div><div style="text-align:center">${src('idle')?`<img class="mx-real-cat" src="${H(src(effectivePose()))}" alt="Mimo" style="width:140px">`:baseCat()}</div><div class="flex">${[['greet','Pati'],['play','Top'],['knead','Yoğurma'],['sleep','Mavi yatak'],['love','Sevgi'],['sad','Sakin tepki']].map(([k,t])=>`<button onclick="mxMimoPose('${k}')">${t}</button>`).join('')}</div><div class="flex"><button class="primary" onclick="mxMimoRewardRule()">Hedefe ödül seç</button><button onclick="mxMimoMedia()">Animasyon ve sesler</button></div><h3>Petshop koleksiyonu</h3><div class="mx-mimo-shop">${catalog.map(x=>`<article><span class="mx-item-icon">${x[2]}</span><strong>${H(x[1])}</strong><small>${owned.has(x[0])?'Koleksiyonda':'Hedef ödülü olarak seçilebilir'}</small></article>`).join('')}</div><h3>Kazanılan ödüller</h3>${earned.map(x=>`<div class="card"><b>${H(x.title)} · ${H(item(x.item)[1])}</b><p>${H(x.date)} ${x.real?H(x.real):''}</p>${x.real&&!x.claimed?`<button onclick="mxMimoClaim('${K(x.id)}')">Gerçek ödülümü aldım</button>`:''}</div>`).join('')||'<p>Henüz kazanılan ödül yok.</p>'}`);
  };
  window.mxMimoMedia=function(){
-  modal5(`<div class="modalhead5"><h2>Mimo · kişisel medya</h2><button onclick="close5()">×</button></div><p>Karakter dosyası ve sesler bu cihazda saklanır. ${Object.keys(urls).length} görsel hazır.</p><label>Karakter paketi (JSON)<input id="mx-mimo-pack" type="file" accept=".json,application/json"></label><button onclick="mxMimoDownloadSounds()">CC0 kedi seslerini cihaza al</button><p><a href="https://opengameart.org/content/cat-purr-meow" target="_blank" rel="noopener noreferrer">Kerzoven · Cat Purr &amp; Meow · CC0</a></p>${Object.entries(sounds).map(([k,f])=>`<label>${H(k)} · ${audioURLs[k]?'Hazır':'Eksik'} <input type="file" data-sound="${k}" accept="audio/*,.wav,.mp3,.ogg"></label>`).join('')}<label><input type="checkbox" id="mx-mimo-sound" ${db().sound?'checked':''}> Kedi sesleri</label><label><input type="checkbox" id="mx-mimo-online" ${db().onlineSounds?'checked':''}> Yerel ses yoksa lisanslı çevrimiçi sesi oynat</label><label><input type="checkbox" id="mx-mimo-motion" ${db().motion?'checked':''}> Animasyon</label><label>Ses düzeyi<input type="range" id="mx-mimo-volume" min="0" max="1" step=".05" value="${db().volume}"></label><p role="status" id="mx-mimo-status"></p>`);
+  modal5(`<div class="modalhead5"><h2>Mimo · kişisel medya</h2><button onclick="close5()">×</button></div><p>Karakter dosyası ve sesler bu cihazda saklanır. ${Object.keys(urls).length}/${modes.length} görsel hazır.</p><p class="muted">${Object.keys(urls).length<modes.length?'Eksik animasyonlar bağlantı kurulunca tekrar denenir.':'Tüm animasyon durumları yüklendi.'}</p><div class="flex"><button onclick="mxMimoPose('greet')">Pati sesi</button><button onclick="mxMimoPose('knead')">Mırlama sesi</button><button onclick="mxMimoPose('sad')">Üzgün ses</button></div><label>Karakter paketi (JSON)<input id="mx-mimo-pack" type="file" accept=".json,application/json"></label><button onclick="mxMimoDownloadSounds()">CC0 kedi seslerini cihaza al</button><p><a href="https://opengameart.org/content/cat-purr-meow" target="_blank" rel="noopener noreferrer">Kerzoven · Cat Purr &amp; Meow · CC0</a></p>${Object.entries(sounds).map(([k,f])=>`<label>${H(k)} · ${audioURLs[k]?'Hazır':'Eksik'} <input type="file" data-sound="${k}" accept="audio/*,.wav,.mp3,.ogg"></label>`).join('')}<label><input type="checkbox" id="mx-mimo-sound" ${db().sound?'checked':''}> Kedi sesleri</label><label><input type="checkbox" id="mx-mimo-online" ${db().onlineSounds?'checked':''}> Yerel ses yoksa lisanslı çevrimiçi sesi oynat</label><label><input type="checkbox" id="mx-mimo-motion" ${db().motion?'checked':''}> Animasyon</label><label>Ses düzeyi<input type="range" id="mx-mimo-volume" min="0" max="1" step=".05" value="${db().volume}"></label><p role="status" id="mx-mimo-status"></p>`);
   const status=document.querySelector('#mx-mimo-status');document.querySelector('#mx-mimo-pack').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(f.size>12000000)throw Error('Paket çok büyük.');const p=JSON.parse(await f.text());if(!p.animations||!p.animations.idle)throw Error('Karakter paketi değil.');for(const k of modes)if(p.animations[k])blobFrom(p.animations[k]);await put6('media',key,p);setPack(p);status.textContent='Karakter paketi kaydedildi. Sonraki ekranlarda aynı kedi kullanılacak.';}catch(e){status.textContent=e.message;}};
   for(const input of document.querySelectorAll('[data-sound]'))input.onchange=async()=>{try{const f=input.files[0];if(!f||f.size>5000000||!(f.type.startsWith('audio/')||/\.(wav|mp3|ogg|m4a)$/i.test(f.name)))throw Error('Geçerli ses dosyası seç.');const k=input.dataset.sound;await put6('media','mx-mimo-audio-'+k,f);if(audioURLs[k])URL.revokeObjectURL(audioURLs[k]);audioURLs[k]=URL.createObjectURL(f);status.textContent='Ses kaydedildi.';}catch(e){status.textContent=e.message;}};
   document.querySelector('#mx-mimo-sound').onchange=e=>{db().sound=e.target.checked;if(!db().sound)player?.pause();save();};document.querySelector('#mx-mimo-online').onchange=e=>{db().onlineSounds=e.target.checked;save();};document.querySelector('#mx-mimo-motion').onchange=e=>{db().motion=e.target.checked;save();paint();};document.querySelector('#mx-mimo-volume').oninput=e=>{db().volume=+e.target.value;if(player)player.volume=db().volume;save();};
@@ -981,3 +981,24 @@ function installRootInteractionMX(){
 }
 const previousStudioInstallerRootMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractionMX();};
+
+
+/* Live build indicator and manual update: no local record migration. */
+function installLiveBuildMX(){
+ if(window.mxLiveBuildInstalled)return;window.mxLiveBuildInstalled=true;
+ const version='0.11.0';
+ const oldHome=home;
+ home=function(){return '<section class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><strong>MUSES Life Studio</strong><div class="muted">Sürüm '+version+' · Cihaz kayıtları korunur</div></div><button onclick="mxCheckUpdate()">Sürümü kontrol et</button></section>'+oldHome();};
+ window.mxCheckUpdate=async function(){
+  try{if(!navigator.serviceWorker){toast('Bu tarayıcıda uygulama güncellemesi desteklenmiyor.');return;}
+   const reg=await navigator.serviceWorker.getRegistration();if(!reg){toast('Çevrimdışı uygulama henüz kurulmamış.');return;}
+   const previous=navigator.serviceWorker.controller;let reloaded=false;
+   const reload=()=>{if(reloaded)return;reloaded=true;location.reload();};
+   const changed=()=>{if(navigator.serviceWorker.controller!==previous)reload();};
+   navigator.serviceWorker.addEventListener('controllerchange',changed,{once:true});
+   await reg.update();if(navigator.serviceWorker.controller!==previous)reload();else if(!reg.installing&&!reg.waiting){navigator.serviceWorker.removeEventListener('controllerchange',changed);toast('Güncelleme kontrol edildi. Yeni sürüm varsa yeniden aç.');}else toast('Yeni kod yükleniyor. Kayıtlar silinmez.');
+  }catch{toast('Güncelleme kontrol edilemedi. Bağlantını kontrol et.');}
+ };
+}
+const previousStudioInstallerLiveBuildMX=installStudioP1;
+installStudioP1=function(){previousStudioInstallerLiveBuildMX();installLiveBuildMX();};
