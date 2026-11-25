@@ -339,3 +339,79 @@ function installPacedGoalsMX(){
 }
 const originalStudioInstallMXGoals = installStudioP1;
 installStudioP1 = function(){originalStudioInstallMXGoals();installPacedGoalsMX();};
+
+
+/* Bilingual reader and flashcard interaction polish. */
+function installBilingualCardsMX(){
+ if(window.mxBilingualInstalled)return;window.mxBilingualInstalled=true;
+ const css=document.createElement('style');css.textContent=`
+ #readerContent10 .mx-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:.4rem 0}
+ #readerContent10:not(.parallel10) .mx-pair{grid-template-columns:minmax(0,1fr)}
+ #readerContent10 .mx-sentence{padding:.45rem;border-radius:8px;overflow-wrap:anywhere;min-width:0}
+ #readerContent10 .mx-lit{background:#dbbb6150;box-shadow:inset 3px 0 #c8a04a}
+ #fcstudio4 .face4{--mx-ink:#28243b;--mx-panel:#fffcfa;--mx-line:#dfd5e9;--mx-purple:#6c509f;--mx-green:#316c58;--mx-blue:#38688e;--mx-gold:#8a642f;background:linear-gradient(145deg,#f3edf9,#fffdf9 55%,#eaf4ed);color:var(--mx-ink);border-radius:24px;border:1px solid var(--mx-line);padding:clamp(15px,3vw,32px);gap:10px;min-width:0;text-align:left;overflow-wrap:anywhere;justify-content:flex-start}
+ body[data-theme=dark] #fcstudio4 .face4{--mx-ink:#f3edf7;--mx-panel:#292d39;--mx-line:#504861;--mx-purple:#d4bdf9;--mx-green:#abd6b9;--mx-blue:#a9cdeb;--mx-gold:#e5c38d;background:linear-gradient(145deg,#30283e,#202831 58%,#253630)}
+ #fcstudio4 .mx-field{background:var(--mx-panel);width:100%;box-sizing:border-box;border:1px solid var(--mx-line);border-left:3px solid var(--mx-purple);border-radius:12px;padding:10px 14px;color:var(--mx-ink);font-size:1rem;line-height:1.55;min-width:0;text-align:left;white-space:pre-wrap}
+ #fcstudio4 .mx-field small{display:block;color:var(--mx-purple);font-size:.7rem;font-weight:700;letter-spacing:.07em;margin-bottom:4px;text-transform:uppercase}
+ #fcstudio4 .mx-main{font-family:Georgia,serif;font-size:clamp(1.8rem,5vw,3.4rem);text-align:center;font-weight:650;background:transparent;border:0;color:var(--mx-purple)}
+ #fcstudio4 .mx-tr{border-left-color:var(--mx-green)}#fcstudio4 .mx-tr small{color:var(--mx-green)}
+ #fcstudio4 .mx-ex{border-left-color:var(--mx-blue);font-style:italic}#fcstudio4 .mx-ex small{color:var(--mx-blue);font-style:normal}
+ #fcstudio4 .mx-meta{border-left-color:var(--mx-gold)}#fcstudio4 .mx-meta small{color:var(--mx-gold)}
+ #fcstudio4 .mx-text{user-select:text;-webkit-user-select:text;cursor:text}
+ .mx-voice{background:transparent!important;border-color:transparent!important;opacity:.75;float:right;font-size:.75rem!important}
+ #fcstudio4 .mx-dock{width:100%;margin-top:auto;padding-top:12px;border-top:1px solid var(--mx-line)}
+ #fcstudio4 .mx-dock .controls4,#fcstudio4 .mx-dock .ratings4{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;background:transparent;margin:4px 0}
+ #fcstudio4 .mx-dock button{background:transparent!important;box-shadow:none!important;color:var(--mx-ink)!important;opacity:.8;min-height:36px;flex:1 1 60px;white-space:normal;font-size:.8rem}
+ #fcstudio4 .mx-dock button:hover{opacity:1;background:var(--mx-panel)!important}
+ #fcstudio4 .face4 .eyebrow{display:none}
+ @media(max-width:650px){#readerContent10 .mx-pair{gap:4px}#readerContent10 .mx-sentence{font-size:.9em}}
+ `;document.head.append(css);
+ const H=x=>esc(String(x??'')),en=()=>s4().lang==='en-US'?'en-US':'en-GB';
+ const tr=new Set(['Türkçe Anlam','Türkçe Yakın Telaffuz','Grammar & Usage Note (TR — Longman style)','Reader Translation']);
+ const ambiguous=new Set(['Note','Usage Difference','Root / Etymology','Category','Source','Usage / Collocation','Similarity','Example Sentence']);
+ const mute=new Set(['Image URL','IPA (BrE)']);
+ function say(parts,rate=1){
+  if(!window.speechSynthesis||!window.SpeechSynthesisUtterance)return toast('Seslendirme desteklenmiyor.');
+  speechSynthesis.cancel();
+  for(const p of parts){if(!p.text?.trim())continue;const voice=speechSynthesis.getVoices().find(v=>v.lang.toLowerCase()===p.lang.toLowerCase())||speechSynthesis.getVoices().find(v=>v.lang.split('-')[0]===p.lang.split('-')[0]);const u=new SpeechSynthesisUtterance(p.text);u.lang=p.lang;u.rate=rate;if(voice)u.voice=voice;speechSynthesis.speak(u);}
+ }
+ function partsFor(v,f){const text=String(v),lang=tr.has(f)?'tr-TR':en();if(f==='Example Sentence'){const m=text.match(/[.!?]\s*[,|]\s*(?=[A-Za-zÇĞİÖŞÜçğıöşü])/);if(m){const i=m.index+1;return [{text:text.slice(0,i),lang:en()},{text:text.slice(i+1).replace(/^[,|\s]+/,''),lang:'tr-TR'}];}}return [{text,lang}];}
+ const oldField=fieldHtml4;fieldHtml4=function(w,f){const v=label4(w,f);if(!v)return '';if(f==='Image URL')return oldField(w,f);
+  const kind=f==='Word / Phrase'?'mx-main':tr.has(f)?'mx-tr':/Example|Context/.test(f)?'mx-ex':/POS|IPA|Root|Prefix|Suffix|Source|Category/.test(f)?'mx-meta':'',parts=partsFor(v,f);
+  return `<div class="fcfield4 mx-field ${kind}" data-mx-field="${H(f)}">${f==='Word / Phrase'?'':`<small>${H(fLabel4(f))}</small>`}${parts.map(p=>`<div class="mx-part" lang="${p.lang}">${mute.has(f)?'':ambiguous.has(f)&&parts.length===1?`<button type="button" class="mx-voice" data-mx-voice="tr-TR" aria-label="Türkçe seslendir">TR ◖</button><button type="button" class="mx-voice" data-mx-voice="${en()}" aria-label="İngilizce seslendir">EN ◖</button>`:`<button type="button" class="mx-voice" data-mx-voice="${p.lang}" aria-label="Seslendir">${p.lang.startsWith('tr')?'TR':'EN'} ◖</button>`}<div class="mx-text">${H(p.text)}</div></div>`).join('')}</div>`;
+ };
+ voice4=function(f){const w=cur4();if(!w)return;const visible=side4?s4().back:s4().front,field=f||(s4().mode==='listen'?s4().write:visible.find(x=>!mute.has(x)&&label4(w,x)));if(!field||mute.has(field))return;const parts=partsFor(label4(w,field),field);if(ambiguous.has(field)&&parts.length===1)return toast('Bu alanda TR veya EN sesini seç.');say(parts);};
+ function seg(t){return typeof Intl.Segmenter==='function'?[...new Intl.Segmenter('en',{granularity:'sentence'}).segment(t)].map(x=>x.segment.trim()).filter(Boolean):String(t).match(/[^.!?]+(?:[.!?]+|$)/g)||[t];}
+ const oldSpeak=readerSpeak9;readerSpeak9=function(){const a=readerCurrent10();if(a?.b.language==='tr'&&a.p.text)return say(seg(a.p.text).map(text=>({text,lang:'tr-TR'})),Number(v9().readerRate)||1);return oldSpeak();};
+ parallelHtml10=function(p){const parallel=v10().readerMode==='parallel',a=readerCurrent10(),sourceTR=a?.b.language==='tr';return `<div class="readerColumns10 ${parallel?'parallel10':''}" id="readerContent10">${readerParas10(p).flatMap((t,i)=>seg(t).map((sentence,j)=>{const id=i+'-'+j,translation=v10().translations[readerNorm10(sentence)]||'';return `<div class="mx-pair">${parallel&&!sourceTR?`<div class="mx-sentence trPara10" data-para="${i}" data-mx-pair="${id}" lang="tr-TR"><button class="mx-voice" data-mx-voice="tr-TR">TR ◖</button><span class="mx-translation">${H(translation||'Cümleyi seç · TR')}</span></div>`:''}<div class="readerPara10 mx-sentence" data-para="${i}" data-mx-pair="${id}" lang="${sourceTR?'tr-TR':en()}"><button class="mx-voice" data-mx-voice="${sourceTR?'tr-TR':en()}">◖</button><span class="mx-source">${sourceTR?H(sentence):tokens10(sentence)}</span></div></div>`;})).join('')}</div>`;};
+ const oldContext=readerContext10;readerContext10=function(el){return el?.closest('.mx-sentence')?.querySelector('.mx-source')?.textContent||oldContext(el);};
+ let pinned=null,pageKey='',timer=null;const pending=new Set();
+ function highlight(id){document.querySelectorAll('[data-mx-pair]').forEach(el=>el.classList.toggle('mx-lit',el.dataset.mxPair===id));}
+ async function ensure(id){if(!id)return;const a=readerCurrent10(),source=document.querySelector(`.readerPara10[data-mx-pair="${id}"] .mx-source`),target=document.querySelector(`.trPara10[data-mx-pair="${id}"] .mx-translation`);if(!a||!source||!target)return;const t=source.textContent,key=a.key+'|'+id,cached=v10().translations[readerNorm10(t)];if(cached){target.textContent=cached;return;}if(pending.has(key))return;if(!v10().remote&&!window.Translator){target.textContent='Çeviri için okuyucu ayarlarını aç.';return;}pending.add(key);target.textContent='Çevriliyor…';try{const result=await translate10(t);if(target.isConnected&&readerCurrent10()?.key===a.key)target.textContent=result;}catch(e){if(target.isConnected)target.textContent=e.message||'Çeviri alınamadı.';}finally{pending.delete(key);}}
+ translatePage10=async function(){const first=document.querySelector('.readerPara10[data-mx-pair]');if(first)await ensure(first.dataset.mxPair);};
+ document.addEventListener('pointerover',e=>{const el=e.target.closest?.('.mx-sentence');if(el&&!el.contains(e.relatedTarget))highlight(el.dataset.mxPair);});
+ document.addEventListener('pointerout',e=>{const el=e.target.closest?.('.mx-sentence');if(el&&!el.contains(e.relatedTarget))highlight(pinned);});
+ document.addEventListener('pointerup',e=>{const el=e.target.closest?.('.mx-sentence');if(!el||e.target.closest('button'))return;pinned=el.dataset.mxPair;highlight(pinned);ensure(pinned);clearTimeout(timer);timer=setTimeout(()=>{pinned=null;highlight(null);},3500);});
+ document.addEventListener('click',e=>{const btn=e.target.closest?.('[data-mx-voice]');if(!btn)return;e.preventDefault();e.stopImmediatePropagation();const block=btn.closest('.mx-part,.mx-sentence'),text=block?.querySelector('.mx-text,.mx-source,.mx-translation')?.textContent;if(text&&!/^Cümleyi seç|^Çevriliyor/.test(text))say([{text,lang:btn.dataset.mxVoice}]);},true);
+ let pop=null;function closePop(){pop?.remove();pop=null;}
+ function selection(){
+  const s=window.getSelection();if(!s||s.isCollapsed||!s.rangeCount)return;const a=s.anchorNode?.parentElement?.closest('.mx-part'),b=s.focusNode?.parentElement?.closest('.mx-part');if(!a||a!==b)return;
+  const value=s.toString().trim().replace(/^[\s.,!?;:"“”()\[\]]+|[\s.,!?;:"“”()\[\]]+$/g,'');if(!value||value.length>160||!/[\p{L}]/u.test(value))return;
+  closePop();const rect=s.getRangeAt(0).getBoundingClientRect(),isTR=a.lang.startsWith('tr'),context=a.querySelector('.mx-text')?.textContent||'';
+  const panel=document.createElement('aside');panel.className='card';panel.style.cssText='position:fixed;z-index:999999;width:min(360px,calc(100vw - 24px));box-sizing:border-box;max-height:80vh;overflow:auto;box-shadow:0 12px 36px #0003';panel.innerHTML=`<h3>${H(value)}</h3><form><label>İngilizce ifade<input name="word" required value="${H(isTR?'':value)}" maxlength="160"></label><label>Türkçe anlam<input name="meaning" required value="${H(isTR?value:'')}" maxlength="600"></label><label>Kelime türü<input name="pos" maxlength="40"></label><p role="status"></p><div class="flex"><button type="submit" class="primary">Flashcard'a ekle</button><button type="button" data-existing hidden>Mevcut kartı aç</button><button type="button" data-close>Kapat</button></div></form>`;
+  pop=panel;(document.fullscreenElement||document.body).append(panel);panel.style.left=Math.max(12,Math.min(rect.left,innerWidth-panel.offsetWidth-12))+'px';panel.style.top=Math.max(12,Math.min(rect.bottom+6,innerHeight-panel.offsetHeight-12))+'px';
+  const f=panel.querySelector('form'),word=f.elements.word,existing=f.querySelector('[data-existing]'),add=f.querySelector('[type=submit]'),status=f.querySelector('[role=status]'),dups=()=>findWords10(word.value.trim());
+  function sync(){const found=dups();add.disabled=!word.value.trim()||!!found.length;existing.hidden=!found.length;status.textContent=found.length?'Bu kelime arşivde zaten var. Tekrar eklenemez.':'Yeni ifade · Türkçe anlamı doğrula.';}word.oninput=sync;sync();
+  f.querySelector('[data-close]').onclick=closePop;existing.onclick=()=>{const found=dups();if(found.length){closePop();choose4(key4(found[0]));}};
+  f.onsubmit=e=>{e.preventDefault();if(dups().length){sync();return;}const text=word.value.trim(),meaning=f.elements.meaning.value.trim();if(!text||!meaning)return;S.words.push({'Word / Phrase':text,'Türkçe Anlam':meaning,POS:f.elements.pos.value.trim(),Source:'Flashcard selection','Example Sentence':!isTR&&/Example|Context/.test(a.closest('.mx-field')?.dataset.mxField||'')?context:''});refresh4();save();closePop();window.getSelection()?.removeAllRanges();toast('Flashcard eklendi.');};
+ }
+ document.addEventListener('pointerup',e=>{if(e.target.closest?.('.mx-text'))selection();});
+ document.addEventListener('keyup',e=>{if(e.shiftKey&&e.key.startsWith('Arrow'))selection();});
+ document.addEventListener('keydown',e=>{if(pop&&e.key==='Escape'){closePop();e.preventDefault();e.stopImmediatePropagation();}},true);
+ const oldRender=render;render=function(){closePop();oldRender();const key=readerCurrent10()?.key||'';if(key!==pageKey){pinned=null;pageKey=key;}const face=document.querySelector('#fcstudio4 .face4');if(!face||s4().mode!=='flash')return;
+  face.querySelector(':scope > .eyebrow')?.remove();face.querySelectorAll(':scope > small').forEach(n=>{if(/Kartı çevirmek/.test(n.textContent))n.remove();});face.removeAttribute('onclick');face.removeAttribute('onkeydown');face.setAttribute('role','group');
+  const studio=face.closest('#fcstudio4'),dock=document.createElement('div');dock.className='mx-dock';for(const c of ['.controls4','.ratings4']){const el=studio.querySelector(c);if(el)dock.append(el);}face.append(dock);face.onclick=e=>{if(e.target.closest('button,input,select,a,.mx-field,.mx-dock')||window.getSelection()?.toString().trim())return;flip4();};
+ };
+}
+const originalStudioInstallMXCards = installStudioP1;
+installStudioP1 = function(){originalStudioInstallMXCards();installBilingualCardsMX();};
