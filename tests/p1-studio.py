@@ -66,6 +66,8 @@ with ThreadingHTTPServer(('127.0.0.1', 0), handler) as server, sync_playwright()
     assert page.evaluate('schedule9(goalP1).unallocated.length') == 1
     assert page.evaluate('Object.values(schedule9(goalP1).dates).map(x=>x.amount)') == [2, 2]
     page.evaluate("go('english')")
+    page.get_by_role('button', name='Gün', exact=True).click()
+    assert page.evaluate("treePeriod10()[0].start === treePeriod10()[0].end")
     page.get_by_role('button', name='Yakınlaştır').click()
     assert page.locator('.treeStudio10').evaluate('(el)=>parseFloat(el.style.zoom)') > 1
     page.evaluate("treeDay10(goalP1.id,today())")
@@ -84,6 +86,20 @@ with ThreadingHTTPServer(('127.0.0.1', 0), handler) as server, sync_playwright()
         v5().challenges.pop();
         delete v9().plans[other.id];
         return id && !plan.dates[add(today(),1)] && !!plan.dates[add(today(),3)];
+    }""")
+
+    assert page.evaluate("""() => {
+        const date = add(today(), 10);
+        const first = {...goalP1, id:'interval-a', start:date, end:date, amount:2,
+            time:'10:00', dailyMinutes:60, minutesPerUnit:15};
+        const second = {...first, id:'interval-b', time:'10:15'};
+        v5().challenges.push(first,second);
+        const a = schedule9(first);
+        const b = schedule9(second);
+        v5().challenges.splice(-2);
+        delete v9().plans[first.id];
+        delete v9().plans[second.id];
+        return a.dates[date]?.amount === 2 && b.unallocated.length === 2;
     }""")
 
     page.evaluate("""() => {
@@ -113,7 +129,17 @@ with ThreadingHTTPServer(('127.0.0.1', 0), handler) as server, sync_playwright()
         assert 'P90X' in page.locator('.timeSummary9').inner_text()
         assert 'Flashcard' in page.locator('.timeSummary9').inner_text()
 
-    page.evaluate("setStudioP1('theme','dark')")
+    page.evaluate("""() => {
+        const key = key4(all4[0]);
+        S.reviews.push({key, date:add(today(),-1), result:'correct'});
+        S.reviews.push({key, date:today(), result:'incorrect'});
+        daySelect5(today(),'day');
+    }""")
+    page.get_by_text('Kaynak, hatırlama ve dönem karşılaştırması').click()
+    assert '1 / 1 yanlış yanıt' in page.locator('.p1-analytics').first.inner_text()
+    page.locator('.p1-analytics').first.get_by_role('button', name=page.evaluate('dateLabel5(today())'), exact=True).click()
+    assert 'Yanlış' in page.locator('#dialog5').inner_text()
+    page.evaluate("close5();setStudioP1('theme','dark')")
     for screen in page.evaluate('nav.map(x=>x[0])'):
         page.evaluate('(screen)=>go(screen)', screen)
         assert page.locator('body').get_attribute('data-theme') == 'dark'

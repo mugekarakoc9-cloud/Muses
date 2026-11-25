@@ -6,12 +6,37 @@ function installPlanningP1() {
   const originalForm = challengeForm5;
   const originalSave = saveChallenge5;
 
-  function plannedMinutes(date, goal) {
-    return v5().challenges.reduce((total, other) => {
-      if (other.id === goal.id || !other.minutesPerUnit) return total;
+  function availableMinutes(date, goal) {
+    const asMinutes = time => {
+      const [hour, minute] = time.split(':').map(Number);
+      return hour * 60 + minute;
+    };
+    const start = goal.time ? asMinutes(goal.time) : null;
+    let budget = goal.dailyMinutes;
+    let end = 1440;
+    function reserve(time, minutes) {
+      if (!time || start === null) return;
+      const startOfReservation = asMinutes(time);
+      if (startOfReservation <= start && start < startOfReservation + Math.max(1, minutes)) {
+        end = start;
+      } else if (startOfReservation > start) {
+        end = Math.min(end, startOfReservation);
+      }
+    }
+    for (const other of v5().challenges) {
+      if (other.id === goal.id) continue;
       const allocation = v9().plans[other.id]?.dates[date];
-      return total + (allocation?.amount || 0) * other.minutesPerUnit;
-    }, 0);
+      if (!allocation) continue;
+      const minutes = allocation.amount * (other.minutesPerUnit || 0);
+      budget -= minutes;
+      reserve(other.time, minutes);
+    }
+    // Ordinary tasks store only a start time. Treat it as a point on the calendar.
+    if (start !== null) {
+      for (const task of tasksFor(date)) reserve(task.time, 0);
+      budget = Math.min(budget, end - start);
+    }
+    return Math.max(0, budget);
   }
 
   function allocate(goal, dates, units) {
@@ -19,15 +44,7 @@ function installPlanningP1() {
     let index = 0;
     for (const date of dates) {
       if (index === units.length) break;
-      // The application stores a start time, but no duration for ordinary tasks.
-      const sameStart = goal.time && (
-        S.tasks.some(task => task.date === date && task.time === goal.time) ||
-        v5().challenges.some(other => other.id !== goal.id &&
-          other.time === goal.time && v9().plans[other.id]?.dates[date])
-      );
-      if (sameStart) continue;
-      const available = goal.dailyMinutes - plannedMinutes(date, goal);
-      const capacity = Math.max(0, Math.floor(available / goal.minutesPerUnit));
+      const capacity = Math.floor(availableMinutes(date, goal) / goal.minutesPerUnit);
       const amount = Math.min(capacity, units.length - index);
       if (!amount) continue;
       allocations[date] = {amount, ids: units.slice(index, index + amount).filter(id => id !== null)};

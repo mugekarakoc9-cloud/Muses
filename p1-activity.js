@@ -20,6 +20,7 @@ function installActivityP1() {
   let active;
   let microphone;
   let video;
+  const isGraded = review => ['correct','incorrect','wrong'].includes(review.result);
 
   function clearActivity() {
     if (!active) return;
@@ -169,7 +170,7 @@ function installActivityP1() {
   };
 
   window.reviewDetailP1 = function (date) {
-    const reviews = S.reviews.filter(review => review.date === date && ['correct','wrong'].includes(review.result));
+    const reviews = S.reviews.filter(review => review.date === date && isGraded(review));
     modal5(`<div class="modalhead5"><h2>${esc(dateLabel5(date))} · Cevaplar</h2>
       <button aria-label="Kapat" onclick="close5()">×</button></div>
       ${reviews.length ? `<ul>${reviews.map(review => {
@@ -183,7 +184,7 @@ function installActivityP1() {
     const minutes = new Map();
     const reviews = new Map();
     for (const review of S.reviews) {
-      if (!review.date?.startsWith(year) || !['correct','wrong'].includes(review.result)) continue;
+      if (!review.date?.startsWith(year) || !isGraded(review)) continue;
       const row = reviews.get(review.date) || {correct: 0, total: 0};
       row.total++;
       row.correct += Number(review.result === 'correct');
@@ -233,5 +234,55 @@ function installActivityP1() {
   }
 
   awards = () => weeklyAchievements() + originalAwards();
-  calendar = () => originalCalendar() + annualActivity();
+  function periodInsights() {
+    const end = selected > today() ? today() : selected;
+    const days = v5().graphDays;
+    const start = add(end, 1 - days);
+    const previous = new Map();
+    const learned = new Set();
+    const probeDates = new Set();
+    let recallAttempts = 0;
+    let missedRecalls = 0;
+    const reviews = S.reviews.filter(review => review.key && review.date <= end && isGraded(review))
+      .sort((a, b) => a.date.localeCompare(b.date));
+    for (const review of reviews) {
+      const last = previous.get(review.key);
+      const correct = review.result === 'correct';
+      if (review.date >= start) {
+        if (correct && !last?.everCorrect) learned.add(review.key);
+        if (last?.correct && last.date < review.date) {
+          recallAttempts++;
+          missedRecalls += Number(!correct);
+          probeDates.add(review.date);
+        }
+      }
+      previous.set(review.key, {date:review.date, correct, everCorrect:correct || last?.everCorrect});
+    }
+    const resources = resourceRows().map(state6).filter(item => item.total && item.status !== 'new');
+    const duration = endDate => range5(add(endDate, 1 - days), endDate).reduce((sum, date) => sum + seconds9(date), 0);
+    const currentSeconds = duration(end);
+    const previousSeconds = duration(add(start, -1));
+    return `<details class="card p1-analytics"><summary>Kaynak, hatırlama ve dönem karşılaştırması</summary>
+      <p>${esc(dateLabel5(start))} – ${esc(dateLabel5(end))}</p>
+      <div class="p1-tools">
+        <button onclick="graphJump5('${end}')">Bu dönem · ${currentSeconds ? fmtTime9(currentSeconds) : 'Kayıt yok'}</button>
+        <button onclick="graphJump5('${add(start,-1)}')">Önceki dönem · ${previousSeconds ? fmtTime9(previousSeconds) : 'Kayıt yok'}</button>
+      </div>
+      <h3>Flashcard</h3>
+      ${reviews.some(review => review.date >= start)
+        ? `<p>${learned.size} kelime için ilk doğru yanıt kaydedildi.</p>`
+        : '<p>Bu dönem için cevap kaydı bulunamadı.</p>'}
+      ${recallAttempts ? `<p>Önceki bir günde doğru cevaplanan kelimelerin sonraki tekrarlarında
+        ${missedRecalls} / ${recallAttempts} yanlış yanıt (%${Math.round(100*missedRecalls/recallAttempts)}).</p>
+        <div class="p1-tools">${[...probeDates].map(date =>
+          `<button onclick="reviewDetailP1('${date}')">${esc(dateLabel5(date))}</button>`).join('')}</div>`
+        : '<p>Günler arasında hatırlamayı ölçmek için yeterli kayıt yok.</p>'}
+      <h3>Başlanan kaynaklar</h3>
+      ${resources.length ? `<ul>${resources.map(({r,n,total}) =>
+        `<li><button onclick="sourceOpen6(dec5('${enc5(r.id)}'))">${esc(r.title)} · %${Math.round(100*n/total)}</button></li>`
+      ).join('')}</ul>` : '<p>Başlanan kaynak kaydı bulunamadı.</p>'}
+    </details>`;
+  }
+
+  calendar = () => originalCalendar() + periodInsights() + annualActivity();
 }

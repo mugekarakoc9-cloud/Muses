@@ -41,3 +41,12 @@ body[data-theme="dark"] .mobileNav3 button.active {
   background: var(--soft) !important;
   color: var(--accent) !important;
 }
+
+.treeDay10.p1-in-progress .treeDot10 {
+  border: 2px solid var(--branch);
+  background: color-mix(in srgb, var(--branch) 30%, transparent);
+}
+.treeDay10.p1-missed .treeDot10 {
+  border: 1px dashed currentColor;
+  background: transparent;
+}
