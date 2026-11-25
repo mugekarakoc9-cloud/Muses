@@ -1087,6 +1087,7 @@ if (typeof installPlanningP1 === "function") installPlanningP1();
 if (typeof installStudioP1 === "function") installStudioP1();
 if (typeof installActivityP1 === "function") installActivityP1();
 installTrainingStudio();
+installCurriculum();
 render();
 
 // Register only on a supported secure web origin; file previews remain usable.

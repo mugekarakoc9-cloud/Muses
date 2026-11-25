@@ -20,7 +20,19 @@ window.MusesCatalog = (() => {
     (!value.Lists || strings(value.Lists)) && (!value.Levels || strings(value.Levels));
   const table = value => object(value) && strings(value.headers) && list(value.rows, tuple);
   const map = (value, test) => object(value) && Object.values(value).every(test);
+  const date = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0,10) === value;
+  const period = row => object(row) && date(row.start) && date(row.end) && row.start <= row.end;
+  function curriculum(value) {
+    if (!object(value) || !list(value.phases, row => period(row) && string(row.title)) || !value.phases.length ||
+        !list(value.resources, row => titled(row) && period(row) && Number.isFinite(row.quantity) &&
+          row.quantity >= 0 && Number.isFinite(row.minutes) && row.minutes >= 0 && string(row.method) && string(row.unit))) return false;
+    const first = value.phases[0].start, last = value.phases.at(-1).end;
+    return Date.parse(last)-Date.parse(first) < 1000*86400000*7*520 &&
+      value.phases.every((row,i)=>!i || row.start > value.phases[i-1].end);
+  }
   const schema = {
+    curriculum,
     sources: value => map(value, string),
     habits: value => list(value, tuple), seed: value => list(value, word),
     pole: value => list(value, titled), ATLAS_SEED: value => list(value, entry),

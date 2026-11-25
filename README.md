@@ -26,9 +26,10 @@ node tests/catalog-check.mjs
 python tests/storage-recovery.py
 python tests/browser-smoke.py
 python tests/p1-studio.py
+python tests/catalog-training.py
 python tests/integration-v09.py
 python tests/integration-v010.py
 python tests/providers-v010.py
 ```
 
-Tarayıcı testleri Python Playwright ve Chromium kullanır. Güncel kapsam ve açık gereksinimler DENETIM.md dosyasındadır.
+Tarayıcı testleri Python Playwright ve Chromium kullanır. Set kaydı testi kısa bir yapay video oluşturmak için FFmpeg kullanır. Güncel kapsam ve açık gereksinimler DENETIM.md dosyasındadır.

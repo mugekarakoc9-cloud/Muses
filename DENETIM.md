@@ -6,7 +6,9 @@
 - Kelime Evreni, sözlük anlamına göre karolar, gerçek tekrar puanı, kartı açma ve son 84 günün seçilebilir tekrar geçmişi. Kök ağında fareyle sürükleme, komşu hareketi, kaydırma ve yakınlaştırma. Testler gerçek tarayıcıda yapay bir sözlük kullanır.
 - Yerel kurtarma, görev erteleme, kaynak planlama, okuyucu ile kaynak arasındaki çift yönlü kayıt ve dört takvim görünümünde süre toplamları için regresyon testleri vardır.
 
+- Yerel program paketi, kaynakların özgün tarihlerini, haftalık miktarlarını, sürelerini ve yöntemlerini taşır. Hafta seçimi ilgili kaynak ve ajanda hedefini açar. Programın aslı ve uygulamadaki hedef kayıtları ayrı tutulur.
 - P90X oynatıcısı yanındaki form aynı video düğümünü koruyarak tarih, hareket sırası, set, taraf, tekrar, ağırlık, süre, dinlenme, RPE ve not kaydeder. İlk setin ortak alanları mevcut antrenman günlüğünü kullanır. Yerel video konumu ve son hareket yeniden açılışta geri gelir. Dailymotion ve YouTube gömme adresleri desteklenir. Yayıncı izni ve canlı yayın doğrulaması açık.
+- Gerçek Chromium ve yapay verilerle boş açılış, katalog önizlemesi ve geri alma, tam yedekten katalog ve medya kurtarma, son program haftası, sağ/sol ve sıfır/boş ayrımı, çevrimdışı video oynatma ve konuma dönme test edildi. Antrenman penceresinin açık/koyu temaları 390, 820 ve 1440 pikselde incelendi.
 
 ## Kısmi gereksinimler
 

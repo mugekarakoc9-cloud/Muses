@@ -108,6 +108,10 @@ body[data-theme="dark"] .mobileNav3 button.active {
 .training-step {display:flex;justify-content:space-between;align-items:center;margin:.6rem 0}
 .training-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}
 @media (max-width:700px){.training-studio[open]{display:block}.training-studio .player6{z-index:1;max-height:32vh}.training-log{margin-top:.5rem}}
+.curriculum-week details {padding:.65rem 0;border-top:1px solid var(--line)}
+.curriculum-week summary {cursor:pointer;font-weight:600}
+.curriculum-week summary small {margin-inline-start:.5rem;color:var(--muted)}
+.curriculum-week [data-week-content] p {line-height:1.6}
 body[data-theme="dark"] #dialog5.training-studio button {background:#30394d;color:#f4f5fb;border-color:#65718b}
 body[data-theme="dark"] #dialog5.training-studio button:disabled {background:#252d3e;color:#9ca9bd}
 .training-studio button:focus-visible {outline:3px solid var(--accent);outline-offset:2px}
