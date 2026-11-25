@@ -24,7 +24,7 @@ function installStudioP1() {
       try{walk(sourceTree(resource),resource.title);}catch{}
     }
     try{const readers=new Map(readerList9().map(b=>[b.id,b]));for(const b of readers.values())add('Kitap',b.title,()=>openReader9(b.id),b.author,b.category);for(const b of bookRows())if(!readers.has(b.id))add('Kitap',b.title,()=>route5('book',b.id,today()),b.author,b.category);}catch{}
-    try{for(const w of S.words||[]){const word=w['Word / Phrase'];if(!word)continue;const key=key4(w);add('Kelime',word,()=>{go('flash');chooseEncoded4(enc5(key));},w['Türkçe Anlam'],[w['Part of Speech'],w['English Definition'],w.Source,w.Category].filter(Boolean).join(' '));}}catch{}
+    try{const seen=new Set();for(const w of all4||S.words||[]){const word=w['Word / Phrase'];if(!word)continue;const key=key4(w);if(seen.has(key))continue;seen.add(key);add('Kelime',word,()=>{go('flash');chooseEncoded4(enc5(key));},w['Türkçe Anlam'],[w.POS,w['Part of Speech'],w['English Definition'],w.Source,w.Category].filter(Boolean).join(' '));}}catch{}
     try{for(const m of ATLAS_SEED||[])add('Pole hareketi',m.name,()=>{atlasSelected=m.id;go('atlas');},m.level||m.category,m.nameTr||'');}catch{}
     try{for(const h of habits||[]){const name=Array.isArray(h)?h[0]:h.name||h.title;add('Alışkanlık',name,()=>go('habits'));}}catch{}
     try{for(let d=1;d<=12;d++){if(!DVD[d])continue;add('P90X',DVD[d],()=>{go('p90');playDVD6(d);},'DVD '+d);for(const move of P90_MOVES[d]||[])add('P90X',move,()=>{go('p90');playDVD6(d);},DVD[d]);}for(let d=1;d<=90;d++)add('P90X','P90X · '+d+'. gün',()=>route5('p90',String(d),today()),'Program');}catch{}
@@ -1190,7 +1190,7 @@ function installHourlyAgendaMX(){
  window.mxHourlyMove=n=>{selected=add(date(),n*(P().mode==='day'?1:7));calMonth=selected.slice(0,7);render();};
  window.mxHourlyToday=()=>{selected=today();calMonth=selected.slice(0,7);render();};
  window.mxHourlyCreate=(d,time='')=>{q5Id='';q5Date=d;q5Module='general';q5Target='';q5Draft={title:'',date:d,time,priority:'Orta',note:'',amount:1};quickForm5();};
- function card(t){const done=!!t.done,color=colors[t.module]||colors.general,draggable=t.kind==='task'&&!done,name=t.label||t.title||'Çalışma';return '<button class="mx-hour-task'+(done?' is-done':'')+'" draggable="'+draggable+'" '+(draggable?'data-mx-hour-task="'+H(K(t.id))+'"':'')+' style="--task-color:'+color+'" onclick="rowAction5(\''+H(t.date)+'\',\''+H(K(t.id))+'\')" title="'+H(name)+'"><small>'+H(t.time||'')+'</small><span>'+H(name)+'</span></button>';}
+ function card(t){const done=!!t.done,color=colors[t.module]||colors.general,draggable=t.kind==='task'&&!done,name=t.label||t.title||'Çalışma';return '<button class="mx-hour-task'+(done?' is-done':'')+'" draggable="'+draggable+'" '+(draggable?'data-mx-hour-task="'+H(K(t.id))+'"':'')+' style="--task-color:'+color+'" onclick="'+(t.kind==='task'?'showQuick5':'rowAction5')+'(\''+H(t.date)+'\',\''+H(K(t.id))+'\')" title="'+H(name)+'"><small>'+H(t.time||'')+'</small><span>'+H(name)+'</span></button>';}
  function switches(){return '<div class="mx-agenda-switch">'+[['day','Gün'],['week','Hafta'],['month','Ay']].map(([m,l])=>'<button class="'+(P().mode===m?'primary':'')+'" onclick="mxHourlyMode(\''+m+'\')">'+l+'</button>').join('')+'</div>';}
  calendar=function(){
   if(P().mode==='month'){v5().mode='month';return old().replace(/onclick="v5\(\)\.mode='(day|week|month)';save\(\);render\(\)"/g,(_,m)=>'onclick="mxHourlyMode(\''+m+'\')"');}
