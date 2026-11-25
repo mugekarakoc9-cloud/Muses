@@ -19,6 +19,9 @@ try{
  await page.waitForFunction(()=>document.querySelector('img.mx-real-cat'),{},{timeout:30000});
  assert.equal(await page.locator('img.mx-real-cat').count()>0,true);
  await page.evaluate(()=>go('home'));
+ await page.waitForSelector('.mx-floating-cat',{state:'visible'});const cat=page.locator('.mx-floating-cat');await cat.hover();const cb=await cat.boundingBox();await page.mouse.move(cb.x+cb.width/2,cb.y+cb.height/2);await page.mouse.down();await page.mouse.move(cb.x+cb.width/2-75,cb.y+cb.height/2-100,{steps:10});await page.mouse.up();assert.equal(await cat.getAttribute('data-mx-pinned'),'yes');await page.evaluate(()=>mxResumeCatWalk());
+ await page.evaluate(()=>{go('library');mxImportLibrary();});await page.locator('#mx-lib-form [name=file]').setInputFiles({name:'test.txt',mimeType:'text/plain',buffer:Buffer.from('Türkçe karakterler: ğüşiöç. English text.')});await page.locator('#mx-lib-form button.primary').click();await page.waitForSelector('.mx-quiet-bar');assert.match(await page.locator('.readerPage9').innerText(),/Türkçe/);await page.locator('.mx-quiet-bar button').first().click();await page.evaluate(()=>go('home'));
+
  await page.locator('.mx-focus-grip').waitFor();
  const grip=page.locator('.mx-focus-grip'),dock=page.locator('.mx-focus-dock');
  const pos=await grip.boundingBox();await page.mouse.move(pos.x+pos.width/2,pos.y+pos.height/2);await page.mouse.down();await page.mouse.move(pos.x-125,pos.y-110,{steps:10});await page.mouse.up();
@@ -29,7 +32,7 @@ try{
  await page.evaluate(()=>go('english'));assert(await page.locator('.mx-palace').count(),'New journey should be the default');await page.evaluate(()=>go('home'));
 
  await page.waitForFunction(()=>[...document.querySelectorAll('img.mx-real-cat')].some(img=>img.complete&&img.naturalWidth>0),{},{timeout:20000});
- assert.match(await page.locator('#app').innerText(),/0\.12\.0/);
+ assert.match(await page.locator('#app').innerText(),/0\.13\.0/);
  await page.evaluate(()=>openPaletteP1());
  await page.locator('#paletteKindP1').waitFor();
  const kinds=await page.locator('#paletteKindP1 option').allTextContents();
