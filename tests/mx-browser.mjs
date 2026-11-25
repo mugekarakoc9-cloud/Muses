@@ -19,8 +19,17 @@ try{
  await page.waitForFunction(()=>document.querySelector('img.mx-real-cat'),{},{timeout:30000});
  assert.equal(await page.locator('img.mx-real-cat').count()>0,true);
  await page.evaluate(()=>go('home'));
+ await page.locator('.mx-focus-grip').waitFor();
+ const grip=page.locator('.mx-focus-grip'),dock=page.locator('.mx-focus-dock');
+ const pos=await grip.boundingBox();await page.mouse.move(pos.x+pos.width/2,pos.y+pos.height/2);await page.mouse.down();await page.mouse.move(pos.x-125,pos.y-110,{steps:10});await page.mouse.up();
+ assert(await dock.evaluate(el=>Boolean(el.style.left)),'Focus dock position should be draggable');
+ await dock.locator('.mx-time').click();assert(await dock.evaluate(el=>el.classList.contains('mx-focus-mini')));await dock.locator('.mx-time').click();
+ await page.evaluate(()=>mxFocusSoundSettings());assert.equal(await page.locator('[data-event-theme]').count(),6);await page.evaluate(()=>close5());
+ await page.evaluate(()=>mxCelebrate('task','Test',true));assert(await page.locator('.mx-celebrate-task').count());await page.evaluate(()=>mxCelebrate('trophy','Test',true));assert(await page.locator('.mx-celebrate-trophy').count());
+ await page.evaluate(()=>go('english'));assert(await page.locator('.mx-palace').count(),'New journey should be the default');await page.evaluate(()=>go('home'));
+
  await page.waitForFunction(()=>[...document.querySelectorAll('img.mx-real-cat')].some(img=>img.complete&&img.naturalWidth>0),{},{timeout:20000});
- assert.match(await page.locator('#app').innerText(),/0\.11\.1/);
+ assert.match(await page.locator('#app').innerText(),/0\.12\.0/);
  await page.evaluate(()=>openPaletteP1());
  await page.locator('#paletteKindP1').waitFor();
  const kinds=await page.locator('#paletteKindP1 option').allTextContents();
