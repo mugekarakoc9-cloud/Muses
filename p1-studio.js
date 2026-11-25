@@ -704,7 +704,7 @@ function installMimoRewardsMX(){
   if(loaded||loading||Date.now()-lastLoad<8000)return;loading=true;lastLoad=Date.now();
   try{
    const local=await get6('media',key).catch(()=>null);
-   if(local){try{setPack(local);}catch{}}
+   if(local){try{setPack(local);if(!modes.every(k=>local.animations?.[k]))loaded=false;}catch{}}
    if(!loaded){
     const cached=await get6('media','mx-mimo-bundled-v1').catch(()=>null);
     if(cached){try{setPack(cached);if(!modes.every(k=>cached.animations?.[k]))loaded=false;}catch{}}
@@ -716,18 +716,19 @@ function installMimoRewardsMX(){
     const rest=await Promise.allSettled(modes.filter(k=>k!=='idle').map(async k=>[k,await read(k)]));
     for(const row of rest)if(row.status==='fulfilled')pack.animations[row.value[0]]=row.value[1];
     const latest=await get6('media',key).catch(()=>null);
-    if(latest)setPack(latest);else setPack(pack);
-    if(Object.keys(pack.animations).length<modes.length&&!latest)loaded=false;
+    if(latest){const merged={...pack, ...latest,animations:{...pack.animations,...latest.animations}};setPack(merged);if(!modes.every(k=>merged.animations[k]))loaded=false;}else{setPack(pack);if(!modes.every(k=>pack.animations[k]))loaded=false;}
     if(!latest&&Object.keys(pack.animations).length===modes.length)await put6('media','mx-mimo-bundled-v1',pack).catch(()=>{});
    }
    for(const k of Object.keys(sounds)){if(audioURLs[k])continue;const b=await get6('media','mx-mimo-audio-'+k).catch(()=>null);if(b instanceof Blob)audioURLs[k]=URL.createObjectURL(b);}
   }catch{loaded=false;}finally{loading=false;}
  }
  function effectivePose(){return !db().motion||v5().animations===false||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'still':Date.now()<until?pose:S.mxFocus?.active?.phase==='break'?'sleep':'idle';}
- function src(p){return urls[p]||(p==='still'?builtIn.still:'')||urls.idle||builtIn.idle;}
+ let fallbackURLs=null;
+ function fallback(p){if(!fallbackURLs){fallbackURLs={};for(const [name,data] of Object.entries(builtIn)){try{fallbackURLs[name]=URL.createObjectURL(blobFrom({mime:name==='still'?'image/png':'image/gif',base64:data.split(',')[1]}));}catch{fallbackURLs[name]=data;}}}return fallbackURLs[p]||fallbackURLs.idle;}
+ function src(p){return urls[p]||(p==='still'?fallback('still'):'')||urls.idle||fallback('idle');}
  function paint(){const u=src(effectivePose());if(u){
    for(const svg of document.querySelectorAll('svg.mimo')){const img=document.createElement('img');img.className='mimo mx-real-cat';img.alt='Mimo';img.draggable=false;img.src=u;svg.replaceWith(img);}
-   for(const img of document.querySelectorAll('img.mx-real-cat')){const effective=effectivePose(),floating=!!img.closest('.mx-floating-cat'),desired=effective==='still'?'still':img.dataset.mxPose||(floating&&effective==='idle'?'walk':effective),target=src(desired);if(img.getAttribute('src')!==target&&img.dataset.failed!==target)img.src=target;img.onerror=()=>{img.dataset.failed=target;if(img.getAttribute('src')!==builtIn.idle)img.src=builtIn.idle;else img.alt='Mimo · Görsel yüklenemedi';};}
+   for(const img of document.querySelectorAll('img.mx-real-cat')){const effective=effectivePose(),floating=!!img.closest('.mx-floating-cat'),desired=effective==='still'?'still':img.dataset.mxPose||(floating&&effective==='idle'?'walk':effective),target=src(desired);if(img.getAttribute('src')!==target&&img.dataset.failed!==target)img.src=target;img.onerror=()=>{img.dataset.failed=target;if(img.getAttribute('src')!==fallback('idle'))img.src=fallback('idle');else img.alt='Mimo · Görsel yüklenemedi';};}
   }
   const p=document.querySelector('.mx-floating-cat');if(p){p.dataset.pose=effectivePose();p.onclick=()=>{react('love','purr');};p.ondblclick=()=>window.mxMimoHome();p.onpointerenter=()=>{if(effectivePose()!=='still')react('greet','greet');};p.onpointerleave=()=>{if(pose==='greet'){until=0;paint();}};if(u&&!p.querySelector('.mx-real-cat'))p.innerHTML=catSvg();}
  }
@@ -1069,7 +1070,7 @@ installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractio
 /* Live build indicator and manual update: no local record migration. */
 function installLiveBuildMX(){
  if(window.mxLiveBuildInstalled)return;window.mxLiveBuildInstalled=true;
- const version='0.14.0';
+ const version='0.15.0';
  const oldHome=home;
  const css=document.createElement('style');css.textContent=`
  .mx-home-banner{padding:clamp(16px,3vw,28px);border-radius:22px;background:linear-gradient(128deg,#e6dcef,#e3eddf);color:#3c3450;border:1px solid #b8abc83b}
@@ -1182,19 +1183,20 @@ function installHourlyAgendaMX(){
  function dates(){return P().mode==='day'?[date()]:Array.from({length:7},(_,i)=>add(monday(date()),i));}
  const labels={general:'Görev',resource:'İngilizce',vocab:'Flashcard',book:'Okuma',p90:'P90X',pole:'Pole',swim:'Yüzme',piano:'Piyano',habit:'Alışkanlık'};
  const colors={general:'#77849a',resource:'#8173bc',vocab:'#9774cb',book:'#c38f53',p90:'#c96983',pole:'#ae78aa',swim:'#4a9cb2',piano:'#8d8c68',habit:'#62a68b'};
- const tasks=()=>S.tasks.filter(t=>(!P().filter||(t.module||'general')===P().filter)&&(!P().hideDone||!taskDone5(t)));
+ const tasks=ds=>ds.flatMap(d=>agendaRows5(d)).filter(t=>(!P().filter||t.module===P().filter)&&(!P().hideDone||!t.done));
  const old=calendar;
- window.mxHourlyMode=m=>{if(['day','week','month'].includes(m)){P().mode=m;save();render();}};
+ window.mxHourlyMode=m=>{if(['day','week','month'].includes(m)){P().mode=m;v5().mode=m;save();render();}};
+ const oldDaySelect=daySelect5;daySelect5=function(d,m){if(view==='calendar'&&['day','week','month'].includes(m))P().mode=m;return oldDaySelect(d,m);};
  window.mxHourlyMove=n=>{selected=add(date(),n*(P().mode==='day'?1:7));calMonth=selected.slice(0,7);render();};
  window.mxHourlyToday=()=>{selected=today();calMonth=selected.slice(0,7);render();};
  window.mxHourlyCreate=(d,time='')=>{q5Id='';q5Date=d;q5Module='general';q5Target='';q5Draft={title:'',date:d,time,priority:'Orta',note:'',amount:1};quickForm5();};
- function card(t){const done=taskDone5(t),color=colors[t.module]||colors.general;return '<button class="mx-hour-task'+(done?' is-done':'')+'" draggable="'+(!done)+'" data-mx-hour-task="'+H(K(t.id))+'" style="--task-color:'+color+'" onclick="showQuick5(\''+H(t.date)+'\',\''+H(K(t.id))+'\')" title="'+H(t.title)+'"><small>'+H(t.time||'')+'</small><span>'+H(t.title)+'</span></button>';}
+ function card(t){const done=!!t.done,color=colors[t.module]||colors.general,draggable=t.kind==='task'&&!done,name=t.label||t.title||'Çalışma';return '<button class="mx-hour-task'+(done?' is-done':'')+'" draggable="'+draggable+'" '+(draggable?'data-mx-hour-task="'+H(K(t.id))+'"':'')+' style="--task-color:'+color+'" onclick="rowAction5(\''+H(t.date)+'\',\''+H(K(t.id))+'\')" title="'+H(name)+'"><small>'+H(t.time||'')+'</small><span>'+H(name)+'</span></button>';}
  function switches(){return '<div class="mx-agenda-switch">'+[['day','Gün'],['week','Hafta'],['month','Ay']].map(([m,l])=>'<button class="'+(P().mode===m?'primary':'')+'" onclick="mxHourlyMode(\''+m+'\')">'+l+'</button>').join('')+'</div>';}
  calendar=function(){
-  if(P().mode==='month')return switches()+old();
-  const ds=dates(),rows=tasks(),range=ds.length===1?dateLabel5(ds[0]):dateLabel5(ds[0])+' – '+dateLabel5(ds.at(-1)),count=rows.filter(t=>ds.includes(t.date)),opts=[...new Set(S.tasks.map(t=>t.module||'general'))];
+  if(P().mode==='month'){v5().mode='month';return old().replace(/onclick="v5\(\)\.mode='(day|week|month)';save\(\);render\(\)"/g,(_,m)=>'onclick="mxHourlyMode(\''+m+'\')"');}
+  const ds=dates(),rows=tasks(ds),range=ds.length===1?dateLabel5(ds[0]):dateLabel5(ds[0])+' – '+dateLabel5(ds.at(-1)),count=rows.filter(t=>ds.includes(t.date)),opts=[...new Set(S.tasks.map(t=>t.module||'general'))];
   function cell(d,h){const found=rows.filter(t=>t.date===d&&mxHourSlot(t.time)===h).sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));return '<div class="mx-hour-cell" data-mx-drop-date="'+d+'" data-mx-drop-hour="'+h+'">'+found.map(card).join('')+'<button class="mx-hour-add" title="Görev ekle" aria-label="Görev ekle" onclick="mxHourlyCreate(\''+d+'\',\''+(h<0?'':String(h).padStart(2,'0')+':00')+'\')">+</button></div>';}
-  return '<section class="card mx-hour-agenda"><header class="mx-hour-header"><div><small>PLANLA · UYGULA · İLERLE</small><h2>'+H(range)+'</h2></div><button class="primary" onclick="mxHourlyCreate(\''+date()+'\')">＋ Görev</button></header><div class="mx-hour-tools">'+switches()+'<div class="flex"><button onclick="mxHourlyMove(-1)" aria-label="Önceki">‹</button><button onclick="mxHourlyToday()">Bugün</button><button onclick="mxHourlyMove(1)" aria-label="Sonraki">›</button></div><details><summary>Filtreler</summary><label>Tür<select id="mx-hour-filter">'+opt5([['','Tümü'],...opts.map(m=>[m,labels[m]||m])],P().filter)+'</select></label><label><input type="checkbox" id="mx-hour-hide" '+(P().hideDone?'checked':'')+'> Tamamlananları gizle</label></details></div><p class="muted">'+count.filter(taskDone5).length+'/'+count.length+' tamamlandı · Görevi gün veya saate sürükle.</p><div class="mx-hour-scroll"><div class="mx-hour-grid" style="--days:'+ds.length+'"><div class="mx-hour-label mx-hour-head">Saat</div>'+ds.map(d=>'<div class="mx-hour-head '+(d===today()?'is-today':'')+'">'+H(dateLabel5(d))+'</div>').join('')+'<div class="mx-hour-label">Saati yok</div>'+ds.map(d=>cell(d,-1)).join('')+Array.from({length:24},(_,h)=>'<div class="mx-hour-label" data-mx-hour-label="'+h+'">'+String(h).padStart(2,'0')+':00</div>'+ds.map(d=>cell(d,h)).join('')).join('')+'</div></div></section>';
+  return '<section class="card mx-hour-agenda"><header class="mx-hour-header"><div><small>PLANLA · UYGULA · İLERLE</small><h2>'+H(range)+'</h2></div><button class="primary" onclick="mxHourlyCreate(\''+date()+'\')">＋ Görev</button></header><div class="mx-hour-tools">'+switches()+'<div class="flex"><button onclick="mxHourlyMove(-1)" aria-label="Önceki">‹</button><button onclick="mxHourlyToday()">Bugün</button><button onclick="mxHourlyMove(1)" aria-label="Sonraki">›</button></div><details><summary>Filtreler</summary><label>Tür<select id="mx-hour-filter">'+opt5([['','Tümü'],...opts.map(m=>[m,labels[m]||m])],P().filter)+'</select></label><label><input type="checkbox" id="mx-hour-hide" '+(P().hideDone?'checked':'')+'> Tamamlananları gizle</label></details></div><p class="muted">'+count.filter(t=>t.done).length+'/'+count.length+' tamamlandı · Görevi gün veya saate sürükle.</p><div class="mx-hour-scroll"><div class="mx-hour-grid" style="--days:'+ds.length+'"><div class="mx-hour-label mx-hour-head">Saat</div>'+ds.map(d=>'<div class="mx-hour-head '+(d===today()?'is-today':'')+'">'+H(dateLabel5(d))+'</div>').join('')+'<div class="mx-hour-label">Saati yok</div>'+ds.map(d=>cell(d,-1)).join('')+Array.from({length:24},(_,h)=>'<div class="mx-hour-label" data-mx-hour-label="'+h+'">'+String(h).padStart(2,'0')+':00</div>'+ds.map(d=>cell(d,h)).join('')).join('')+'</div></div></section>';
  };
  function move(key,d,h){const t=S.tasks.find(x=>x.id===dec5(key));if(!t||taskDone5(t)||!Number.isInteger(h)||h< -1||h>23)return false;if(t.date!==d&&linked5(t)&&S.tasks.some(x=>x!==t&&x.date===d&&x.module===t.module&&x.target===t.target)){toast('Bu çalışma o gün zaten planlı.');return false;}const old=t.date;if(old!==d)t.deferredFrom=[...(Array.isArray(t.deferredFrom)?t.deferredFrom:[]),old];t.date=d;t.time=h<0?'':String(h).padStart(2,'0')+':'+(mxHourSlot(t.time)>=0?String(t.time).split(':')[1]:'00');save();render();return true;}
  let drag='',touch=null,swallow=false;
