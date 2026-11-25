@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+const html = fs.readFileSync('index.html', 'utf8');
+const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)];
+assert.ok(scripts.length);
+for (const [, source] of scripts) new vm.Script(source);
+assert.ok(html.includes('rel="manifest"'));
+assert.ok(html.includes("serviceWorker.register('./sw.js')"));
+const manifest = JSON.parse(fs.readFileSync('manifest.webmanifest','utf8'));
+for (const file of [manifest.start_url, ...manifest.icons.map(icon=>icon.src)]) assert.ok(fs.existsSync(file), file);
+new vm.Script(fs.readFileSync('sw.js','utf8'));
+console.log('PASS: JavaScript syntax, manifest assets, offline registration');
