@@ -4,7 +4,7 @@ Personal local-first learning, agenda and fitness application. This working repo
 
 ## Run
 
-Open `index.html` for a local preview. For PWA installation, serve this directory on a fixed HTTPS origin (localhost is suitable for development). Browser data are origin-specific. Export a JSON backup before changing origin or version. JSON backups do not contain imported video files.
+Open `index.html` for a local preview. For PWA installation, serve this directory on a fixed HTTPS origin (localhost is suitable for development). Browser data are origin-specific. Export a JSON backup before changing origin or version. Standard JSON backups contain records only. In Settings, choose **Videolarla tam yedek al** to include locally imported P90X videos. Full backups are larger and should be stored privately.
 
 ## Check
 

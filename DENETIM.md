@@ -48,3 +48,14 @@
 Bozuk veya geçersiz localStorage kopyası bulunduğunda geçerli IndexedDB kopyası, zaman damgası boş olan eski kayıtlar dahil, yeniden yüklenir. Geçersiz IndexedDB kopyası sırf daha yeni tarihli olduğu için geçerli yerel kaydın yerine geçmez. Depolama anahtarları ve veri şeması korunur.
 
 `python tests/storage-recovery.py` bu senaryoları Chromium'da gerçek localhost, localStorage ve IndexedDB üzerinden sınar. Bu test JSON yedeğinin içe aktarılmasını, medya kurtarmayı veya fiziksel cihaz kalıcılığını kapsamaz.
+
+## P0/P1 — Tam yedek ve etkinlik akışı
+
+| Gereksinim | Durum | Kanıt ve kalan işler |
+|---|---|---|
+| Eski JSON, video dahil yedek, geri yükleme ve geri alma | Tamamlanan akış | Ayarlar'da kayıt yedeği ve videolu tam yedek var. IndexedDB işleminde kayıt, video ve geri alma kopyası birlikte yazılıyor. `tests/storage-recovery.py` eski JSON, geçersiz dosya, video baytları, eklenen videonun geri alınması, yeniden açılış ve yarıda kesilen yazmayı sınar. Büyük video arşivlerinde bellek ve kota ölçümü bekliyor. |
+| Ortak kayıtlar ve modüller | Kısmi | `tests/integration-v09.py` okuyucu ile kaynak arasında çift yönlü tamamlanmayı ve tek okuma kaydını sınar. `tests/integration-v010.py` kaynak hedefi, gerçek alt konu ve P90X yönlendirmesini sınar. Bütün modüllerin tam kabul matrisi açık. |
+| Aktif süre, ajanda, hedef ve öğrenme yolu | Kısmi | İstanbul gece yarısı bölünmesi, gün başına tek süre satırı, plan toplamından ayrılma ve süre ayrıntısından ilgili ajanda gününe geçiş doğrulandı. Plan görevini tekrar işaretlemek ilk tamamlanma tarihini değiştirmez. Fiziksel cihaz ve paralel sekme senaryoları açık. |
+| Düğmeler ve sade gezinme | Kısmi | Ayarlar'daki yinelenen yedek düğmeleri azaltıldı. Süre ayrıntısındaki tarih düğmesi ve DVD ayar düğmesinin erişilebilir adı güncellendi. Kalan ekranların görev bazlı etkileşim ve erişilebilirlik denetimi açık. |
+| Güvenli canlı önizleme | Bağlantı eksik | Bulut ortamında doğrulanmış bir HTTP önizleme portu yok. Uygulama özel veri içerdiğinden genel yayın yapılmadı. |
+| P2 öğrenme, P3 spor/yaşam, P4 üretim | Kısmi veya doğrulanmadı | Yukarıdaki v0.10 envanteri geçerli. PDF/EPUB ve OCR kapsamı, kaynak eşleştirmeleri, gerçek cihaz bildirimi, eşitleme ve asistan bağlantısı ayrıca doğrulanmalı. |
