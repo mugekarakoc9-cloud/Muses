@@ -18,6 +18,27 @@ try{
  await page.waitForFunction(()=>window.mxRootInteraction&&window.mxTrainingWorkspace&&window.mxMimoRewardsInstalled&&window.mxDailyLearningReady,{},{timeout:30000});
  await page.waitForFunction(()=>document.querySelector('img.mx-real-cat'),{},{timeout:30000});
  assert.equal(await page.locator('img.mx-real-cat').count()>0,true);
+ await page.evaluate(()=>go('home'));
+ await page.waitForFunction(()=>[...document.querySelectorAll('img.mx-real-cat')].some(img=>img.complete&&img.naturalWidth>0),{},{timeout:20000});
+ assert.match(await page.locator('#app').innerText(),/0\.11\.1/);
+ await page.evaluate(()=>openPaletteP1());
+ await page.locator('#paletteKindP1').waitFor();
+ const kinds=await page.locator('#paletteKindP1 option').allTextContents();
+ for(const kind of ['Ekran','Kaynak','Alt bölüm','Kelime','Kitap','P90X'])assert(kinds.includes(kind),'Missing search category: '+kind);
+ await page.locator('#paletteP1 [name=query]').fill('P90X');
+ assert.match(await page.locator('#resultsP1').innerText(),/P90X/i);
+ await page.evaluate(()=>close5());
+ await page.evaluate(()=>focusOpen7());
+ await page.locator('#mx-focus-form').waitFor();
+ await page.locator('#mx-focus-form [name=kind]').selectOption('goal');
+ assert.equal(await page.locator('#mx-focus-form [name=target] option').count(),await page.evaluate(()=>v5().challenges.length));
+ await page.locator('#mx-focus-form [name=kind]').selectOption('resource');
+ assert(await page.locator('#mx-focus-form [name=target] option').count()>0);
+ assert(await page.locator('#mx-focus-form [name=leaf] option').count()>0);
+ await page.locator('#mx-focus-form [name=targetSearch]').fill('zzzz-no-such-target-12345');
+ assert.equal(await page.locator('#mx-focus-form [name=target] option').count(),0);
+ assert(await page.locator('#mx-focus-form button.primary').isDisabled());
+ await page.evaluate(()=>close5());
  const views=['home','resources','flash','library','english','goals','calendar','p90','atlas','habits','journal'];
  for(const view of views){await page.evaluate(v=>go(v),view);await page.waitForTimeout(100);assert(await page.locator('#app').innerText());assert.equal(errors.length,0,view+': '+errors.join('; '));}
  await page.evaluate(()=>{go('p90');playDVD6(1);});await page.locator('#mx-training-workspace').waitFor();
