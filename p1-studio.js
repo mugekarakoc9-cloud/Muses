@@ -598,7 +598,25 @@ function installPalaceMX(){
  const oldActual=actual5;actual5=function(m,t,d){if(m==='resource')return scope6(t).items.filter(n=>leafDone(n)&&s4().chapterDates[n.id]===d).length;return oldActual(m,t,d);};
  if(typeof markPlanLeaf9==='function'){markPlanLeaf9=function(gid,nid,done){const g=v5().challenges.find(x=>x.id===D(gid));if(!g)return;const rid=g.target.split('~')[0];close5();mxPalaceOpen(K(rid),nid);if(done)mxPalaceComplete(K(rid),nid);else mxPalaceUndo(K(rid),nid);};}
  function wire(){
-   for(const road of document.querySelectorAll('.mx-road')){const svg=road.querySelector('.mx-road-line'),ns=[...road.querySelectorAll('.mx-node')];if(!ns.length)continue;const r=road.getBoundingClientRect(),w=road.offsetWidth,h=road.offsetHeight,scale=r.width/w||1,pts=ns.map(n=>{const b=n.getBoundingClientRect();return [(b.left+b.width/2-r.left)/scale,(b.top+b.height/2-r.top)/scale];});let line=`M ${pts[0][0]} ${pts[0][1]}`;for(let j=1;j<pts.length;j++){let a=pts[j-1],b=pts[j],y=(a[1]+b[1])/2;line+=` C ${a[0]+(j%2?44:-44)} ${y},${b[0]+(j%2?-44:44)} ${y},${b[0]} ${b[1]}`;}svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.innerHTML=`<path d="${line}" fill="none" stroke="#51475e" opacity=".15" stroke-width="15" stroke-linecap="round" transform="translate(0 5)"/><path d="${line}" fill="none" stroke="#a7a0b4" opacity=".65" stroke-width="12" stroke-linecap="round"/><path d="${line}" fill="none" stroke="white" opacity=".65" stroke-width="2" stroke-dasharray="4 9"/>`;}
+   for(const road of document.querySelectorAll('.mx-road')){
+    const svg=road.querySelector('.mx-road-line'),ns=[...road.querySelectorAll('.mx-node')];if(!ns.length)continue;
+    const r=road.getBoundingClientRect(),w=road.offsetWidth,h=road.offsetHeight,scale=r.width/w||1,pts=ns.map(n=>{const b=n.getBoundingClientRect();return [(b.left+b.width/2-r.left)/scale,(b.top+b.height/2-r.top)/scale];});
+    const segment=(a,b)=>{const y=(a[1]+b[1])/2;return `C ${a[0]} ${y},${b[0]} ${y},${b[0]} ${b[1]}`;};
+    const line=pts.reduce((s,p,j)=>j?s+' '+segment(pts[j-1],p):`M ${p[0]} ${p[1]}`,'');
+    const done=ns.map(n=>n.closest('.mx-stop').dataset.state==='done'),segments=[];
+    for(let i=1;i<pts.length;i++)if(done[i-1]&&done[i])segments.push(`M ${pts[i-1][0]} ${pts[i-1][1]} ${segment(pts[i-1],pts[i])}`);
+    svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.innerHTML=`<path d="${line}" fill="none" stroke="#a9a2b8" opacity=".34" stroke-width="19" stroke-linecap="round"/><path d="${line}" fill="none" stroke="#fff" opacity=".75" stroke-width="2" stroke-dasharray="3 12"/>${segments.map(d=>`<path d="${d}" fill="none" stroke="#67a58a" stroke-width="15" stroke-linecap="round"/>`).join('')}`;
+    road.querySelector('.mx-path-walker')?.remove();
+    if(!P().hideCat&&done.some(Boolean)){
+     const walker=document.createElement('div');walker.className='mx-path-walker';walker.innerHTML=cat();walker.setAttribute('aria-hidden','true');road.append(walker);
+     let last=done.lastIndexOf(true),first=last;while(first>0&&done[first-1])first--;
+     const path=pts.slice(first,last+1).reduce((s,p,i)=>i?s+' '+segment(pts[first+i-1],p):`M ${p[0]} ${p[1]}`,'');
+     const img=walker.querySelector('img');if(img)img.dataset.mxPose='walk';
+     const still=window.matchMedia('(prefers-reduced-motion: reduce)').matches||S.mxMimoRewards?.motion===false||v5().animations===false;
+     if(first!==last&&!still&&CSS.supports('offset-path','path("M 0 0 L 1 1")')){walker.style.offsetPath='path("'+path+'")';walker.style.offsetRotate='0deg';walker.style.offsetAnchor='50% 88%';walker.animate([{offsetDistance:'0%'},{offsetDistance:'100%'}],{duration:Math.min(7000,1400*(last-first)),fill:'forwards',easing:'ease-in-out'});}
+     else{walker.style.left=pts[last][0]+'px';walker.style.top=pts[last][1]+'px';walker.style.transform='translate(-50%,-88%)';}
+    }
+   }
    for(const v of document.querySelectorAll('.mx-road-view')){if(v.dataset.wired)continue;v.dataset.wired='1';let o=null;v.onpointerdown=e=>{if(e.pointerType!=='mouse'||e.button!==0||e.target.closest('button,input,a'))return;o={x:e.clientX,y:e.clientY,l:v.scrollLeft,t:v.scrollTop};v.setPointerCapture(e.pointerId);};v.onpointermove=e=>{if(o)v.scrollTo(o.l+o.x-e.clientX,o.t+o.y-e.clientY);};v.onpointerup=v.onpointercancel=v.onlostpointercapture=()=>{o=null;};}
    if(blobURL&&(!localVideo||!localVideo.isConnected)){URL.revokeObjectURL(blobURL);blobURL=null;localVideo=null;}
    const local=document.querySelector('[data-mx-lesson] video:not([src])');if(local){const k=D(local.closest('[data-mx-lesson]').dataset.mxLesson),m=P().media[k];if(m?.kind==='local')get6('media',m.key).then(blob=>{if(!local.isConnected)return;if(!(blob instanceof Blob)){local.nextElementSibling.textContent='Yerel video bulunamadı.';return;}if(blobURL)URL.revokeObjectURL(blobURL);blobURL=URL.createObjectURL(blob);localVideo=local;local.src=blobURL;}).catch(()=>{if(local.isConnected)local.nextElementSibling.textContent='Dosya açılamadı.';});}
@@ -675,13 +693,13 @@ function installMimoRewardsMX(){
    for(const k of Object.keys(sounds)){if(audioURLs[k])continue;const b=await get6('media','mx-mimo-audio-'+k).catch(()=>null);if(b instanceof Blob)audioURLs[k]=URL.createObjectURL(b);}
   }catch{loaded=false;}finally{loading=false;}
  }
- function effectivePose(){return !db().motion||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'still':Date.now()<until?pose:S.mxFocus?.active?.phase==='break'?'sleep':'idle';}
+ function effectivePose(){return !db().motion||v5().animations===false||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'still':Date.now()<until?pose:S.mxFocus?.active?.phase==='break'?'sleep':'idle';}
  function src(p){return urls[p]||(p==='still'?builtIn.still:'')||urls.idle||builtIn.idle;}
  function paint(){const u=src(effectivePose());if(u){
    for(const svg of document.querySelectorAll('svg.mimo')){const img=document.createElement('img');img.className='mimo mx-real-cat';img.alt='Mimo';img.draggable=false;img.src=u;svg.replaceWith(img);}
-   for(const img of document.querySelectorAll('img.mx-real-cat')){if(img.getAttribute('src')!==u&&img.dataset.failed!==u){img.src=u;}img.onerror=()=>{img.dataset.failed=u;if(img.getAttribute('src')!==builtIn.idle)img.src=builtIn.idle;else img.alt='Mimo · Görsel yüklenemedi';};}
+   for(const img of document.querySelectorAll('img.mx-real-cat')){const effective=effectivePose(),floating=!!img.closest('.mx-floating-cat'),desired=effective==='still'?'still':img.dataset.mxPose||(floating&&effective==='idle'?'walk':effective),target=src(desired);if(img.getAttribute('src')!==target&&img.dataset.failed!==target)img.src=target;img.onerror=()=>{img.dataset.failed=target;if(img.getAttribute('src')!==builtIn.idle)img.src=builtIn.idle;else img.alt='Mimo · Görsel yüklenemedi';};}
   }
-  const p=document.querySelector('.mx-floating-cat');if(p){p.onclick=()=>window.mxMimoHome();if(u&&!p.querySelector('.mx-real-cat'))p.innerHTML=catSvg();}
+  const p=document.querySelector('.mx-floating-cat');if(p){p.dataset.pose=effectivePose();p.onclick=()=>{react('love','purr');};p.ondblclick=()=>window.mxMimoHome();p.onpointerenter=()=>{if(effectivePose()!=='still')react('greet','greet');};p.onpointerleave=()=>{if(pose==='greet'){until=0;paint();}};if(u&&!p.querySelector('.mx-real-cat'))p.innerHTML=catSvg();}
  }
  const baseCat=catSvg;catSvg=function(){const u=src(effectivePose());return u?`<img class="mimo mx-real-cat" src="${H(u)}" alt="Mimo" draggable="false">`:baseCat();};
  function react(p,s){
@@ -690,7 +708,7 @@ function installMimoRewardsMX(){
   const u=audioURLs[s]||(db().onlineSounds!==false&&sounds[s]&&navigator.onLine!==false?audioBase+sounds[s]:'');if(!u)return;lastSound=Date.now();
   try{player?.pause();player=new Audio(u);player.volume=Math.max(0,Math.min(1,db().volume));player.play().catch(()=>{if(document.querySelector('#mx-mimo-status'))document.querySelector('#mx-mimo-status').textContent='Ses oynatılamadı. Cihazdaki ses dosyasını veya bağlantıyı kontrol et.';});}catch{}
  }
- window.mxMimoPose=(p)=>{if(modes.includes(p))react(p,p==='sleep'?'sleep':p==='sad'?'sad':p==='happy'||p==='gift'?'happy':p==='love'||p==='knead'?'purr':'greet');};
+ window.mxMimoPose=(p,silent=false)=>{if(modes.includes(p))react(p,silent?null:p==='sleep'?'sleep':p==='sad'?'sad':p==='happy'||p==='gift'?'happy':p==='love'||p==='knead'?'purr':'greet');};
  document.addEventListener('pointerdown',()=>{if(Date.now()<until&&pose==='greet'&&lastSound===0)react('greet','greet');},{once:true});
  const oldReact=window.mxPalaceReact;window.mxPalaceReact=function(kind){react(kind==='win'?'gift':kind==='focus'?'greet':'walk',kind==='win'?'happy':'greet');if(!Object.keys(urls).length&&typeof oldReact==='function')oldReact(kind);};
  function item(id){return catalog.find(x=>x[0]===id)||catalog.at(-1);}
@@ -704,9 +722,9 @@ function installMimoRewardsMX(){
  function showReward(e){
   notice?.remove();notice=document.createElement('aside');notice.className='mx-mimo-reward';notice.setAttribute('role','status');notice.innerHTML=`<button style="float:right" aria-label="Kapat" data-close>×</button>${src('gift')?`<img alt="Mimo hediye açıyor" src="${H(src('gift'))}">`:''}<small>HEDEF ÖDÜLÜ</small><h3>${H(e.title)}</h3><p>${H(item(e.item)[1])} Mimo'nun koleksiyonuna eklendi.</p>${e.real?`<p>Kendine ödülün: <b>${H(e.real)}</b></p>`:''}<button data-shop>Petshop / ödüller</button>`;
   document.body.append(notice);notice.querySelector('[data-close]').onclick=()=>{notice?.remove();notice=null;};notice.querySelector('[data-shop]').onclick=()=>{notice?.remove();notice=null;window.mxMimoHome();};
-  react('gift','happy');rewardChime();
+  react('gift',null);if(window.mxCelebrate)window.mxCelebrate('trophy','Hedef ödülü kazanıldı');else rewardChime();
  }
- function observeDay(){const d=today(),tasks=S.tasks.filter(t=>t.date===d),done=tasks.filter(t=>taskDone5(t)).length,miss=S.tasks.filter(t=>t.date<d&&!taskDone5(t)).length;if(observedDay===d&&previousDone!==null&&done>previousDone)react('happy','happy');if(previousMiss!==null&&miss>previousMiss)react('sad','sad');observedDay=d;previousDone=done;previousMiss=miss;}
+ function observeDay(){const d=today(),tasks=S.tasks.filter(t=>t.date===d),done=tasks.filter(t=>taskDone5(t)).length,miss=S.tasks.filter(t=>t.date<d&&!taskDone5(t)).length;if(observedDay===d&&previousDone!==null&&done>previousDone){react('happy',null);window.mxCelebrate?.('task','Görev tamamlandı');}if(previousMiss!==null&&miss>previousMiss)react('sad','sad');observedDay=d;previousDone=done;previousMiss=miss;}
  function checkRewards(){
   if(checking)return;checking=true;try{observeDay();const p=db(),newly=[];
    for(const [id,r] of Object.entries(p.rules)){const g=r.type==='goal'?v5().challenges.find(x=>x.id===id):null;if(r.type==='goal'&&!g)continue;
@@ -741,7 +759,7 @@ function installMimoRewardsMX(){
   for(const [k,f] of Object.entries(sounds)){try{const r=await fetch(audioBase+f,{credentials:'omit'});if(!r.ok)throw Error('HTTP '+r.status);const b=await r.blob();if(b.size>5000000)throw Error('Dosya çok büyük');const bytes=new Uint8Array(await b.slice(0,12).arrayBuffer());if(String.fromCharCode(...bytes.slice(0,4))!=='RIFF'||String.fromCharCode(...bytes.slice(8))!=='WAVE')throw Error('WAV değil');const audio=new Blob([b],{type:'audio/wav'});await put6('media','mx-mimo-audio-'+k,audio);if(audioURLs[k])URL.revokeObjectURL(audioURLs[k]);audioURLs[k]=URL.createObjectURL(audio);count++;}catch{}}
   if(status)status.textContent=count+'/5 gerçek ses kaydedildi. '+(count<5?'İndirilemeyenleri kaynak sayfasından alıp elle ekle.':'Çevrimdışı kullanıma hazır.');
  };
- const oldHomeMimo=home;home=function(){return `<section class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><div style="width:100px;min-height:100px;display:grid;place-items:center">${catSvg()}</div><div style="flex:1;min-width:120px"><h3>Mimo</h3><p>Birlikte çalışalım.</p><button onclick="mxMimoPose('love')">Sev</button> <button onclick="mxMimoPose('play')">Oyna</button> <button onclick="mxMimoHome()">Petshop</button> <button onclick="mxMimoMedia()">Animasyon durumu</button></div></section>`+oldHomeMimo();};
+ const oldHomeMimo=home;home=function(){return `<section class="card mx-mimo-home" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><div style="width:100px;min-height:100px;display:grid;place-items:center">${catSvg()}</div><div style="flex:1;min-width:120px"><h3>Mimo</h3><p>Birlikte çalışalım.</p><button onclick="mxMimoHome()">Petshop</button> <button onclick="mxPathSettings()" aria-label="Mimo ayarları">⚙</button></div></section>`+oldHomeMimo();};
  const oldGoals=goalsView;goalsView=function(){return `<section class="card"><h3>Mimo ve hedef ödülleri</h3><button onclick="mxMimoRewardRule()">Hedefe ödül seç</button> <button onclick="mxMimoHome()">Petshop</button></section>`+oldGoals();};
  const oldRender=render;render=function(){oldRender();load();paint();checkRewards();};
  setInterval(()=>{load();paint();if(!document.hidden)checkRewards();},2500);load();
@@ -1047,3 +1065,22 @@ function installLiveBuildMX(){
 }
 const previousStudioInstallerLiveBuildMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerLiveBuildMX();installLiveBuildMX();};
+
+/* Distinct celebrations: transient UI only, never grants fake progress. */
+function installCelebrationsMX(){
+ if(window.mxCelebrationsReady)return;window.mxCelebrationsReady=true;
+ let notice=null,timer=0;
+ const defs={task:['✓','Görev','mx-celebrate-task'],focus:['★','Odak','mx-celebrate-focus'],trophy:['🏆','Kupa','mx-celebrate-trophy']};
+ window.mxCelebrate=function(kind,title,silent=false){
+  const info=defs[kind];if(!info||document.hidden)return;
+  notice?.remove();clearTimeout(timer);notice=document.createElement('div');notice.className='mx-celebration '+info[2];notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
+  const emblem=document.createElement('span');emblem.className='mx-celebrate-emblem';emblem.textContent=info[0];const text=document.createElement('strong');text.textContent=title||info[1];notice.append(emblem,text);
+  for(let i=0;i<10;i++){const part=document.createElement('i');part.style.setProperty('--angle',i*36+'deg');part.style.setProperty('--particle',String(i%3));notice.append(part);}
+  (document.fullscreenElement||document.body).append(notice);timer=setTimeout(()=>{notice?.remove();notice=null;},3200);
+  if(!silent)window.mxPlayEventSound?.(kind==='focus'?'complete':kind);
+ };
+ let previous=new Map(),initialized=false;
+ const oldRender=render;render=function(){oldRender();const current=new Map(v5().challenges.map(g=>{try{const s=challengeInfo5(g);return [g.id,Number(s.target)>0&&Number(s.count)>=Number(s.target)];}catch{return [g.id,false];}}));if(initialized&&[...current].some(([k,done])=>done&&previous.get(k)===false)){window.mxMimoPose?.('gift',true);window.mxCelebrate('trophy','Hedef tamamlandı');}previous=current;initialized=true;};
+}
+const previousStudioInstallerCelebrationsMX=installStudioP1;
+installStudioP1=function(){previousStudioInstallerCelebrationsMX();installCelebrationsMX();};
