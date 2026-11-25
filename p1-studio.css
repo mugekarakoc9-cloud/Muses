@@ -130,3 +130,10 @@ body[data-mx-quiet] .mx-lesson-layout{grid-template-columns:minmax(0,1.3fr) minm
  .mx-month-more{font-size:.59rem!important}
  .mx-quiet-bar strong{font-size:.8rem}
 }
+
+@media(max-width:560px){
+ .mx-month-grid{min-width:560px!important}
+ .mx-month-grid .cell5{min-height:80px!important}
+ .mx-month-grid .mx-month-event,.mx-month-grid .mx-month-event button{font-size:.7rem!important}
+ .mx-month-grid .cellhead5 button,.mx-month-more{font-size:.72rem!important}
+}
