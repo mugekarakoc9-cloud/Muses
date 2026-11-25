@@ -111,8 +111,8 @@ function installActivityP1() {
       });
     }
   };
-  document.querySelector('#dialog5').addEventListener('close', () => {
-    if (!video) return;
+  document.querySelector('#dialog5').addEventListener('close', event => {
+    if (event.currentTarget.open || !video) return;
     clockFlush9();
     video = null;
     clockTick9();

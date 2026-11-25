@@ -1,5 +1,5 @@
-const CACHE = 'muses-life-v011-catalog';
-const FILES = ['./', './index.html', './studio.css', './studio.js', './local-catalog.js', './p1-planning.js', './p1-studio.js', './p1-studio.css', './p1-activity.js', './p1-vocabulary.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const CACHE = 'muses-life-v011-training';
+const FILES = ['./', './index.html', './studio.css', './studio.js', './local-catalog.js', './training-studio.js', './p1-planning.js', './p1-studio.js', './p1-studio.css', './p1-activity.js', './p1-vocabulary.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('muses-life-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', event => {

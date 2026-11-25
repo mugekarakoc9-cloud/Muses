@@ -97,3 +97,17 @@ body[data-theme="dark"] .mobileNav3 button.active {
 .catalog-welcome p,.catalog-card p {margin:.35rem 0;color:var(--muted)}
 .catalog-card input {max-width:100%}
 .catalog-card button[hidden] {display:none}
+#dialog5.training-studio {width:min(1000px,96vw);max-width:96vw;color:var(--ink);background:var(--paper)}
+.training-studio[open] {display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,1fr);gap:.8rem;align-items:start}
+.training-studio .modalhead5 {grid-column:1/-1}
+.training-studio .player6 {grid-column:1;width:100%;aspect-ratio:16/9;height:auto;position:sticky;top:0;background:#17181a}
+.training-log {grid-column:2;grid-row:2/span 4;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:1rem}
+.training-log h3 {margin:0 0 .65rem}
+.training-log label {display:flex;flex-direction:column;gap:.2rem;font-weight:600}
+.training-log input,.training-log select,.training-log textarea {min-width:0;width:100%}
+.training-step {display:flex;justify-content:space-between;align-items:center;margin:.6rem 0}
+.training-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem}
+@media (max-width:700px){.training-studio[open]{display:block}.training-studio .player6{z-index:1;max-height:32vh}.training-log{margin-top:.5rem}}
+body[data-theme="dark"] #dialog5.training-studio button {background:#30394d;color:#f4f5fb;border-color:#65718b}
+body[data-theme="dark"] #dialog5.training-studio button:disabled {background:#252d3e;color:#9ca9bd}
+.training-studio button:focus-visible {outline:3px solid var(--accent);outline-offset:2px}

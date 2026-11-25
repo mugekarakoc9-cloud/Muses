@@ -6,6 +6,7 @@
 - Kelime Evreni, sözlük anlamına göre karolar, gerçek tekrar puanı, kartı açma ve son 84 günün seçilebilir tekrar geçmişi. Kök ağında fareyle sürükleme, komşu hareketi, kaydırma ve yakınlaştırma. Testler gerçek tarayıcıda yapay bir sözlük kullanır.
 - Yerel kurtarma, görev erteleme, kaynak planlama, okuyucu ile kaynak arasındaki çift yönlü kayıt ve dört takvim görünümünde süre toplamları için regresyon testleri vardır.
 
+- P90X oynatıcısı yanındaki form aynı video düğümünü koruyarak tarih, hareket sırası, set, taraf, tekrar, ağırlık, süre, dinlenme, RPE ve not kaydeder. İlk setin ortak alanları mevcut antrenman günlüğünü kullanır. Yerel video konumu ve son hareket yeniden açılışta geri gelir. Dailymotion ve YouTube gömme adresleri desteklenir. Yayıncı izni ve canlı yayın doğrulaması açık.
 
 ## Kısmi gereksinimler
 
