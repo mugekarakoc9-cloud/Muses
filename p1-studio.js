@@ -765,6 +765,9 @@ function installDailyLearningMX(){
  const day=d=>db().days[d]??={keys:[],learned:{},target:db().target};
  const word=k=>by4.get(k),eligible=k=>{const w=word(k);if(!w||!label4(w,'Türkçe Anlam')||!label4(w,'Word / Phrase'))return false;const p=st4(k);return !db().first[k]&&!p.last&&!p.next&&!p.days.length&&!p.level;};
  const due=()=>all4.map(key4).filter(k=>{const p=st4(k);return p.next&&p.next<=today();}).sort((a,b)=>String(st4(a).next).localeCompare(String(st4(b).next)));
+ let cachedProgress=null,cachedDay='',dueCounts={};
+ function reviewCount(d){const progress=s4().progress,now=today();if(cachedProgress!==progress||cachedDay!==now){dueCounts={};for(const w of all4){const p=st4(key4(w));if(p.next){const day=p.next<now?now:p.next;dueCounts[day]=(dueCounts[day]||0)+1;}}cachedProgress=progress;cachedDay=now;}return dueCounts[d]||0;}
+ const oldUpdate=update4;update4=function(k,p){cachedProgress=null;return oldUpdate(k,p);};
  const count=d=>Object.keys(db().days[d]?.learned||{}).length;
  const css=document.createElement('style');css.textContent=`
  .mx-learning-bar{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:10px 0}.mx-learning-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin:12px 0}.mx-learning-stats>div{border:1px solid var(--line);border-radius:12px;padding:10px}.mx-learning-stats b{display:block;font-size:1.4rem}.mx-word-universe{display:grid;grid-template-columns:repeat(auto-fill,minmax(21px,1fr));gap:4px;margin:12px 0}.mx-word-universe button{height:23px;min-height:0!important;min-width:0;padding:0!important;background:var(--cell)!important;border:1px solid #0001!important;border-radius:4px!important}.mx-word-universe button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}.mx-word-universe button[data-due=true]{box-shadow:inset 0 0 0 2px #403448!important}.mx-word-picker{max-height:45vh;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:8px}.mx-word-picker label{display:flex;gap:9px;align-items:flex-start;margin:6px 0}.mx-word-picker input{flex-shrink:0}.mx-word-picker small{display:block}.mx-word-legend{display:flex;flex-wrap:wrap;gap:8px;font-size:.76rem}.mx-word-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px}
@@ -782,11 +785,12 @@ function installDailyLearningMX(){
   document.querySelector('#mx-daily-clear').onclick=()=>{picked.clear();Object.keys(r.learned).forEach(k=>picked.add(k));update();};
   document.querySelector('#mx-daily-save').onclick=()=>{const days=[...document.querySelectorAll('[data-weekday]:checked')].map(x=>Number(x.dataset.weekday));if(!days.length||picked.size>cap()||count(today())>cap())return toast('Miktarı veya çalışma günlerini düzenle.');a.target=cap();r.target=a.target;a.daysOfWeek=days;r.keys=[...picked];save();close5();render();};update();
  };
- window.mxDailyStart=function(){const r=day(today()),keys=r.keys.filter(k=>!r.learned[k]&&eligible(k));if(!keys.length)return toast('Önce yeni kelimeleri seç veya bugünkü çalışman tamamlandı.');if(typeof window.mxStartFlashKeys!=='function')return toast('Oturum modülü yüklenemedi.');window.mxStartFlashKeys(keys,'type');};
+ window.mxDailyStart=function(){const r=day(today()),keys=r.keys.filter(k=>!r.learned[k]&&!db().first[k]&&word(k));if(!keys.length)return toast('Önce yeni kelimeleri seç veya bugünkü çalışman tamamlandı.');if(typeof window.mxStartFlashKeys!=='function')return toast('Oturum modülü yüklenemedi.');window.mxStartFlashKeys(keys,'type');};
+ window.mxOpenDueDate=function(d){if(d<=today())return window.mxDailyDue();toast('Bu tekrarlar '+d+' tarihinde çalışılabilir.');};
  window.mxDailyDue=function(){const keys=due();if(!keys.length)return toast('Vadesi gelen kelime yok.');if(typeof window.mxStartFlashKeys!=='function')return toast('Oturum modülü yüklenemedi.');window.mxStartFlashKeys(keys.slice(0,Math.max(1,Number(s4().limit)||30)),'flash');};
- const prevAttempt=attempt6;attempt6=function(a){prevAttempt(a);if(!a.ok||a.mode!=='type'||a.field!=='Word / Phrase')return;const d=today(),r=db().days[d],k=a.key;if(!r||!r.keys.includes(k)||r.learned[k]||!eligible(k))return;
+ const prevAttempt=attempt6;attempt6=function(a){prevAttempt(a);if(!a.ok||a.mode!=='type'||a.field!=='Word / Phrase')return;const d=today(),r=db().days[d],k=a.key;if(!r||!r.keys.includes(k)||r.learned[k]||db().first[k]||!word(k))return;
   r.learned[k]={at:Date.now(),session:session4?.id||'',answer:String(a.answer||'')};db().first[k]=d;const p=st4(k);
-  update4(k,{level:3,stage:0,last:d,next:add(d,4),days:[...new Set([...p.days,d])]});save();
+  if(!p.next||p.next<=d||p.lastFail===d)update4(k,{level:3,stage:0,last:d,next:add(d,4),days:[...new Set([...p.days,d])]});save();
  };
  const palette=['#d4d7df','#bd5969','#db9258','#d7b45d','#9bbd9c','#478e72','#397060'];
  window.mxWordUniverse=function(){
@@ -797,8 +801,8 @@ function installDailyLearningMX(){
  };
  const oldFlash=flash;flash=function(){return (!full4?dailyPanel():'')+oldFlash();};
  const oldHome=home;home=function(){return dailyPanel()+oldHome();};
- const oldAgenda=agendaRows5;agendaRows5=function(d){const rows=oldAgenda(d),s=db(),n=count(d);const target=s.days[d]?.target||s.target;if((d>=s.start&&s.daysOfWeek.includes(new Date(d+'T12:00:00').getDay()))||s.days[d]){rows.push({id:'mx-daily-new:'+d,kind:'mx-daily-new',date:d,label:'Yeni kelimeler · '+n+'/'+target,done:n>=target,module:'vocab',target:'All'});}return rows;};
- const oldRow=row5;row5=function(r,compact=false){if(r.kind!=='mx-daily-new')return oldRow(r,compact);return `<div class="event5 ${r.done?'completed5':''}"><button class="eventtext5" onclick="go('flash')">${H(r.label)}</button></div>`;};
+ const oldAgenda=agendaRows5;agendaRows5=function(d){const rows=oldAgenda(d),s=db(),n=count(d);const target=s.days[d]?.target||s.target;if((d>=s.start&&s.daysOfWeek.includes(new Date(d+'T12:00:00').getDay()))||s.days[d]){rows.push({id:'mx-daily-new:'+d,kind:'mx-daily-new',date:d,label:'Yeni kelimeler · '+n+'/'+target,done:n>=target,module:'vocab',target:'All'});}const reviews=reviewCount(d);if(reviews)rows.push({id:'mx-daily-review:'+d,kind:'mx-daily-review',date:d,label:'Kelime SRS · '+reviews+' kart',done:false,module:'vocab',target:'All'});return rows;};
+ const oldRow=row5;row5=function(r,compact=false){if(r.kind==='mx-daily-review')return `<div class="event5"><button class="eventtext5" onclick="mxOpenDueDate('${H(r.date)}')">${H(r.label)}</button></div>`;if(r.kind!=='mx-daily-new')return oldRow(r,compact);return `<div class="event5 ${r.done?'completed5':''}"><button class="eventtext5" onclick="go('flash')">${H(r.label)}</button></div>`;};
 }
 const previousStudioInstallerDailyMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerDailyMX();installDailyLearningMX();};
