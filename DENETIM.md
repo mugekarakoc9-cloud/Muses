@@ -23,3 +23,13 @@
 - Node sözdizimi ve PWA referansları; katalog bütünlüğü, Fono kontrol sayısı.
 - Kontrollü Chromium DOM: 16 ekran, 377/3034 kayıt kontrolü, 12 aylık takvim, Fono görevi → kaynak → ajanda, fotoğraf notu, kart tam ekran kısayolu, mobil 390px taşma kontrolü. Test değişiklikleri yalnız tarayıcı oturumu içindedir.
 - Gerçek HTTPS adresi/IndexedDB yeniden yükleme testi ortam tarafından engellendi (`ERR_BLOCKED_BY_ADMINISTRATOR`). Gerçek cihazda test edilmeden başarılı sayılmaz.
+
+
+# v0.9 denetimi
+
+- Otomatik aktif çalışma süresi: uygulama içi Flashcard, açık kaynak çalışma oturumu ve okuyucu; 2 dk hareketsizlik veya gizli sekme sonrası durur. Önceki sürümlerde eksik otomatik süre geriye dönük üretilmedi.
+- Takvim plan/gerçekleşen filtreleri: süre kaydı plan olarak sayılmaz. Hedef planı kaynak alt konu kimliklerini ve tarihlerini saklar; süreyi görev tamamlamasıyla eşitlemez.
+- Okuyucu: Sherlock Holmes: Two Plays, The Elephant Man, The Phantom of the Opera, The Piano Man, The Wizard of Oz. Sonuncusu taranmış; TTS ve kelime seçimi yok. EPUB birimi bölüm; diğerleri PDF sayfası.
+- Kaynaklar: 59 Pole Anatomy başlık eşleşmesi, 319 Pole Dance Fitness teknik sayfası eşleşmesi. Bu iki sayı çakışabilir; 377 bağımsız anatomi doğrulaması anlamına gelmez.
+- Hâlâ eksik: kalan kitap dosyaları/kapaklar, tam EPUB/PDF içe aktarma, tarama OCR, orijinal kitap metninin tam Türkçe çevirisi, doğrulanmış tüm hareket anatomisi/görsel/video, etimoloji, gerçek cihaz bildirimleri, cihazlar arası güvenli eşitleme ve ChatGPT bağlantısı.
+- GitHub'a yükleme yapılmadı; bu paket kişisel içerik taşır.

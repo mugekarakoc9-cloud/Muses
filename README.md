@@ -29,3 +29,15 @@ Split the embedded personal catalog from reusable application code; add browser 
 - Year view, fixed routine agenda, shared P90X/English habit summaries, direct resource completion dialog, correct plan-versus-unplanned metrics and plan-to-date adherence.
 - Reading monthly goal, 12-month personal photo journal, validated backup import with recovery snapshot, stable fullscreen host, live data-quality inventory.
 - See `DENETIM.md` for the full requirements audit, limitations and test coverage. The standalone file embeds private catalog data; use a private repository only.
+
+
+## v0.9 — One Flow / Reader
+- Four main areas: Bugün, Öğren, Hareket, Yaşam; nested screens remain accessible.
+- Active flashcard, resource, and reader duration ledger; day/week/month/year aggregation, inactivity and visibility pause, no focus-timer double counting in duration summary.
+- Stable source leaf schedules and goal-linked monthly/weekly/12-month paths, separate actual counts.
+- Five private local reader books, text speech for four, scanned page images for one; bookmarks, font/rate, notes, local word lookup, TXT import and reader/source progress sync. EPUB progress measured in sections, not fixed pages.
+- 377 bilingual family-level anatomy records, 59 heading-matched detailed anatomy references and 319 heading-matched technique page references. Reference pages may include adjacent moves. Full individual anatomical validation and complete translations of original source prose are not yet available.
+- Light/dark theme contrast and reduced-motion support.
+
+### Verification and limitations
+Controlled Chromium with mocked localStorage and blocked external requests: 16 screens, active-duration accounting, four calendar views, stable seven-unit goal allocation, reader marks in both directions, unique reading logs, scoped reader goal, dark theme and mobile width. Real device storage persistence, TTS voices, background notifications and microphone/audio quality are not validated. Five reader files are private user-source derivatives; never publish this repository or bundle.
