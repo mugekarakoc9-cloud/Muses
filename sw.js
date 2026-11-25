@@ -1,4 +1,4 @@
-const CACHE = 'muses-life-v0107-palace';
+const CACHE = 'muses-life-v0108-mimo-review';
 const FILES = ['./', './index.html', './p1-planning.js', './p1-studio.js', './p1-studio.css', './p1-activity.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('muses-life-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
