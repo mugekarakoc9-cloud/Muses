@@ -32,7 +32,7 @@ try{
  await page.evaluate(()=>go('english'));assert(await page.locator('.mx-palace').count(),'New journey should be the default');await page.evaluate(()=>go('home'));
 
  await page.waitForFunction(()=>[...document.querySelectorAll('img.mx-real-cat')].some(img=>img.complete&&img.naturalWidth>0),{},{timeout:20000});
- assert.match(await page.locator('#app').innerText(),/0\.14\.0/);
+ assert.match(await page.locator('#app').innerText(),/0\.15\.0/);
  await page.evaluate(()=>openPaletteP1());
  await page.locator('#paletteKindP1').waitFor();
  const kinds=await page.locator('#paletteKindP1 option').allTextContents();
@@ -51,7 +51,7 @@ try{
  assert.equal(await page.locator('#mx-focus-form [name=target] option').count(),0);
  assert(await page.locator('#mx-focus-form button.primary').isDisabled());
  await page.evaluate(()=>close5());
- await page.evaluate(()=>{go('calendar');mxHourlyMode('week');});assert.equal(await page.locator('[data-mx-drop-date]').count(),175);await page.evaluate(()=>mxHourlyMode('day'));assert.equal(await page.locator('[data-mx-drop-date]').count(),25);await page.evaluate(()=>mxMimoGallery());assert.equal(await page.locator('[data-mimo-pose]').count(),11);await page.evaluate(()=>close5());
+ await page.evaluate(()=>{go('calendar');mxHourlyMode('week');});assert.equal(await page.locator('[data-mx-drop-date]').count(),175);await page.evaluate(()=>mxHourlyMode('day'));assert.equal(await page.locator('[data-mx-drop-date]').count(),25);await page.evaluate(()=>mxHourlyMode('month'));assert(await page.locator('.cell5').count()>=28);await page.locator('.calendar5 button[onclick="mxHourlyMode(\'day\')"]').first().click();assert.equal(await page.locator('[data-mx-drop-date]').count(),25);await page.evaluate(()=>mxMimoGallery());assert.equal(await page.locator('[data-mimo-pose]').count(),11);await page.evaluate(()=>close5());
  const views=['home','resources','flash','library','english','goals','calendar','p90','atlas','habits','journal'];
  for(const view of views){await page.evaluate(v=>go(v),view);await page.waitForTimeout(100);assert(await page.locator('#app').innerText());assert.equal(errors.length,0,view+': '+errors.join('; '));}
  await page.evaluate(()=>{go('p90');playDVD6(1);});await page.locator('#mx-training-workspace').waitFor();
