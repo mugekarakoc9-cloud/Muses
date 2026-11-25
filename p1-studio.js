@@ -781,3 +781,72 @@ function installDailyLearningMX(){
 }
 const previousStudioInstallerDailyMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerDailyMX();installDailyLearningMX();};
+
+
+/* Editable local vector notebooks. */
+function notesStrokeMX(points,x,y,r){
+ if(!Array.isArray(points)||!points.length)return false;
+ const distance=(a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(x-a.x-t*dx,y-a.y-t*dy);};
+ return points.length===1?distance(points[0],points[0])<=r:points.slice(1).some((p,i)=>distance(points[i],p)<=r);
+}
+function installNotesMX(){
+ if(window.mxNotesReady)return;window.mxNotesReady=true;
+ const H=x=>esc(String(x??'')),K=x=>enc5(String(x??'')),D=x=>dec5(x),W=760,HEIGHT=1000;
+ const db=()=>{const x=S.mxNotes??={books:[],selected:'',page:0};x.books??=[];return x;};
+ const active=()=>db().books.find(b=>b.id===db().selected);
+ const page=()=>active()?.pages[db().page];
+ const makePage=()=>({id:String(uid()),template:'lined',strokes:[],text:''});
+ let tool='pen',color='#312945',width=3,penOnly=false,working=null,undos=[],redos=[],lastPage='',canvas=null,ctx=null;
+ const style=document.createElement('style');style.textContent=`
+ .mx-note-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.mx-note-book{min-height:130px!important;white-space:normal!important;text-align:left!important;border-radius:16px!important;background:linear-gradient(135deg,#ded0ee,#b2d4c1)!important;color:#302841!important;padding:16px!important}.mx-note-book b{display:block;margin:8px 0}
+ .mx-note-tools{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:8px 0}.mx-note-tools input[type=color]{width:42px;height:35px;padding:2px}.mx-note-tools input[type=range]{max-width:100px}.mx-note-stage{max-width:800px;margin:auto;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fffdf8;box-shadow:0 4px 18px #0001}.mx-note-stage canvas{display:block;width:100%;height:auto;touch-action:none;user-select:none;cursor:crosshair}.mx-note-text{width:100%;box-sizing:border-box}.mx-note-tools button[aria-pressed=true]{background:var(--accent)!important;color:#fff!important}
+ @media(max-width:600px){.mx-note-tools{gap:4px}.mx-note-tools button{font-size:.8rem}}
+ `;document.head.append(style);
+ function snapshot(){const p=page();if(!p)return;undos.push(JSON.stringify(p.strokes));if(undos.length>40)undos.shift();redos=[];}
+ function resetHistory(){undos=[];redos=[];working=null;}
+ function redraw(){if(!ctx||!canvas||!page())return;const p=page();ctx.clearRect(0,0,W,HEIGHT);ctx.fillStyle='#fffdf8';ctx.fillRect(0,0,W,HEIGHT);ctx.lineWidth=.8;ctx.strokeStyle='#e2e1df';ctx.fillStyle='#cbd0cc';
+  if(p.template==='lined'||p.template==='grid'){ctx.beginPath();for(let y=36;y<HEIGHT;y+=28){ctx.moveTo(0,y);ctx.lineTo(W,y);}if(p.template==='grid')for(let x=30;x<W;x+=28){ctx.moveTo(x,0);ctx.lineTo(x,HEIGHT);}ctx.stroke();}
+  if(p.template==='dots')for(let y=20;y<HEIGHT;y+=24)for(let x=20;x<W;x+=24){ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fill();}
+  for(const s of [...p.strokes,...(working&&working.tool!=='eraser'?[working]:[])]){const pts=s.points;if(!pts?.length)continue;ctx.save();ctx.strokeStyle=s.color;ctx.fillStyle=s.color;ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=s.tool==='highlight'?.25:s.tool==='pencil'?.65:1;ctx.globalCompositeOperation=s.tool==='highlight'?'multiply':'source-over';
+   if(pts.length===1){ctx.beginPath();ctx.arc(pts[0].x,pts[0].y,s.width*(pts[0].p||.5)/2,0,Math.PI*2);ctx.fill();}
+   else for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];ctx.lineWidth=s.width*(.55+.9*((a.p+b.p)/2));ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}ctx.restore();
+  }
+ }
+ function show(){const b=active(),p=page(),host=document.querySelector('#mx-notes-host');if(!host)return;
+  if(!b){host.innerHTML=`<div class="mx-note-tools"><button class="primary" onclick="mxNewNotebook()">＋ Defter</button><label>JSON defter içe aktar <input id="mx-notes-import" type="file" accept=".json,application/json"></label></div><div class="mx-note-grid">${db().books.map(b=>`<button class="mx-note-book" onclick="mxOpenNotebook('${K(b.id)}')">MUSES PAPER <b>${H(b.title)}</b><small>${b.pages.length} sayfa</small></button>`).join('')||'<p>Henüz defter yok.</p>'}</div>`;
+   host.querySelector('#mx-notes-import').onchange=importBook;return;}
+  if(!p){db().page=0;return show();}
+  if(lastPage!==p.id){lastPage=p.id;resetHistory();}
+  host.innerHTML=`<div class="mx-note-tools"><button onclick="mxNotesBack()">‹ Defterler</button><b>${H(b.title)}</b><button onclick="mxNotebookRename()">Adı değiştir</button><button onclick="mxNotebookExport()">Düzenlenebilir JSON</button><button onclick="mxNotePNG()">Sayfayı PNG kaydet</button><button onclick="mxNotebookDelete()">Defteri kaldır</button></div><div class="mx-note-tools"><button onclick="mxNotePage(-1)" ${db().page===0?'disabled':''}>‹</button><b>${db().page+1}/${b.pages.length}</b><button onclick="mxNotePage(1)" ${db().page>=b.pages.length-1?'disabled':''}>›</button><button onclick="mxNoteAdd()">＋ Sayfa</button><button onclick="mxNoteDuplicate()">Kopyala</button><button onclick="mxNoteDelete()">Sayfayı sil</button><select id="mx-note-template" aria-label="Kağıt">${opt5([['blank','Boş'],['lined','Çizgili'],['grid','Kareli'],['dots','Noktalı']],p.template)}</select></div><div class="mx-note-tools">${[['pen','Kalem'],['pencil','Kurşun'],['brush','Fırça'],['highlight','Fosforlu'],['eraser','Silgi']].map(([k,t])=>`<button data-tool="${k}" aria-pressed="${tool===k}">${t}</button>`).join('')}<input id="mx-note-color" type="color" aria-label="Mürekkep" value="${color}"><input id="mx-note-width" type="range" min="1" max="32" value="${width}" aria-label="Kalınlık"><button onclick="mxNoteUndo()">Geri al</button><button onclick="mxNoteRedo()">Yinele</button><label><input id="mx-note-penonly" type="checkbox" ${penOnly?'checked':''}> Yalnız kalem</label></div><div class="mx-note-stage"><canvas width="${W}" height="${HEIGHT}" id="mx-note-canvas" aria-label="El yazısı sayfası"></canvas></div><label>Yazılı not<textarea class="mx-note-text" id="mx-note-text" rows="4" maxlength="20000">${H(p.text||'')}</textarea></label><p class="muted">El yazısı düzenlenebilir çizgi verisi olarak cihazda saklanır. PDF üzerine yazma ve Goodnotes biçimi bu defter sürümünde henüz desteklenmiyor.</p>`;
+  canvas=host.querySelector('canvas');ctx=canvas.getContext('2d');redraw();
+  host.querySelectorAll('[data-tool]').forEach(x=>x.onclick=()=>{tool=x.dataset.tool;host.querySelectorAll('[data-tool]').forEach(t=>t.setAttribute('aria-pressed',String(t.dataset.tool===tool)));});
+  host.querySelector('#mx-note-color').oninput=e=>color=e.target.value;host.querySelector('#mx-note-width').oninput=e=>width=+e.target.value;host.querySelector('#mx-note-penonly').onchange=e=>penOnly=e.target.checked;host.querySelector('#mx-note-template').onchange=e=>{p.template=e.target.value;save();redraw();};
+  host.querySelector('#mx-note-text').onchange=e=>{p.text=e.target.value;save();};
+  function point(e){const r=canvas.getBoundingClientRect();return {x:Math.max(0,Math.min(W,(e.clientX-r.left)*W/r.width)),y:Math.max(0,Math.min(HEIGHT,(e.clientY-r.top)*HEIGHT/r.height)),p:e.pointerType==='pen'&&e.pressure>0?e.pressure:.5};}
+  function erase(q){p.strokes=p.strokes.filter(s=>!notesStrokeMX(s.points,q.x,q.y,Math.max(7,width)+s.width/2));}
+  canvas.onpointerdown=e=>{if(working||e.button!==0||(penOnly&&e.pointerType==='touch'))return;e.preventDefault();canvas.setPointerCapture(e.pointerId);snapshot();const q=point(e);working={tool,color,width:tool==='highlight'?Math.max(12,width):tool==='brush'?Math.max(5,width):width,points:[q],pointer:e.pointerId};if(tool==='eraser')erase(q);redraw();};
+  canvas.onpointermove=e=>{if(!working||e.pointerId!==working.pointer)return;e.preventDefault();for(const event of e.getCoalescedEvents?.()||[e]){const q=point(event);if(working.tool==='eraser')erase(q);else if(working.points.length<20000)working.points.push(q);}redraw();};
+  const finish=e=>{if(!working||e.pointerId!==working.pointer)return;if(working.tool!=='eraser'){delete working.pointer;p.strokes.push(working);}working=null;save();redraw();};canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=finish;
+ }
+ window.mxNotesHome=function(){modal5(`<div class="modalhead5"><h2>MUSES Notes</h2><button onclick="close5()">×</button></div><div id="mx-notes-host"></div>`);show();};
+ window.mxNewNotebook=function(){const name=prompt('Defter adı');if(!name?.trim())return;const b={id:String(uid()),title:name.trim().slice(0,120),pages:[makePage()]};db().books.push(b);db().selected=b.id;db().page=0;save();show();};
+ window.mxOpenNotebook=k=>{if(!db().books.some(x=>x.id===D(k)))return;db().selected=D(k);db().page=0;save();show();};
+ window.mxNotesBack=()=>{db().selected='';save();show();};
+ window.mxNotebookRename=()=>{const b=active(),n=prompt('Defter adı',b?.title||'');if(b&&n?.trim()){b.title=n.trim().slice(0,120);save();show();}};
+ window.mxNotePage=n=>{const b=active();if(!b)return;db().page=Math.max(0,Math.min(b.pages.length-1,db().page+n));save();show();};
+ window.mxNoteAdd=()=>{const b=active();if(!b)return;b.pages.splice(db().page+1,0,makePage());db().page++;save();show();};
+ window.mxNoteDuplicate=()=>{const b=active(),p=page();if(!b||!p)return;const q=JSON.parse(JSON.stringify(p));q.id=String(uid());b.pages.splice(db().page+1,0,q);db().page++;save();show();};
+ window.mxNoteDelete=()=>{const b=active();if(!b||!confirm('Bu sayfa silinsin mi?'))return;b.pages.splice(db().page,1);if(!b.pages.length)b.pages.push(makePage());db().page=Math.min(db().page,b.pages.length-1);save();show();};
+ window.mxNotebookDelete=()=>{const b=active();if(!b||!confirm('Defter silinsin mi? Önce JSON yedeğini alabilirsin.'))return;db().books=db().books.filter(x=>x.id!==b.id);db().selected='';save();show();};
+ window.mxNoteUndo=()=>{if(!page()||!undos.length)return;redos.push(JSON.stringify(page().strokes));page().strokes=JSON.parse(undos.pop());save();redraw();};
+ window.mxNoteRedo=()=>{if(!page()||!redos.length)return;undos.push(JSON.stringify(page().strokes));page().strokes=JSON.parse(redos.pop());save();redraw();};
+ function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+ window.mxNotebookExport=()=>{const b=active();if(b)download(new Blob([JSON.stringify({format:'muses-notes-v1',book:b})],{type:'application/json'}),'MUSES-defter.json');};
+ window.mxNotePNG=()=>canvas?.toBlob(b=>{if(b)download(b,'MUSES-sayfa-'+(db().page+1)+'.png');},'image/png');
+ async function importBook(e){try{const f=e.target.files[0];if(!f)return;if(f.size>10000000)throw Error('Defter dosyası 10 MB sınırını aşıyor.');const x=JSON.parse(await f.text()),b=x.book;if(x.format!=='muses-notes-v1'||typeof b?.title!=='string'||!Array.isArray(b.pages)||!b.pages.length||b.pages.length>200)throw Error('Geçerli MUSES defteri değil.');const pages=b.pages.map(p=>{if(!Array.isArray(p.strokes)||p.strokes.length>10000)throw Error('Geçersiz çizgi verisi.');return {id:String(uid()),template:['blank','lined','grid','dots'].includes(p.template)?p.template:'blank',text:String(p.text||'').slice(0,20000),strokes:p.strokes.map(s=>{if(!['pen','pencil','brush','highlight'].includes(s.tool)||!/^#[0-9a-f]{6}$/i.test(s.color)||!Number.isFinite(s.width)||s.width<1||s.width>32||!Array.isArray(s.points)||!s.points.length||s.points.length>20000||s.points.some(q=>!Number.isFinite(q.x)||q.x<0||q.x>W||!Number.isFinite(q.y)||q.y<0||q.y>HEIGHT||!Number.isFinite(q.p)||q.p<0||q.p>1))throw Error('Geçersiz kalem verisi.');return {tool:s.tool,color:s.color,width:s.width,points:s.points.map(q=>({x:q.x,y:q.y,p:q.p}))};})};});const copy={id:String(uid()),title:b.title.slice(0,120),pages};db().books.push(copy);db().selected=copy.id;db().page=0;save();show();}catch(err){toast(err.message);}}
+ const oldLibrary=libraryView;libraryView=function(){return `<div class="mx-note-tools"><button onclick="mxNotesHome()">✎ MUSES Notes</button></div>`+oldLibrary();};
+ const oldJournal=journal;journal=function(){return `<div class="mx-note-tools"><button onclick="mxNotesHome()">✎ Dijital defter</button></div>`+oldJournal();};
+ document.addEventListener('keydown',e=>{if(!document.querySelector('#mx-notes-host')||!document.querySelector('#dialog5')?.open||e.target.closest('input,textarea,select')||!(e.ctrlKey||e.metaKey)||e.key.toLowerCase()!=='z')return;e.preventDefault();e.stopImmediatePropagation();if(e.shiftKey)window.mxNoteRedo();else window.mxNoteUndo();},true);
+}
+const previousStudioInstallerNotesMX=installStudioP1;
+installStudioP1=function(){previousStudioInstallerNotesMX();installNotesMX();};
