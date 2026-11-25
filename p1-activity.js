@@ -329,12 +329,12 @@ function installFocusSessionsMX(){
   if(r.credit)credit(a,...r.credit);
   if(r.changed){
    if(before==="work"&&notify){try{sound("win");}catch{}toast(r.finished?"Pomodoro setleri tamamlandı.":"Odak seti tamamlandı. Mola zamanı.");}
-   if(r.finished){archive(a,"sets-complete");D().active=null;clock9=null;}
+   if(r.finished){archive(a,"sets-complete");D().active=null;clock9=null;paused9=true;}
    save();lastSave=now;
   }else if(r.credit&&now-lastSave>=10000){save();lastSave=now;}
   paint();
  }
- function stop(reason="manual"){tick(Date.now(),false);const a=active();if(a){archive(a,reason);D().active=null;clock9=null;save();}paint();}
+ function stop(reason="manual"){tick(Date.now(),false);const a=active();if(a){archive(a,reason);D().active=null;clock9=null;paused9=true;save();}paint();}
  function pause(){tick(Date.now(),false);const a=active();if(!a)return;if(a.status==="running"){a.left=Math.max(0,a.end-Date.now());a.status="paused";}else{a.at=Date.now();a.end=a.at+a.left;a.status="running";}save();paint();}
  function label(m,t){
   if(m==="task")return S.tasks.find(x=>x.id===t)?.title||"Görev";
@@ -350,7 +350,7 @@ function installFocusSessionsMX(){
   const a=active();
   if(a&&a.module===m&&a.target===t&&(!session||!a.session||a.session===session)){if(session)a.session=session;save();paint();return true;}
   if(a&&!confirm("Mevcut Pomodoro kaydedilsin ve yeni çalışma başlatılsın mı?"))return false;
-  if(a)stop("switch");clockFlush9();clock9=null;
+  if(a)stop("switch");clockFlush9();clock9=null;paused9=false;
   const now=Date.now(),clamp=(v,max,def)=>Number.isFinite(+v)?Math.max(1,Math.min(max,Math.round(+v))):def,work=clamp(cfg.work,180,25)*60000,rest=clamp(cfg.rest,60,5)*60000;
   D().active={id:id(),module:m,target:String(t),title:name||label(m,t),session,started:now,at:now,end:now+work,left:work,work,rest,rounds:clamp(cfg.rounds,30,5),done:0,phase:"work",status:"running",seconds:0,days:{}};
   lastSave=now;save();paint();return true;
@@ -400,10 +400,11 @@ function installFocusSessionsMX(){
   const a=active(),p=prefs(),[m,t]=currentTarget(),types=[["task","Görev"],["resource","Kaynak / bölüm"],["book","Kitap"],["vocab","Flashcard"],["habit","Alışkanlık"],["p90","P90X"],["pole","Pole Dance"],["swim","Yüzme"],["piano","Piyano"],["speaking","Konuşma"],["general","Serbest çalışma"]];
   modal5(`<div class="modalhead5"><h2>Pomodoro</h2><button onclick="close5()">×</button></div>${a?`<div class="card"><b>${H(a.title)}</b><p>${H(fmtTime9(a.seconds))} · ${a.done}/${a.rounds} set</p><button onclick="mxPauseFocus()">${a.status==="running"?"Duraklat":"Devam et"}</button><button onclick="mxStopFocus()">Kaydet ve bitir</button></div>`:""}<form id="mx-focus-form" class="mx-focus-form"><label>Çalışma türü<select name="kind">${opt5(types,m)}</select></label><label>Hedef<select name="target"></select></label><label data-leaf hidden>Alt bölüm<select name="leaf"></select></label><label data-custom hidden>Başlık<input name="title" value="${H(name)}" maxlength="140"></label><div class="grid three"><label>Odak (dk)<input name="work" type="number" min="1" max="180" value="${p.work}" required></label><label>Mola (dk)<input name="rest" type="number" min="1" max="60" value="${p.rest}" required></label><label>Set<input name="rounds" type="number" min="1" max="30" value="${p.rounds}" required></label></div><label><input type="checkbox" name="auto" ${p.auto?"checked":""}> Sonraki sete otomatik geç</label><label><input type="checkbox" name="voice" ${p.voice?"checked":""}> Flashcard otomatik ses</label><p class="muted">Molalar çalışma süresine eklenmez. Kapalı tarayıcıda yalnız başlamış setin sonuna kadar süre hesaplanır.</p><button class="primary">Başlat</button></form>`);
   const f=document.querySelector("#mx-focus-form");
-  function leaf(){let r=f.elements.kind.value==="resource";f.querySelector("[data-leaf]").hidden=!r;if(r)f.elements.leaf.innerHTML=opt5([["","Kaynağın tamamı"],...scope6(f.elements.target.value).items.map(x=>[x.id,x.title])],"");}
+  function flattenSections(tree,depth=0){return (tree||[]).flatMap(x=>[[x.id,"  ".repeat(depth)+x.title],...flattenSections(x.children||[],depth+1)]);}
+  function leaf(){let r=f.elements.kind.value==="resource";f.querySelector("[data-leaf]").hidden=!r;if(r)f.elements.leaf.innerHTML=opt5([["","Kaynağın tamamı"],...flattenSections(scope6(f.elements.target.value).tree)],"");}
   function targets(preferred=""){let k=f.elements.kind.value,l=options(k);f.elements.target.innerHTML=opt5(l,l.some(x=>x[0]===preferred)?preferred:l[0]?.[0]);f.querySelector("[data-custom]").hidden=k!=="general";leaf();}
   f.elements.kind.onchange=()=>targets();f.elements.target.onchange=leaf;targets(t);
-  f.onsubmit=e=>{e.preventDefault();const k=f.elements.kind.value;let target=f.elements.target.value;if(!target)return toast("Bir çalışma seç.");if(k==="resource"&&f.elements.leaf.value)target+="~"+f.elements.leaf.value;if(k==="general")target=f.elements.title.value.trim()||"Odak çalışması";const cfg={work:+f.elements.work.value,rest:+f.elements.rest.value,rounds:+f.elements.rounds.value,auto:f.elements.auto.checked,voice:f.elements.voice.checked};if(!start(k,target,label(k,target),"",cfg))return;Object.assign(prefs(),cfg);save();close5();render();};
+  f.onsubmit=e=>{e.preventDefault();const k=f.elements.kind.value;let target=f.elements.target.value;if(!target)return toast("Bir çalışma seç.");if(k==="resource"&&f.elements.leaf.value)target+="~"+f.elements.leaf.value;if(k==="general")target=f.elements.title.value.trim()||"Odak çalışması";const cfg={work:+f.elements.work.value,rest:+f.elements.rest.value,rounds:+f.elements.rounds.value,auto:f.elements.auto.checked,voice:f.elements.voice.checked};if(!start(k,target,label(k,target),"",cfg))return;Object.assign(prefs(),cfg);save();close5();if(k==="vocab"){route5("vocab",target,today());begin(false);}else if(k==="task"){const task=S.tasks.find(x=>x.id===target);if(task?.module==="vocab"){route5("vocab",task.target||"All",task.date);begin(false);}else if(task&&linked5(task))route5(task.module,task.target,task.date);else render();}else render();};
  };
  focusFinish7=function(){if(v7().focusActive)return oldFinish7();stop();close5();render();};focusCancel7=function(){if(v7().focusActive)return oldCancel7();stop();close5();render();};
  window.mxPauseFocus=()=>{pause();close5();render();};window.mxStopFocus=()=>{stop();close5();render();};
@@ -441,9 +442,10 @@ function installFocusSessionsMX(){
   if(ok&&!Object.hasOwn(f.answers,a.key))f.answers[a.key]={mode:a.mode,ok:!!a.ok};save();
   if(Object.keys(f.answers).length>=f.keys.length&&!endTimer){const sid=f.id;endTimer=setTimeout(()=>{endTimer=0;if(fs()?.id===sid)finish("complete",true);},1000);}
  };
- const rateBase=rating4;rating4=function(n){let f=fs(),w=cur4();if(f&&w&&f.mode!=="flash"&&!Object.hasOwn(f.answers,key4(w)))return toast("Önce soruyu yanıtla.");return rateBase(n);};
- const moveBase=move4;move4=function(n){let f=fs();if(f&&n>0){for(let i=1;i<=queue4.length;i++)if(!Object.hasOwn(f.answers,queue4[(pos4+i)%queue4.length]))return moveBase(i);return;}return moveBase(n);};
- const matchBase=match4;match4=function(){let f=fs();if(!f||f.mode!=="match")return matchBase();let remaining=queue4.filter(k=>!matchDone4.has(k));if(!remaining.length)return `<p>${queue4.length}/${queue4.length} eşleşti.</p>`;let group=remaining.slice(0,6),old=queue4,order=matchOrder4;try{queue4=group;matchOrder4=order.filter(k=>group.includes(k));if(matchOrder4.length!==group.length)matchOrder4=mix4(group.slice());return matchBase();}finally{queue4=old;matchOrder4=order;}};
+ const rateBase=rating4;rating4=function(n){let f=fs(),w=cur4();if(f&&w){const answered=Object.hasOwn(f.answers,key4(w));if(Object.keys(f.answers).length>=f.keys.length)return;if(f.mode==="flash"&&answered)return toast("Bu kart bu oturumda zaten değerlendirildi.");if(f.mode!=="flash"&&!answered)return toast("Önce soruyu yanıtla.");}return rateBase(n);};
+ const evaluateBase=evaluate4;evaluate4=function(...args){const f=fs();if(f&&Object.keys(f.answers).length>=f.keys.length)return;return evaluateBase(...args);};
+ const moveBase=move4;move4=function(n){let f=fs();if(!f)return moveBase(n);if(n>0){let i=1;while(i<=queue4.length&&Object.hasOwn(f.answers,queue4[(pos4+i)%queue4.length]))i++;if(i>queue4.length)return;n=i;}const was=auto4;auto4=false;try{return moveBase(n);}finally{auto4=was;autoSchedule4();}};
+ const matchBase=match4;match4=function(){let f=fs();if(!f||f.mode!=="match")return matchBase();let remaining=queue4.filter(k=>!matchDone4.has(k));if(!remaining.length)return `<p>${queue4.length}/${queue4.length} eşleşti.</p>`;let group=remaining.slice(0,6),old=queue4,order=matchOrder4;try{queue4=group;matchOrder4=order.filter(k=>group.includes(k));if(matchOrder4.length!==group.length)matchOrder4=mix4(group.slice());return matchBase().replace(/\d+\/\d+ eşleşti/,`${matchDone4.size}/${old.length} eşleşti`);}finally{queue4=old;matchOrder4=order;}};
  function voiceParts(field,value){
   if(!value||field==="Image URL"||field.startsWith("IPA"))return [];
   const en=s4().lang==="en-US"?"en-US":"en-GB",text=String(value);
@@ -459,7 +461,9 @@ function installFocusSessionsMX(){
   speechSynthesis.cancel();let voices=speechSynthesis.getVoices();for(let p of parts){let u=new SpeechSynthesisUtterance(p.text);u.lang=p.lang;let v=voices.find(x=>x.lang.toLowerCase()===p.lang.toLowerCase())||voices.find(x=>x.lang.split("-")[0]===p.lang.split("-")[0]);if(v)u.voice=v;speechSynthesis.speak(u);}
  }
  const autoBase=autoSchedule4;autoSchedule4=function(){if(!fs())return autoBase();clearTimeout(timer4);if(auto4&&view==="flash"&&tab4==="study"&&s4().mode==="flash"&&!side4)timer4=setTimeout(()=>{if(fs()&&!side4){side4=true;render();}},1000*Math.max(1,Number(s4().seconds)||3));};
- const studyBase=study4;study4=function(){const f=fs(),h=studyBase();return `<div class="mx-flash-session"><button class="primary" onclick="mxStartFlashSession()">${f?"Yeni oturum":"Oturumu başlat · Pomodoro"}</button>${f?`<b>${Object.keys(f.answers).length}/${f.keys.length} soru</b><span>◷ <b data-mx-clock>—</b></span><small>Yanıtlar anında kaydedilir.</small>`:"<small>Seçili filtre ve soru sayısını kullanır.</small>"}</div>`+h.replaceAll('onclick="restart4();render()"','onclick="mxStartFlashSession()"');};
+ const autoToggleBase=autoToggle4;autoToggle4=function(){if(!fs())return autoToggleBase();if(s4().mode!=="flash")return toast("Otomatik çevirme kart modunda çalışır.");auto4=!auto4;render();autoSchedule4();};
+ const studyBase=study4;study4=function(){const f=fs(),h=studyBase();return `<div class="mx-flash-session"><button class="primary" onclick="mxStartFlashSession()">${f?"Yeni oturum":"Oturumu başlat · Pomodoro"}</button>${f?`<b>${Object.keys(f.answers).length}/${f.keys.length} soru</b><span>◷ <b data-mx-clock>—</b></span><small>Yanıtlar anında kaydedilir.</small>`:"<small>Seçili filtre ve soru sayısını kullanır.</small>"}</div>`+h.replace(/<button class="mini" onclick="restart4\(\);render\(\)"[^>]*>Yeni oturum<\/button>/g,"");};
+ const flashBase=flash;flash=function(){return flashBase().replaceAll('onclick="restart4();tab4=\'study\';render()"','onclick="mxStartFlashSession()"');};
  // Keep stored attempts if a browser reload interrupted a session; never fabricate completion.
  if(fs()&&session4?.id!==fs().id)finish("reload",false);
  const renderBase=render;render=function(){renderBase();paint();speakFace();};
