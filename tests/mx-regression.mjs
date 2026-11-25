@@ -17,3 +17,7 @@ const path=extract(studio,'pathStatusMX','pathVideoMX');assert.deepEqual(path([{
 const step=extract(activity,'focusStepMX','installFocusSessionsMX');const a={phase:'work',status:'running',done:0,rounds:2,at:0,end:60000,work:60000,rest:10000};
 assert.deepEqual(step(a,60000,true).credit,[0,60000]);assert.equal(step(a,70000,true).credit,null);assert.equal(step(a,130000,true).finished,true);
 console.log('MUSES regression: syntax, unique words, ink geometry, SRS, rewards, path and focus passed.');
+
+const hour=extract(studio,'mxHourSlot','installHourlyAgendaMX');for(const [t,n] of [['00:00',0],['18:15',18],['23:59',23],['24:00',-1],['12:60',-1],['',-1]])assert.equal(hour(t),n);
+const key=extract(studio,'mxBackupMediaKey','mxValidPack');for(const k of ['p90-2','mx-original-mx-reader-abc','mx-audio-mx-reader-abc','mx-focus-sound-break','mx-mimo-character-pack-v2'])assert(key(k));for(const k of ['__proto__','unknown','p90-13'])assert(!key(k));
+console.log('PASS: calendar hours and full-media backup key validation');
