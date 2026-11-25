@@ -68,3 +68,11 @@ Bozuk veya geçersiz localStorage kopyası bulunduğunda geçerli IndexedDB kopy
 - `tests/browser-smoke.py`, `tests/integration-v09.py`, `tests/integration-v010.py` ve `tests/providers-v010.py` geçti. Bunlar okuyucu/kaynak eşleşmesini, tekil okuma kaydını, kitap sözcüğü mükerrer kontrolünü ve benzetilmiş sözlük/çeviri sağlayıcısını kapsar.
 - P1 testinde süre aralıklarının çakışması, hedef ağacının gün görünümü ve önceki bir günde doğru yanıtlanan kartın yanlış tekrarının ayrıntıda görünmesi doğrulandı.
 - Fiziksel Android/iPad, gerçek mikrofon ve TTS sesleri, gömülü haricî video oynatma ve eşzamanlı sekme kalıcılığı doğrulanmadı. Diğer açık P1 kapsamı şartnamedeki P1 tablosunda.
+
+
+### P1 — Kaynağa bağlı Pomodoro ve Flashcard oturumları (geliştirme dalı)
+
+- Görev, kaynak/alt bölüm, kitap, alışkanlık, Flashcard seviyesi ve spor hedefi seçilebilen ortak Pomodoro; şeffaf küçük sayaç, çalışma/mola süresi, 1–30 set, başlat/duraklat/devam/bitir. Uygulama içi gezinmede sayaç korunur. Sadece odak evresi ortak süre kaydına yazılır; İstanbul gün sınırında bölünür.
+- Seçilen Flashcard oturumunun soru sayısı, gerçek yanıt kayıtları, otomatik kapanış, oturum süresi ve ön/arka yüz seslendirmesi eklendi. Cihaz sesi gerektirir; dili belirsiz eski alanlar otomatik yanlış dilde okunmaz. Tarayıcı yeniden açılırsa yarım kalmış Flashcard oturumu kısmi geçmiş olarak saklanır; kaldığı karttan otomatik sürdürme henüz yok.
+- V8 sözdizimi ve saf zamanlayıcı testleri geçti: iki odak turunda mola sayılmadı, duraklatılmış sayaç süre eklemedi, kapalı tarayıcı senaryosunda sadece başlamış tur hesaplandı. Kontrollü DOM/API taklitli entegrasyon testi üç Flashcard yanıtını, otomatik bitişi, 35 saniye tekil süre kaydını, TR/EN ses kuyruğunu ve ekran geçişi/duraklatma ile 25 saniye görev süresini doğruladı. Son ek stop/switch düzenlemesi sözdizimi kontrolünden geçti; yeniden gerçek tarayıcı testi bekliyor.
+- Canlı GitHub Pages dalına birleştirilmedi. Tam Chromium arayüzü, gerçek cihaz sesleri, fiziksel Android/iPad, çoklu tarayıcı sekmesi eşzamanlılığı ve gerçek çevrimdışı güncelleme doğrulanmadı. Kullanıcı verisi eklenmedi; mevcut yayın arşivinin gizlilik denetimi açık.
