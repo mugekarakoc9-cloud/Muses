@@ -457,7 +457,7 @@ function installFocusSessionsMX(){
  const finishBase=finish4;finish4=function(){return fs()?finish("manual",true):finishBase();};
  const restartBase=restart4;restart4=function(explicit){if(fs()&&!ending)finish("queue-changed",false);return restartBase(explicit);};
  function begin(reset){
-  if(fs())finish("new-session",false);if(reset)restart4();if(!queue4.length)return toast("Bu seçimde kart yok.");
+  if(fs())finish("new-session",false);if(reset)restart4();const limit=Number(s4().limit);queue4=[...new Set(queue4)];if(Number.isInteger(limit)&&limit>0)queue4=queue4.slice(0,limit);if(!queue4.length)return toast("Bu seçimde kart yok.");if(pos4>=queue4.length||pos4<0)pos4=0;
   if(!session4)session4={id:id(),start:Date.now(),count:0,correct:0};
   const sid=session4.id,t=s4().levels.join(",")||"All",a=active();
   if(a?.module==="task"&&S.tasks.some(x=>x.id===a.target&&x.module==="vocab")){a.session=sid;save();}
@@ -516,7 +516,8 @@ function installFocusSessionsMX(){
  const autoBase=autoSchedule4;autoSchedule4=function(){if(!fs())return autoBase();clearTimeout(timer4);if(auto4&&view==="flash"&&tab4==="study"&&s4().mode==="flash"&&!side4)timer4=setTimeout(()=>{if(fs()&&!side4){side4=true;render();}},1000*Math.max(1,Number(s4().seconds)||3));};
  const autoToggleBase=autoToggle4;autoToggle4=function(){if(!fs())return autoToggleBase();if(s4().mode!=="flash")return toast("Otomatik çevirme kart modunda çalışır.");auto4=!auto4;render();autoSchedule4();};
  const studyBase=study4;study4=function(){const f=fs(),h=studyBase();return `<div class="mx-flash-session"><button class="primary" onclick="mxStartFlashSession()">${f?"Yeni oturum":"Oturumu başlat · Pomodoro"}</button>${f?`<b>${Object.keys(f.answers).length}/${f.keys.length} soru</b><span>◷ <b data-mx-clock>—</b></span><button onclick="mxStopFocus()">Oturumu kaydet ve bitir</button><small>Yanıtlar anında kaydedilir.</small>`:"<small>Seçili filtre ve soru sayısını kullanır.</small>"}</div>`+h.replace(/<button class="mini" onclick="restart4\(\);render\(\)"[^>]*>Yeni oturum<\/button>/g,"");};
- const flashBase=flash;flash=function(){return flashBase().replaceAll('onclick="restart4();tab4=\'study\';render()"','onclick="mxStartFlashSession()"');};
+ function sessionHistory(){const rows=D().flashHistory.slice(-15).reverse();return '<details class="card mx-flash-history"><summary>Flashcard oturum geçmişi · '+D().flashHistory.length+'</summary>'+ (rows.map(x=>'<details style="margin:10px 0"><summary>'+H(x.date)+' · '+H(x.answered)+'/'+H(x.planned)+' soru · '+H(fmtTime9(x.seconds||0))+' · '+(x.reason==='complete'?'Tamamlandı':'Kaydedildi')+'</summary><p>'+H(x.correct)+'/'+H(x.objective)+' nesnel doğru · '+H(x.attempts||0)+' deneme</p>'+ (Array.isArray(x.answers)?x.answers.map(y=>'<div class="line"><div><b>'+H(y.word||y.key)+'</b><p>Yanıt: '+H(y.answer||'—')+'</p><p>Beklenen: '+H(y.expected||'—')+'</p></div><small>'+ (y.mode==='srs'?'Öz değerlendirme':y.ok?'Doğru':'Yanlış')+'</small></div>').join(''):'<p>Eski oturum: ayrıntılı yanıt bu özette bulunmuyor.</p>')+'</details>').join('')||'<p>Henüz kaydedilmiş oturum yok.</p>')+'</details>';}
+ const flashBase=flash;flash=function(){const h=flashBase().replaceAll('onclick="restart4();tab4=\'study\';render()"','onclick="mxStartFlashSession()"');return document.fullscreenElement?h:h+sessionHistory();};
  // Keep stored attempts if a browser reload interrupted a session; never fabricate completion.
  if(fs()&&session4?.id!==fs().id)finish("reload",false);
  const renderBase=render;render=function(){renderBase();paint();speakFace();};
