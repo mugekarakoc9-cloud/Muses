@@ -729,3 +729,54 @@ function installUniversalReviewMX(){
 }
 const previousStudioInstallerReviewMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerReviewMX();installUniversalReviewMX();};
+
+
+/* Daily learning and word universe; uses existing private vocabulary, no new personal data. */
+function dailyNewKeysMX(candidates,existing,limit){
+ const picked=[],seen=new Set(existing);
+ for(const key of candidates){if(seen.has(key))continue;seen.add(key);picked.push(key);if(picked.length>=limit)break;}
+ return limit>0?picked:[];
+}
+function installDailyLearningMX(){
+ if(window.mxDailyLearningReady)return;window.mxDailyLearningReady=true;
+ const H=x=>esc(String(x??'')),K=x=>enc5(String(x??'')),D=x=>dec5(x),db=()=>{const s=S.mxDailyLearning??={};s.days??={};s.first??={};s.target??=10;s.daysOfWeek??=[0,1,2,3,4,5,6];return s;};
+ const day=d=>db().days[d]??={keys:[],learned:{}};
+ const word=k=>by4.get(k),eligible=k=>{const w=word(k);if(!w||!label4(w,'Türkçe Anlam')||!label4(w,'Word / Phrase'))return false;const p=st4(k);return !db().first[k]&&!p.last&&!p.next&&!p.days.length&&!p.level;};
+ const due=()=>all4.map(key4).filter(k=>{const p=st4(k);return p.next&&p.next<=today();}).sort((a,b)=>String(st4(a).next).localeCompare(String(st4(b).next)));
+ const count=d=>Object.keys(db().days[d]?.learned||{}).length;
+ const css=document.createElement('style');css.textContent=`
+ .mx-learning-bar{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:10px 0}.mx-learning-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin:12px 0}.mx-learning-stats>div{border:1px solid var(--line);border-radius:12px;padding:10px}.mx-learning-stats b{display:block;font-size:1.4rem}.mx-word-universe{display:grid;grid-template-columns:repeat(auto-fill,minmax(21px,1fr));gap:4px;margin:12px 0}.mx-word-universe button{height:23px;min-height:0!important;min-width:0;padding:0!important;background:var(--cell)!important;border:1px solid #0001!important;border-radius:4px!important}.mx-word-universe button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}.mx-word-universe button[data-due=true]{box-shadow:inset 0 0 0 2px #403448!important}.mx-word-picker{max-height:45vh;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:8px}.mx-word-picker label{display:flex;gap:9px;align-items:flex-start;margin:6px 0}.mx-word-picker input{flex-shrink:0}.mx-word-picker small{display:block}.mx-word-legend{display:flex;flex-wrap:wrap;gap:8px;font-size:.76rem}.mx-word-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px}
+ `;document.head.append(css);
+ function dailyPanel(){const d=today(),a=db(),r=a.days[d]||{keys:[],learned:{}},n=count(d),target=a.target,wait=due().length;return `<section class="card"><small>DAILY WORD STUDIO</small><h3>Günün ${target} yeni kelimesi</h3><div class="mx-learning-stats"><div><b>${r.keys.length}/${target}</b>Seçildi</div><div><b>${n}/${target}</b>İlk hatırlama başarılı</div><div><b>${wait}</b>Vadesi gelen kart</div></div><div class="mx-learning-bar"><button class="primary" onclick="mxDailyPicker()">Kelimeleri seç</button><button onclick="mxDailyStart()">Yeni kelimeleri çalış</button><button onclick="mxDailyDue()">Tekrarları çalış</button><button onclick="mxWordUniverse()">Kelime haritası</button></div><small>Başarılı yazılı hatırlama ilk öğrenme kaydını oluşturur. Seçmek veya karta bakmak öğrenilmiş sayılmaz.</small></section>`;}
+ window.mxDailyPicker=function(){
+  const a=db(),r=day(today()),picked=new Set(r.keys),limit=a.target;
+  modal5(`<div class="modalhead5"><h2>Günün kelimeleri</h2><button onclick="close5()">×</button></div><label>Günlük miktar<input type="number" id="mx-daily-target" min="1" max="100" value="${limit}"></label><label>Kelime veya anlam ara<input id="mx-daily-search" placeholder="İngilizce / Türkçe"></label><div class="mx-learning-bar"><button id="mx-daily-suggest">Uygun yeni kelimeleri seç</button><button id="mx-daily-clear">Seçimi temizle</button><b id="mx-daily-count"></b></div><div class="mx-word-picker" id="mx-daily-options"></div><label>Çalışma günleri</label><div class="mx-learning-bar">${['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'].map((x,i)=>`<label><input type="checkbox" data-weekday="${i}" ${a.daysOfWeek.includes(i)?'checked':''}>${x}</label>`).join('')}</div><button class="primary" id="mx-daily-save">Seçimi kaydet</button>`);
+  const input=document.querySelector('#mx-daily-target'),search=document.querySelector('#mx-daily-search'),list=document.querySelector('#mx-daily-options'),label=document.querySelector('#mx-daily-count');
+  const cap=()=>Math.max(1,Math.min(100,Math.floor(Number(input.value)||10)));
+  function update(){const q=search.value.trim().toLocaleLowerCase('tr'),filtered=all4.filter(w=>{const k=key4(w);return (picked.has(k)||eligible(k))&&(!q||[w['Word / Phrase'],w['Türkçe Anlam']].some(t=>String(t||'').toLocaleLowerCase('tr').includes(q)));});const keys=[...new Set([...picked,...filtered.map(key4)])].filter(k=>word(k)).slice(0,180);
+   list.innerHTML=keys.map(k=>{const w=word(k);return `<label><input type="checkbox" value="${H(K(k))}" ${picked.has(k)?'checked':''} ${r.learned[k]?'disabled':''}><span>${H(w['Word / Phrase'])}<small>${H(w['Türkçe Anlam'])}${r.learned[k]?' · öğrenildi':''}</small></span></label>`;}).join('')||'<p>Uygun yeni kelime yok.</p>';label.textContent=picked.size+'/'+cap();};
+  search.oninput=update;input.oninput=update;list.onchange=e=>{if(e.target.type!=='checkbox')return;const k=D(e.target.value);if(e.target.checked){if(picked.size>=cap()){e.target.checked=false;return toast('Günlük miktar doldu.');}picked.add(k);}else picked.delete(k);label.textContent=picked.size+'/'+cap();};
+  document.querySelector('#mx-daily-suggest').onclick=()=>{for(const k of dailyNewKeysMX(pool4().map(key4).filter(eligible),picked,cap()-picked.size))picked.add(k);update();};
+  document.querySelector('#mx-daily-clear').onclick=()=>{picked.clear();Object.keys(r.learned).forEach(k=>picked.add(k));update();};
+  document.querySelector('#mx-daily-save').onclick=()=>{const days=[...document.querySelectorAll('[data-weekday]:checked')].map(x=>Number(x.dataset.weekday));if(!days.length||picked.size>cap()||count(today())>cap())return toast('Miktarı veya çalışma günlerini düzenle.');a.target=cap();a.daysOfWeek=days;r.keys=[...picked];save();close5();render();};update();
+ };
+ window.mxDailyStart=function(){const r=day(today()),keys=r.keys.filter(k=>!r.learned[k]&&eligible(k));if(!keys.length)return toast('Önce yeni kelimeleri seç veya bugünkü çalışman tamamlandı.');if(typeof window.mxStartFlashKeys!=='function')return toast('Oturum modülü yüklenemedi.');window.mxStartFlashKeys(keys,'type');};
+ window.mxDailyDue=function(){const keys=due();if(!keys.length)return toast('Vadesi gelen kelime yok.');if(typeof window.mxStartFlashKeys!=='function')return toast('Oturum modülü yüklenemedi.');window.mxStartFlashKeys(keys.slice(0,Math.max(1,Number(s4().limit)||30)),'flash');};
+ const prevAttempt=attempt6;attempt6=function(a){prevAttempt(a);if(!a.ok||a.mode!=='type'||a.field!=='Word / Phrase')return;const d=today(),r=db().days[d],k=a.key;if(!r||!r.keys.includes(k)||r.learned[k]||!eligible(k))return;
+  r.learned[k]={at:Date.now(),session:session4?.id||'',answer:String(a.answer||'')};db().first[k]=d;const p=st4(k);
+  update4(k,{level:3,stage:0,last:d,next:add(d,4),days:[...new Set([...p.days,d])]});save();
+ };
+ const palette=['#d4d7df','#bd5969','#db9258','#d7b45d','#9bbd9c','#478e72','#397060'];
+ window.mxWordUniverse=function(){
+  modal5(`<div class="modalhead5"><h2>Kelime evreni</h2><button onclick="close5()">×</button></div><label>Arama<input id="mx-universe-search" placeholder="Kelime veya anlam"></label><label>Seviye<select id="mx-universe-level">${opt5(['All','A1','A2','B1','B2','B2+','C1','C2'].map(x=>[x,x==='All'?'Tümü':x]),'All')}</select></label><div class="mx-word-legend">${['Yeni','Çok zor','Zor','Orta','Kolay','Çok kolay','Ustalık'].map((x,i)=>`<span><i style="background:${palette[i]}"></i>${x}</span>`).join('')}</div><div class="mx-learning-bar"><button id="mx-universe-prev">‹</button><b id="mx-universe-page"></b><button id="mx-universe-next">›</button></div><div id="mx-universe-grid" class="mx-word-universe"></div><p id="mx-universe-info" role="status">Bir kelimenin üzerine gel veya klavyeyle seç.</p>`);
+  let page=0;const search=document.querySelector('#mx-universe-search'),level=document.querySelector('#mx-universe-level'),grid=document.querySelector('#mx-universe-grid'),info=document.querySelector('#mx-universe-info');
+  function draw(){const q=search.value.toLocaleLowerCase('tr').trim(),rows=all4.filter(w=>(level.value==='All'||w.Levels?.includes(level.value))&&(!q||[w['Word / Phrase'],w['Türkçe Anlam']].some(x=>String(x||'').toLocaleLowerCase('tr').includes(q))));page=Math.max(0,Math.min(page,Math.ceil(rows.length/240)-1));document.querySelector('#mx-universe-page').textContent=(page+1)+' / '+Math.max(1,Math.ceil(rows.length/240))+' · '+rows.length+' kelime';grid.innerHTML=rows.slice(page*240,page*240+240).map(w=>{const k=key4(w),p=st4(k),n=status4(k),t=w['Word / Phrase']+' · '+(w['Türkçe Anlam']||'')+' · Son: '+(p.last||'—')+' · Vade: '+(p.next||'—');return `<button data-key="${H(K(k))}" data-info="${H(t)}" data-due="${!!p.next&&p.next<=today()}" style="--cell:${palette[n]||palette[0]}" title="${H(t)}" aria-label="${H(t)}"></button>`;}).join('');}
+  search.oninput=level.onchange=()=>{page=0;draw();};document.querySelector('#mx-universe-prev').onclick=()=>{page--;draw();};document.querySelector('#mx-universe-next').onclick=()=>{page++;draw();};const describe=e=>{const b=e.target.closest('[data-key]');if(b)info.textContent=b.dataset.info;};grid.onmouseover=grid.onfocusin=describe;grid.onclick=e=>{const b=e.target.closest('[data-key]');if(b){close5();choose4(D(b.dataset.key));}};draw();
+ };
+ const oldFlash=flash;flash=function(){return (!full4?dailyPanel():'')+oldFlash();};
+ const oldHome=home;home=function(){return dailyPanel()+oldHome();};
+ const oldAgenda=agendaRows5;agendaRows5=function(d){const rows=oldAgenda(d),s=db(),n=count(d);if(s.daysOfWeek.includes(new Date(d+'T12:00:00').getDay())||n){rows.push({id:'mx-daily-new:'+d,kind:'mx-daily-new',date:d,label:'Yeni kelimeler · '+n+'/'+s.target,done:n>=s.target,module:'vocab',target:'All'});}return rows;};
+ const oldRow=row5;row5=function(r,compact=false){if(r.kind!=='mx-daily-new')return oldRow(r,compact);return `<div class="event5 ${r.done?'completed5':''}"><button class="eventtext5" onclick="go('flash')">${H(r.label)}</button></div>`;};
+}
+const previousStudioInstallerDailyMX=installStudioP1;
+installStudioP1=function(){previousStudioInstallerDailyMX();installDailyLearningMX();};
