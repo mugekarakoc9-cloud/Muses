@@ -1,0 +1,21 @@
+# MUSES Life Studio — Codex çalışma kuralları
+
+Bu depo kullanıcının kişisel, yerel öncelikli yaşam ve öğrenme uygulamasıdır. Ayrıntılı gereksinimler `MUSES-GEREKSINIMLER.md`, önceki sürümlerin gerçek durumu `DENETIM.md` ve `README.md` içindedir. Bunları ve mevcut kodu değişiklikten önce oku. Kullanıcının son isteği eski sürümlerin üstüne çalışmaktır; sıfırdan örnek uygulama yazma.
+
+## Değişmez kurallar
+- Tek uygulama: TickTick'in ajandası + Notion'ın kaynak hiyerarşisi + Duolingo'nun ilerleme yolu + VoCat/Quizlet'in öğrenme motoru + ReadEra/Language Reactor/Langua'nın okuyucusu. Marka tasarımlarını birebir kopyalama; özgün MUSES tasarım dili geliştir.
+- ADHD dostu: ana ekranda az seçenek, tek hızlı giriş, her yerde tutarlı gezinme, ayrıntılar açılır panelde. Kullanıcı aynı şeyi iki kere kaydetmez. Gerçek veri, gerçek çalışan düğme ve grafik; sahte ilerleme/örnek arşiv yok.
+- Veri yerel cihazda çalışır. Drive/Notion/TickTick yalnızca isteğe bağlı kaynak aktarımı; zorunlu bağlantı yok. Kişisel katalogları, kitapları, medya ve kayıtları yeniden kullanılabilir koddan ayır. Hiçbir kişisel içeriği public repoya, public Pages'e, CI loglarına veya dış servise izinsiz gönderme. API anahtarlarını kodda saklama. Kitap ve video haklarına saygı göster.
+- Eski sürüm kullanıcı kayıtlarını, stabil kimlikleri, tamamlanmaları, SRS durumunu, kitap/alışkanlık/fitness geçmişini koru. Şema değişikliklerinde sürümlü ve geri alınabilir migration; yedek/geri yükleme testleri. Silme ve sıfırlama yalnız açık kullanıcı talebiyle. Bilinmeyen değer sıfır veya tamamlanmış kabul edilmez.
+- Plan, gerçekleşen kayıt, hedef ve aktif süreyi ayrı sakla ve tek veri kaynağından türet. Kaynağa bağlı görev, kart, antrenman, okuma ve hedefler otomatik birbirini günceller; iki kez sayılmaz. Tarih/saat Europe/Istanbul varsayımıyla doğru yerel güne yazılır, hafta pazartesi başlar.
+- Sade, pastel ama okunaklı özgün arayüz; masaüstü/iPad/Android; açık/koyu/sistem teması; klavye/ekran okuyucu, azaltılmış hareket, ses ve titreşim kapatma seçenekleri. SVG/CSS ile çözünürlükten bağımsız grafik ve animasyon; gereksiz ağır 8K dosyalar yükleme.
+- İçerik güvenilir olmalı: gerçek kaynak ve sayfa referansı, doğrulanmamış anatomi/etimoloji/medya işaretli; uydurma çeviri veya video bağlantısı yok. Mikrofon metin benzerliğini fonetik telaffuz doğruluğu diye sunma. Kullanıcıya açık ve dürüst sınırlamalar.
+
+## Çalışma yöntemi
+1. Depo/branch ve veri gizliliğini kontrol et. Mevcut `index.html`, manifest, service worker, testler, kaynak veri yapıları, storage/migration ve tüm ekranları envanterle. `MUSES-GEREKSINIMLER.md` ile gereksinim matrisi çıkar: tamam / kısmi / eksik / doğrulanmadı; dosya ve test kanıtı ekle. Eksik dosyalar varsa belirt; sahte veriyle tamamlama.
+2. Önce kritik veri kaybı, mükerrer kayıt, süre çift sayımı, hatalı hedef/takvim ve responsive erişilebilirlik sorunlarını düzelt. Büyük yeniden yazım yerine küçük, testli refactor; tek dosyalı eski uygulamadan modüler yapıya güvenli geçiş. Framework/yerel platform seçimini gerekçelendir; var olan özellikleri kaybetme.
+3. Her görev için çalışan uçtan uca sonuç; değişiklikleri bağımsız küçük commit/PR'larda tut. Özellik eklerken gerçek veriyle test et; test kullanıcı verisini değiştirme. Kullanıcı tek tek tekrar sormadan eksikleri matrise göre önceliklendir ve kapsamı ölçülebilir yap.
+4. Başlangıç kontrolleri: `node tests/check.mjs`, `node tests/catalog-check.mjs`; mevcut Playwright/Python smoke ve integration testlerini oku, gerekiyorsa ortamı kur, gerçek HTTPS origin ve IndexedDB testlerini ekle. Eski mock testleri gerçek cihaz doğrulaması diye adlandırma. Yeni işlev için regresyon testi yaz. CI çıktısı ve README/DENETIM güncel olsun.
+5. Her tamamlanan PR/iş sonunda Türkçe kısa rapor: yapılan, nasıl açılacağı, test edilen senaryolar, kalan engeller, veri değişikliği/migration, kararlar. Telefon bildirimi, canlı çeviri, mikrofon, iPad/Android gibi ortam bağımlı özellikler gerçekten test edilmediyse “doğrulanmadı” de. Çalışan uygulama önizlemesi sağla; tasarım resmi ile yetinme.
+
+İlk çalışma: tam denetim + P0 veri bütünlüğü ve depolama düzeltmeleri; mevcut temel v0.10 (c3545ff). Daha sonra gereksinim belgesindeki P1–P4. Depo boşsa bu paket kaynak kodudur; dosyaları ve kuralları mevcut branch'e al, örnek uygulama başlatma.
