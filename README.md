@@ -49,3 +49,13 @@ Controlled Chromium with mocked localStorage and blocked external requests: 16 s
 - Parallel TR-left/EN-right reading, selection translation, keyboard word selection, return from card to same book page.
 - Today → Yol Haritam: goal, period and date branches for all modules and agenda plans; date leaf routes to the appropriate study or workout. Daily/limit goal counts are days, not units.
 - Tests: syntax/catalog, 16-screen controlled browser smoke, duplicate prevention, source-linked completion, P90X routing, reader return, keyboard/selection, simulated dictionary and translation API responses and cache. Actual external services, native notifications and physical-device persistence are not verified.
+
+## P1 geliştirme dalını yerelde açma
+
+Depo dizininde `python -m http.server 8765 --bind 127.0.0.1` çalıştır ve [localhost:8765](http://127.0.0.1:8765) adresini aç. Yerel önizleme kendi tarayıcı depolama alanını kullanır. Mevcut kurulumun verileri farklı bir origin'deyse kayıtları yalnızca kendi yedeğin üzerinden içe aktarabilirsin.
+
+- **Bugün → Ara veya görev ekle**, varsayılan kısayol `Ctrl/⌘+K`.
+- **Hedeflerim → Yeni hedef → Süreye göre planla**, günlük bütçe ve birim tahminiyle toplam çalışma hedefi oluşturur.
+- **Ajanda**, erteleme geçmişini ve dört dönem görünümünde etkinlik süresini gösterir.
+- **Yaşam → Ayarlar → Görünüm ve komut kısayolu** görünüm tercihlerini kaydeder.
+- Kabul testi için Playwright ve Chromium ile `python tests/p1-studio.py` çalıştır.

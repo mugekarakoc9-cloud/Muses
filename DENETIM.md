@@ -59,3 +59,11 @@ Bozuk veya geçersiz localStorage kopyası bulunduğunda geçerli IndexedDB kopy
 | Düğmeler ve sade gezinme | Kısmi | Ayarlar'daki yinelenen yedek düğmeleri azaltıldı. Süre ayrıntısındaki tarih düğmesi ve DVD ayar düğmesinin erişilebilir adı güncellendi. Kalan ekranların görev bazlı etkileşim ve erişilebilirlik denetimi açık. |
 | Güvenli canlı önizleme | Bağlantı eksik | Bulut ortamında doğrulanmış bir HTTP önizleme portu yok. Uygulama özel veri içerdiğinden genel yayın yapılmadı. |
 | P2 öğrenme, P3 spor/yaşam, P4 üretim | Kısmi veya doğrulanmadı | Yukarıdaki v0.10 envanteri geçerli. PDF/EPUB ve OCR kapsamı, kaynak eşleştirmeleri, gerçek cihaz bildirimi, eşitleme ve asistan bağlantısı ayrıca doğrulanmalı. |
+
+## 25 Kasım 2026 — P1 geliştirme dalı
+
+- `node tests/check.mjs` ve `node tests/catalog-check.mjs` geçti.
+- `python tests/storage-recovery.py` gerçek Chromium localhost üzerinde bozuk kopyadan kurtarma, eski JSON, videolu yedek ve video baytları, geri alma ve yarıda kesilen geri yüklemeyi doğruladı.
+- `python tests/p1-studio.py` gerçek Chromium localhost üzerinde komut paleti, Türkçe görev taslağı, erteleme geçmişi, takvimde sürükleme, dakika bütçesi, plan çakışması, kalan programı yeniden dağıtma, ağaç yakınlaştırma, P90X 15. gün ekranı ve hareket kaydı, Flashcard ve P90X sürelerinin dört takvim görünümüne yansıması, yeniden açılış ve çevrimdışı PWA açılışını doğruladı. 16 ekranın koyu tema koşulu ve 390, 820, 1440 piksel genişliklerinde ana akışların taşma kontrolü yapıldı. Ana ekran ve hedef ağacı aynı üç genişlikte görsel olarak incelendi.
+- `tests/browser-smoke.py`, `tests/integration-v09.py`, `tests/integration-v010.py` ve `tests/providers-v010.py` geçti. Bunlar okuyucu/kaynak eşleşmesini, tekil okuma kaydını, kitap sözcüğü mükerrer kontrolünü ve benzetilmiş sözlük/çeviri sağlayıcısını kapsar.
+- Fiziksel Android/iPad, gerçek mikrofon ve TTS sesleri, gömülü haricî video oynatma ve eşzamanlı sekme kalıcılığı doğrulanmadı. Diğer açık P1 kapsamı şartnamedeki P1 tablosunda.

@@ -30,3 +30,14 @@
   transition-duration: 0s !important;
   scroll-behavior: auto !important;
 }
+body[data-theme="dark"] .mobileNav3 {
+  background: var(--panel5, #202634) !important;
+  border-color: var(--line);
+}
+body[data-theme="dark"] .mobileNav3 button {
+  color: var(--muted) !important;
+}
+body[data-theme="dark"] .mobileNav3 button.active {
+  background: var(--soft) !important;
+  color: var(--accent) !important;
+}
