@@ -42,3 +42,9 @@
 **Sınırlar:** önceden kayıtlı olmayan tanım/eş anlam/zıt anlam bilgisi sağlayıcının kapsamına bağlıdır; olmayan alanlar eksik olarak belirtilir. Tarayıcı Translator API desteklenmeyebilir. MyMemory ücretsiz kullanımında 5000 karakter/gün kotası ve istek başına 500 bayt sınırı vardır. Sonuçlar makine çevirisidir; kontrol ve düzenleme mümkündür. Ağ erişimi varsayılan kapalıdır. Taranmış PDF sayfaları metin seçimi/çeviri özelliğinden yararlanamaz. Önceki kitap ve medya kapsamı eksikleri, tam etimoloji, native bildirim, gerçek cihaz kalıcılığı ve cihazlar arası eşitleme devam ediyor.
 
 **Doğrulama:** kontrollü Chromium ortamında 16 ekran, mevcut/yeni ifade tekrar ekleme, özel kitap destesi, kitaba dönüş, klavye ve metin seçimi, hedef ağacı, P90X gününe geçiş, kaynak tamamlama, 390 px mobil görünüm test edildi. Sözlük/çeviri alan eşleştirmesi, önbellek ve hata yolu sahte servis yanıtlarıyla test edildi; gerçek ağ erişimi test edilmedi. GitHub deposu public ve yazma API çağrısı 403 döndü; kişisel veriler uzaktaki depoya gönderilmedi.
+
+## v0.10 P0 — Açılışta yerel kayıt kurtarma
+
+Bozuk veya geçersiz localStorage kopyası bulunduğunda geçerli IndexedDB kopyası, zaman damgası boş olan eski kayıtlar dahil, yeniden yüklenir. Geçersiz IndexedDB kopyası sırf daha yeni tarihli olduğu için geçerli yerel kaydın yerine geçmez. Depolama anahtarları ve veri şeması korunur.
+
+`python tests/storage-recovery.py` bu senaryoları Chromium'da gerçek localhost, localStorage ve IndexedDB üzerinden sınar. Bu test JSON yedeğinin içe aktarılmasını, medya kurtarmayı veya fiziksel cihaz kalıcılığını kapsamaz.
