@@ -23,3 +23,9 @@ Split the embedded personal catalog from reusable application code; add browser 
 - TickTick snapshot: 1–45 and 47 marked completed; task 46 is still open despite a completion-time field. The open task is seeded once, with the existing source scope. The four weekly selection checklist entries are provided as a reusable template, not new completed history.
 - Animated SVG companion, daily focus queue, scalable responsive UI, resource-specific learning path, local focus timer and clickable activity analytics. Keyboard: N new task, T today, O focus (outside input and flashcard views). Reduced-motion preference respected.
 - Offline cache version updated. Existing local backup key retained. Source-tree migration preserves exact matching titles and existing IDs when unambiguous; unmatched old completion IDs remain in the backup, not credited to different topics. Export a JSON backup before migrating. IndexedDB persistence and notifications still need on-device testing. Private project; do not publish the personal embedded data.
+
+## v0.8 — Integrity and offline atlas
+- Local atlas snapshot: 377 movement records, 3,034 transitions, 54 combos, 1,508 conditioning records, 18 family mappings. Distinguish published from other transition records; these source labels are not independent medical or movement validation.
+- Year view, fixed routine agenda, shared P90X/English habit summaries, direct resource completion dialog, correct plan-versus-unplanned metrics and plan-to-date adherence.
+- Reading monthly goal, 12-month personal photo journal, validated backup import with recovery snapshot, stable fullscreen host, live data-quality inventory.
+- See `DENETIM.md` for the full requirements audit, limitations and test coverage. The standalone file embeds private catalog data; use a private repository only.

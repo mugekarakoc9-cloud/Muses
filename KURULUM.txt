@@ -1,2 +1,4 @@
-MUSES v0.6 — Yerel öncelikli web uygulaması.
+MUSES v0.8 — Yerel öncelikli web uygulaması.
 HTML dosyasını tarayıcıda aç. Kalıcı depolama ve PWA için sabit bir HTTPS adresinde bu klasörü yayınla. iPad Safari: Ana Ekrana Ekle; Android Chrome: uygulama yükle. Eski sürümden JSON yedeği alıp Veriler ekranında yükle. Cihazlar arası senkronizasyon ve kapalıyken native bildirim yok. Video ve sözlük bağlantıları internet ister; yerel video ekleme sadece bu tarayıcıdaki IndexedDB’de saklanır. JSON yedeğine video dosyaları dahil değildir.
+
+Yeni sürüme geçerken önce eski sürümdeki JSON yedeğini indir. Uygulama içindeki Veriler ekranı son JSON içe aktarmasından önce kurtarma kopyası saklar (tarayıcı depolama izni gerekir).
