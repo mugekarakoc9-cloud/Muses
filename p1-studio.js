@@ -867,3 +867,56 @@ function installNotesMX(){
 }
 const previousStudioInstallerNotesMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerNotesMX();installNotesMX();};
+
+
+/* Persistent P90X media and set workspace. */
+function installTrainingWorkspaceMX(){
+ if(window.mxTrainingWorkspace)return;window.mxTrainingWorkspace=true;
+ const H=x=>esc(String(x??'')),K=x=>enc5(String(x??'')),D=x=>dec5(x);
+ const db=()=>S.mxTrainingWorkspace??={positions:{},chapters:{}};
+ const style=document.createElement('style');style.textContent=`
+ .mx-training-workspace{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+ .mx-training-player{position:sticky;top:0;min-width:0}
+ .mx-training-player video,.mx-training-player iframe{width:100%;aspect-ratio:16/9;display:block;border:0;border-radius:12px;background:#20202a}
+ .mx-training-rows{max-height:64vh;overflow:auto;min-width:0}
+ .mx-training-set{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
+ .mx-training-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(67px,1fr));gap:7px;margin:8px 0}
+ .mx-training-fields input{min-width:0;width:100%;box-sizing:border-box}
+ .mx-training-set textarea{width:100%;box-sizing:border-box}
+ @media(max-width:720px){.mx-training-workspace{grid-template-columns:1fr}.mx-training-player{position:sticky;top:0;z-index:2;background:var(--paper)}.mx-training-rows{max-height:48vh}}
+ `;document.head.append(style);
+ let localURL=null,workspace=null;
+ function clearMedia(){if(workspace?.video){workspace.video.pause();remember();}if(localURL){URL.revokeObjectURL(localURL);localURL=null;}workspace=null;}
+ function remember(){if(!workspace?.video)return;const t=workspace.video.currentTime;if(Number.isFinite(t)){db().positions[workspace.key]=t;save();}}
+ function stableEntry(run,day){return v2().p90[String(run)+'-'+day]??={};}
+ function values(d,n){return (P90_MOVES[d]||[]).map((name,i)=>({name,key:d+'-'+i,index:i}));}
+ function previous(run,n,key){for(let day=n-1;day>=1;day--){const a=v2().p90[String(run)+'-'+day]?.moves?.[key];if(a&&['reps','right','left','kg','seconds'].some(k=>a[k]!==undefined&&a[k]!==''))return {day,...a};}return null;}
+ const fields=[['reps','Tekrar',1],['right','Sağ',1],['left','Sol',1],['kg','Kg',.1],['seconds','Sn',1],['rpe','RPE',1],['rest','Mola sn',1]];
+ function rows(d,n,run){return values(d,n).map(x=>{const a=stableEntry(run,n).moves?.[x.key]||{},p=previous(run,n,x.key),stamp=db().chapters[d]?.[x.key];return `<article class="mx-training-set" data-occurrence="${H(x.key)}"><b>${x.index+1}. ${H(x.name)}</b><label><input type="checkbox" data-field="done" ${a.done?'checked':''}> Tamamlandı</label>${p?`<small>Önceki gün ${p.day} · ${fields.filter(([k])=>p[k]!==undefined&&p[k]!=='').map(([k,t])=>H(t+': '+p[k])).join(' · ')}</small>`:''}<div class="mx-training-fields">${fields.map(([k,t,step])=>`<label>${t}<input type="number" data-field="${k}" min="0" ${k==='rpe'?'max="10"':''} step="${step}" value="${H(a[k]??'')}"></label>`).join('')}</div><label>Not / değişiklik<textarea data-field="note" rows="2" maxlength="1000">${H(a.note||'')}</textarea></label><div class="mx-palace-tools"><button data-stamp="${H(x.key)}">Bu hareketin video zamanını kaydet</button><button data-seek="${H(x.key)}" ${Number.isFinite(stamp)?'':'disabled'}>${Number.isFinite(stamp)?Math.floor(stamp/60)+':'+String(Math.floor(stamp%60)).padStart(2,'0')+' · Git':'Zaman yok'}</button></div></article>`;}).join('')||'<p>Bu DVD için hareket verisi yok.</p>';}
+ window.mxTrainingSettings=function(d){if(!DVD[d])return;clearMedia();modal5(`<div class="modalhead5"><h2>DVD ${d} · ${H(DVD[d])}</h2><button onclick="close5()">×</button></div><form id="mx-training-link"><label>YouTube / Dailymotion / HTTPS MP4<input name="url" type="url" value="${H(v6().videoLinks[d]||'')}"></label>${d===1?'<small>Gönderdiğin birleşik Chest & Back + Ab Ripper X bağlantısı: <button type="button" id="mx-training-suggest">Adresini kullan</button></small>':''}<p class="muted">Gömme izni olan yayınları veya yetkili yerel dosyalarını kullan. Yerel dosya varsa önceliklidir.</p><button class="primary">Bağlantıyı kaydet</button></form><label>Yerel video <input type="file" id="mx-training-file" accept="video/*,.mp4,.webm"></label><button onclick="removeLocalVideo6(${d})">Yerel videoyu kaldır</button>`);
+ const f=document.querySelector('#mx-training-link'),suggest=document.querySelector('#mx-training-suggest');if(suggest)suggest.onclick=()=>{f.elements.url.value='https://www.dailymotion.com/video/x941iya';};
+ f.onsubmit=e=>{e.preventDefault();const raw=f.elements.url.value.trim(),m=raw?pathVideoMX(raw):null;if(raw&&(!m||m.kind==='audio'))return toast('Geçerli video adresi gir.');if(m)v6().videoLinks[d]=raw;else delete v6().videoLinks[d];save();close5();render();};
+ document.querySelector('#mx-training-file').onchange=e=>{const f=e.target.files[0];if(f)saveLocalVideo6(f,d);};};
+ const oldSet=setDVD6;setDVD6=function(d){return window.mxTrainingSettings(d);};
+ playDVD6=async function(d){
+  if(!DVD[d])return;clearMedia();
+  const n=pday,run=v2().p90Run,key=String(run)+'-'+n+'-'+d;
+  modal5(`<div class="modalhead5"><div><small>P90X · TUR ${run} · GÜN ${n}</small><h2>DVD ${d} · ${H(DVD[d])}</h2></div><button onclick="close5()">×</button></div><div class="mx-training-workspace" id="mx-training-workspace"><section class="mx-training-player card"><div data-player><p>Medya yükleniyor…</p></div><div class="mx-palace-tools"><button onclick="mxStartLinkedFocus('p90','${n}')">◷ Antrenman süresini başlat</button><button onclick="mxStopLinkedFocus('p90','${n}')">Süreyi kaydet</button><button onclick="mxTrainingSettings(${d})">Medya ayarları</button></div><p class="muted">Set kaydı oynatıcıyı yenilemez. Hareket zamanlarını yerel videoda kendin kaydedebilirsin. Boş ve sıfır ayrı değerlerdir.</p><p data-training-status role="status"></p></section><section class="mx-training-rows" aria-label="Antrenman kayıtları">${rows(d,n,run)}</section></div>`);
+  const host=document.querySelector('#mx-training-workspace');workspace={host,key,d,n,run,video:null};
+  const state=workspace,player=host.querySelector('[data-player]'),status=host.querySelector('[data-training-status]');
+  host.querySelector('.mx-training-rows').addEventListener('change',e=>{const el=e.target.closest('[data-field]'),row=el?.closest('[data-occurrence]');if(!row)return;const k=el.dataset.field,entry=stableEntry(run,n),a=(entry.moves??={})[row.dataset.occurrence]??={};if(k==='done')a[k]=el.checked;else if(k==='note')a[k]=el.value.slice(0,1000);else if(el.value==='')delete a[k];else {const v=Number(el.value);if(!Number.isFinite(v)||v<0||k==='rpe'&&v>10){el.value=a[k]??'';return toast('Geçerli miktar gir.');}a[k]=v;}a.date=today();save();status.textContent='Set kaydedildi · '+row.dataset.occurrence;});
+  host.querySelector('.mx-training-rows').addEventListener('click',e=>{const stamp=e.target.closest('[data-stamp]'),seek=e.target.closest('[data-seek]');if(stamp){if(!state.video)return toast('Zaman eşleştirme yerel/doğrudan videoda kullanılabilir.');const v=Math.floor(state.video.currentTime);(db().chapters[d]??={})[stamp.dataset.stamp]=v;save();const btn=stamp.nextElementSibling;btn.disabled=false;btn.textContent=Math.floor(v/60)+':'+String(v%60).padStart(2,'0')+' · Git';}if(seek&&state.video){const t=db().chapters[d]?.[seek.dataset.seek];if(Number.isFinite(t))state.video.currentTime=t;}});
+  let blob;try{blob=await get6('media','p90-'+d);}catch{}
+  if(workspace!==state||!host.isConnected)return;
+  const m=pathVideoMX(v6().videoLinks[d]||'');
+  if(blob instanceof Blob||m?.kind==='video'){
+   const v=document.createElement('video');v.controls=true;v.playsInline=true;v.preload='metadata';if(blob instanceof Blob){localURL=URL.createObjectURL(blob);v.src=localURL;}else v.src=m.src;state.video=v;player.replaceChildren(v);
+   v.onloadedmetadata=()=>{const t=db().positions[key];if(Number.isFinite(t)&&t<v.duration)v.currentTime=t;};let last=0;v.ontimeupdate=()=>{if(Date.now()-last>10000){last=Date.now();remember();}};v.onpause=remember;v.onerror=()=>{status.textContent='Bu video biçimi cihazda oynatılamadı.';};
+  }else if(m?.kind==='embed'){const frame=document.createElement('iframe');frame.src=m.src;frame.title=DVD[d];frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';player.replaceChildren(frame);}
+  else player.innerHTML='<p>Bu DVD için video henüz kaydedilmemiş.</p><button onclick="mxTrainingSettings('+d+')">Video ekle</button>';
+ };
+ document.querySelector('#dialog5')?.addEventListener('close',clearMedia);window.addEventListener('pagehide',remember);
+ const oldP90=p90View;p90View=function(){return `<section class="card"><h3>12 DVD · Medya ve set stüdyosu</h3><div class="mx-palace-tools">${Array.from({length:12},(_,i)=>i+1).map(d=>`<button onclick="playDVD6(${d})" title="${H(DVD[d])}">DVD ${d} ${v6().mediaNames[d]||v6().videoLinks[d]?'· hazır':'· ekle'}</button>`).join('')}</div><small>Kaynak sırasındaki setleri oynatıcıyla birlikte kaydet. Video sağlanmamışsa kayıt alanı yine kullanılabilir.</small></section>`+oldP90();};
+}
+const previousStudioInstallerTrainingMX=installStudioP1;
+installStudioP1=function(){previousStudioInstallerTrainingMX();installTrainingWorkspaceMX();};
