@@ -19,7 +19,7 @@ with ThreadingHTTPServer(
         page.route("**/*", lambda route: route.continue_() if
                    route.request.url.startswith(origin + "/") else route.abort())
         page.goto(origin)
-        page.wait_for_function("db6 !== null")
+        page.wait_for_function("typeof db6 !== 'undefined' && db6 !== null")
         page.evaluate("""async () => {
             S.tasks.push({id:'recovery-test', title:'Recovery test', date:'2026-11-25'});
             await put6('state', 'snapshot', {savedAt:'', state:S});
@@ -28,7 +28,7 @@ with ThreadingHTTPServer(
         for broken_copy in ("{broken", '{"tasks":null}'):
             page.evaluate("(raw) => localStorage.setItem('muses-life-v1', raw)", broken_copy)
             page.reload()
-            page.wait_for_function("S.tasks.some(task => task.id === 'recovery-test')")
+            page.wait_for_function("typeof S !== 'undefined' && S.tasks.some(task => task.id === 'recovery-test')")
             assert page.evaluate("""JSON.parse(localStorage.getItem('muses-life-v1'))
                 .tasks.some(task => task.id === 'recovery-test')""")
 
@@ -37,7 +37,7 @@ with ThreadingHTTPServer(
             await put6('state', 'snapshot', {savedAt:'2099-01-01', state:wrong});
         }""")
         page.reload()
-        page.wait_for_function("db6 !== null")
+        page.wait_for_function("typeof db6 !== 'undefined' && db6 !== null")
         assert page.evaluate("S.tasks.some(task => task.id === 'recovery-test')")
         page.on("dialog", lambda dialog: dialog.accept())
         page.evaluate("""async () => {
@@ -62,7 +62,7 @@ with ThreadingHTTPServer(
             await importFile(new File([JSON.stringify(testBackup)],'full.json'));
         }""")
         page.reload()
-        page.wait_for_function("db6 && S.tasks.some(task => task.id === 'imported')")
+        page.wait_for_function("typeof db6 !== 'undefined' && db6 && S.tasks.some(task => task.id === 'imported')")
         assert page.evaluate("async () => (await get6('media','p90-1')).text()") == "replacement"
         assert page.evaluate("async () => (await get6('media','p90-2')).text()") == "new"
         page.evaluate("recover8()")
@@ -92,7 +92,7 @@ with ThreadingHTTPServer(
         assert page.evaluate("S.tasks.some(task => task.id === 'recovery-test')")
         assert page.evaluate("async () => (await get6('media','p90-1')).text()") == "existing"
         page.reload()
-        page.wait_for_function("db6 && S.tasks.some(task => task.id === 'recovery-test')")
+        page.wait_for_function("typeof db6 !== 'undefined' && db6 && S.tasks.some(task => task.id === 'recovery-test')")
         page.evaluate("""async () => {
             const invalid=structuredClone(S);
             invalid.tasks=[...invalid.tasks,invalid.tasks[0]];
@@ -105,7 +105,7 @@ with ThreadingHTTPServer(
             await importFile(new File([JSON.stringify(legacy)],'legacy.json'));
         }""")
         page.reload()
-        page.wait_for_function("db6 && S.tasks.some(task => task.id === 'legacy')")
+        page.wait_for_function("typeof db6 !== 'undefined' && db6 && S.tasks.some(task => task.id === 'legacy')")
         assert page.evaluate("async () => (await get6('media','p90-1')).text()") == "existing"
         page.evaluate("removeLocalVideo6(1)")
         assert page.evaluate("async () => (await get6('media','p90-1')) === undefined")

@@ -1,4 +1,5 @@
 """Exercise P1 features over a localhost origin with real browser storage."""
+from fixture_app import import_pack, wait_ready
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -19,7 +20,8 @@ with ThreadingHTTPServer(('127.0.0.1', 0), handler) as server, sync_playwright()
     page.on('pageerror', lambda error: errors.append(str(error)))
     page.route('**/*', lambda route: route.continue_() if route.request.url.startswith(origin + '/') else route.abort())
     page.goto(origin)
-    page.wait_for_function("db6 !== null")
+    wait_ready(page)
+    import_pack(page)
     assert not errors, errors
     page.keyboard.press('Control+k')
     page.get_by_role('textbox', name='Arama veya yeni görev').fill('Yarın 18:30 piyano')
@@ -51,7 +53,7 @@ with ThreadingHTTPServer(('127.0.0.1', 0), handler) as server, sync_playwright()
 
     page.evaluate("""() => {
         selected = today();
-        const resource = resourceRows().find(x => x.title.includes('Fono'));
+        const resource = resourceRows().find(x => x.id==='test-lessons');
         go('goals');
         resourceGoal6(resource.id);
     }""")
@@ -151,8 +153,63 @@ with ThreadingHTTPServer(('127.0.0.1', 0), handler) as server, sync_playwright()
             if screen in ['home','english']:
                 page.wait_for_timeout(300)
                 page.screenshot(path=str(artifacts / f'p1-{screen}-{width}.png'))
+    page.set_viewport_size({'width': 1440, 'height': 960})
+    page.evaluate("go('flash');tab4='roots';rootSel4=[...root4].find(([,keys])=>keys.length>=3)[0];render()")
+    graph = page.locator('#rootSvg6')
+    word = graph.locator('.rootnode6').first
+    neighbor = graph.locator('.rootnode6').nth(1)
+    word.scroll_into_view_if_needed()
+    bounds = word.bounding_box()
+    x, y = bounds['x'] + bounds['width'] / 2, bounds['y'] + bounds['height'] / 2
+    page.mouse.move(x, y)
+    page.mouse.down()
+    page.mouse.move(x + 54, y + 33, steps=8)
+    page.mouse.up()
+    assert word.get_attribute('transform')
+    assert neighbor.get_attribute('transform')
+    assert graph.locator('#edge6-1').get_attribute('x2') != neighbor.get_attribute('data-x')
+    assert page.evaluate("tab4 === 'roots'")
+    before_zoom = graph.locator('#networkGroup6').get_attribute('transform')
+    page.mouse.wheel(0, -180)
+    page.wait_for_function("(before)=>document.querySelector('#networkGroup6').getAttribute('transform')!==before",arg=before_zoom)
+    graph.screenshot(path=str(artifacts / 'issue1-root-1440.png'))
+    word.click()
+    assert not graph.is_visible()
+    page.get_by_role('button', name='Kelime Evreni').click()
+    tile = page.locator('.universe-tile[data-grade="0"]').first
+    key = tile.get_attribute('data-card')
+    tile.focus()
+    assert 'Çalışılmadı' in page.locator('.universe-detail').inner_text()
+    tile.press('Enter')
+    assert page.evaluate('key4(cur4())') == key
+    page.evaluate('rating4(4)')
+    page.get_by_role('button', name='Kelime Evreni').click()
+    assert page.locator('.universe-tile').evaluate_all(
+        '(tiles,key)=>tiles.find(tile=>tile.dataset.card===key).dataset.grade', key
+    ) == '4'
+    today_date = page.evaluate('today()')
+    previous_date = page.evaluate('add(today(),-1)')
+    assert page.locator('.review-heatmap button').count() == 84
+    today_count = page.evaluate("S.reviews.filter(row=>row.date===today()).length")
+    previous_count = page.evaluate("S.reviews.filter(row=>row.date===add(today(),-1)).length")
+    assert page.locator('[data-review-summary]').inner_text().endswith(f'· {today_count} tekrar')
+    day_cell = page.locator(f'[data-review-date="{today_date}"]')
+    assert day_cell.get_attribute('data-intensity') != '0'
+    page.locator(f'[data-review-date="{previous_date}"]').click()
+    assert page.locator('[data-review-summary]').inner_text().endswith(f'· {previous_count} tekrar')
+    day_cell.press('Enter')
+    assert page.locator('[data-review-summary]').inner_text().endswith(f'· {today_count} tekrar')
+    assert day_cell.get_attribute('aria-pressed') == 'true'
+    word = page.evaluate("(key)=>by4.get(key)['Word / Phrase']", key)
+    page.locator('.review-words button').filter(has_text=word).last.click()
+    assert page.evaluate('key4(cur4())') == key
+    page.get_by_role('button', name='Kelime Evreni').click()
+    for width in (390,820,1440):
+        page.set_viewport_size({'width':width,'height':900})
+        assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+        page.screenshot(path=str(artifacts / f'universe-{width}.png'))
     page.reload()
-    page.wait_for_function("db6 !== null")
+    wait_ready(page)
     assert page.evaluate("S.tasks.find(t=>t.title==='piyano').date") == drop_date
     assert page.evaluate("seconds9(today(),'p90','15')") >= 1
     assert page.evaluate("seconds9(today(),'vocab')") >= 1
@@ -166,6 +223,7 @@ with ThreadingHTTPServer(('127.0.0.1', 0), handler) as server, sync_playwright()
     offline_page.wait_for_function("navigator.serviceWorker.controller !== null")
     offline.set_offline(True)
     offline_page.reload()
+    wait_ready(offline_page)
     assert offline_page.get_by_role('button', name='Ara veya görev ekle').is_visible()
     assert offline_page.evaluate("typeof installPlanningP1 === 'function' && typeof installActivityP1 === 'function'")
     browser.close()

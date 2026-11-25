@@ -1,8 +1,9 @@
+from fixture_app import open_app, import_pack
 from playwright.sync_api import sync_playwright
 from pathlib import Path
 D=Path(__file__).resolve().parents[1];h=(D/'index.html').read_text();w=D/'tests/artifacts';w.mkdir(parents=True,exist_ok=True)
 with sync_playwright() as p:
- b=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage']);pg=b.new_page(viewport={'width':1440,'height':960});errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));pg.route('**/*',lambda r:r.abort());pg.set_content(h.replace('<script>','<script>const __mock={};Object.defineProperty(window,"localStorage",{value:{getItem:k=>__mock[k]||null,setItem:(k,v)=>__mock[k]=v}});</script><script>',1),wait_until='domcontentloaded');pg.evaluate('openReader9("reader-sherlock-holmes-two-plays");readerPage9(4)')
+ b=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox','--disable-dev-shm-usage']);pg=b.new_page(viewport={'width':1440,'height':960});errs=[];pg.on('pageerror',lambda e:errs.append(str(e)));open_app(pg);import_pack(pg);pg.evaluate('openReader9("test-book");readerPage9(4)')
  # Verify actual selection and keyboard navigation (no network yet).
  pg.locator('.readerWord10').first.focus();pg.keyboard.press('ArrowRight');assert pg.evaluate('document.activeElement.classList.contains("readerWord10")');pg.keyboard.press('Enter');assert pg.locator('#lens10').count()==1;pg.keyboard.press('Escape');assert pg.locator('#lens10').count()==0
  pg.evaluate('''(()=>{let a=document.querySelector('.readerPara10'),s=getSelection(),r=document.createRange();r.setStart(a.firstChild,0);r.setEnd(a.lastChild.previousSibling,a.lastChild.previousSibling.textContent.length);s.removeAllRanges();s.addRange(r);readerWord9()})()''');assert pg.locator('#lens10').count()==1;pg.evaluate('closeLens10();getSelection().removeAllRanges()');print('keyboard + selection PASS',flush=True)

@@ -8,5 +8,16 @@ private/
 backups/
 
 tests/screenshots/
-
 tests/artifacts/
+*.catalog.json
+*.bundle
+*.epub
+*.pdf
+*.mp4
+*.webm
+*.xlsx
+*.zip
+__pycache__/
+muses-catalog-*.json
+muses-backup-*.json
+muses-tam-yedek-*.json
