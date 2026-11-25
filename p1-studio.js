@@ -1113,3 +1113,57 @@ function installCelebrationsMX(){
 }
 const previousStudioInstallerCelebrationsMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerCelebrationsMX();installCelebrationsMX();};
+
+
+/* Focus workspace: keep the actual working DOM in place, hide only unrelated siblings. */
+function installQuietWorkspaceMX(){
+ if(window.mxQuietReady)return;window.mxQuietReady=true;
+ let mode='',suppressed='',bar=null,lastView='',catWired=null;
+ const pref=()=>S.mxQuiet??={};
+ const keep='.mx-focus-dock,.mx-floating-cat,.mx-celebration,.mx-mimo-reward,dialog,[role="alert"],[role="status"],script,style,link';
+ function clear(){for(const n of document.querySelectorAll('.mx-quiet-hide,.mx-quiet-ancestor,.mx-quiet-work'))n.classList.remove('mx-quiet-hide','mx-quiet-ancestor','mx-quiet-work');delete document.body.dataset.mxQuiet;bar?.remove();bar=null;}
+ function candidate(){
+  if(view==='resources'){const e=document.querySelector('.mx-lesson-layout');if(e)return ['lesson',e];}
+  if(view==='library'&&v9().readerId){const p=document.querySelector('.readerPage9'),t=document.querySelector('.readerTools9');if(p){let root=p.parentElement;while(root&&t&&!root.contains(t)&&root.id!=='app')root=root.parentElement;return ['reader',root||p];}}
+  if(view==='flash'&&tab4==='study'){const e=document.querySelector('#fcstudio4');if(e)return ['flash',e];}
+  return ['',null];
+ }
+ function leave(){
+  const previous=mode;clear();suppressed=previous;mode='';
+  if(previous==='reader'){readerStop9();v9().readerId='';save();go('library');}
+  else if(previous==='lesson'){const r=resourceRows().find(x=>x.id===String(sourceSelected||'').split('~')[0]);if(r&&window.mxPalaceOpen)window.mxPalaceOpen(enc5(r.id));else go('resources');}
+  else if(previous==='flash'){if(S.mxFocus?.flash&&window.mxStopFocus)window.mxStopFocus();go('home');}
+ }
+ window.mxExitQuiet=leave;
+ function apply(){
+  const [next,root]=candidate();clear();if(!next){suppressed='';mode='';lastView=view;return;}if(view!==lastView){suppressed='';lastView=view;}if(suppressed===next)return;mode=next;
+  document.body.dataset.mxQuiet=next;root.classList.add('mx-quiet-work');
+  let child=root;while(child&&child!==document.body){const parent=child.parentElement;if(!parent)break;parent.classList.add('mx-quiet-ancestor');for(const s of parent.children){if(s===child||s.matches(keep)||s.querySelector('dialog[open]'))continue;if(next==='reader'&&s.matches('.readerTools9,.readerPage9,.mx-original-controls,[data-mx-audio]'))continue;if(next==='flash'&&s.matches('.mx-flash-session'))continue;s.classList.add('mx-quiet-hide');}child=parent;}
+  if(next==='reader'&&root.id==='app')for(const el of root.children){if(el.matches('.mx-note-tools,.importReader9,.readerShelf9,.mx-flash-history'))el.classList.add('mx-quiet-hide');}
+  bar=document.createElement('div');bar.className='mx-quiet-bar';const exit=document.createElement('button');exit.type='button';exit.textContent='‹ Çalışmadan çık';exit.onclick=leave;const title=document.createElement('strong');title.textContent=next==='reader'?'Okuma alanı':next==='lesson'?'Ders çalışma alanı':'Flashcard çalışma alanı';const tools=document.createElement('button');tools.textContent='◷ Pomodoro';tools.onclick=()=>focusOpen7();bar.append(exit,title,tools);root.before(bar);
+ }
+ function month(){
+  const cells=[...document.querySelectorAll('.cell5')];if(cells.length<28)return;
+  const parents=new Map();for(const cell of cells)parents.set(cell.parentElement,(parents.get(cell.parentElement)||0)+1);
+  const grid=[...parents].sort((a,b)=>b[1]-a[1])[0];if(!grid||grid[1]<28)return;
+  grid[0].classList.add('mx-month-grid');grid[0].parentElement?.classList.add('mx-month-shell');
+  for(const cell of cells){if(cell.dataset.mxMonthReady)return;cell.dataset.mxMonthReady='1';const events=[...cell.querySelectorAll('.event5')];for(const e of events){e.title=(e.innerText||e.textContent).trim();e.classList.add('mx-month-event');}
+   if(events.length>3){for(const e of events.slice(3))e.hidden=true;const more=document.createElement('button');more.className='mx-month-more';more.textContent='+'+(events.length-3)+' kayıt';more.onclick=()=>{for(const e of events)e.hidden=false;more.remove();};cell.append(more);}
+  }
+ }
+ function wireCat(){
+  const cat=document.querySelector('.mx-floating-cat');if(!cat||catWired===cat)return;catWired=cat;let drag=null,swallow=false;
+  function place(p){if(!p)return;cat.dataset.mxPinned='yes';cat.style.setProperty('left',Math.max(0,Math.min(innerWidth-cat.offsetWidth,p.x))+'px','important');cat.style.setProperty('top',Math.max(0,Math.min(innerHeight-cat.offsetHeight,p.y))+'px','important');cat.style.setProperty('bottom','auto','important');}
+  place(pref().catPosition);
+  cat.addEventListener('pointerdown',e=>{if(e.button!==0)return;const b=cat.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX,y:e.clientY,l:b.left,t:b.top};swallow=false;cat.setPointerCapture(e.pointerId);});
+  cat.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;if(!swallow&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<6)return;swallow=true;cat.dataset.mxDragging='yes';pref().catPosition={x:drag.l+e.clientX-drag.x,y:drag.t+e.clientY-drag.y};place(pref().catPosition);});
+  const end=()=>{if(!drag)return;drag=null;delete cat.dataset.mxDragging;if(swallow)save();};cat.addEventListener('pointerup',end);cat.addEventListener('pointercancel',end);cat.addEventListener('click',e=>{if(swallow){e.preventDefault();e.stopImmediatePropagation();swallow=false;}},true);
+  window.addEventListener('resize',()=>place(pref().catPosition));
+  window.mxResumeCatWalk=()=>{delete pref().catPosition;delete cat.dataset.mxPinned;for(const k of ['left','top','bottom'])cat.style.removeProperty(k);save();};
+ }
+ const oldSettings=settings;settings=function(){return '<section class="card"><h3>Çalışma alanı</h3><p>Bir ders, kitap veya Flashcard çalışması açıldığında diğer menüler gizlenir.</p><button onclick="mxResumeCatWalk()">Mimo serbest yürüsün</button></section>'+oldSettings();};
+ const oldRender=render;render=function(){oldRender();apply();month();wireCat();};
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mode&&!document.querySelector('dialog[open]')&&!e.target.closest?.('input,textarea,select')){e.preventDefault();leave();}});
+}
+const previousStudioInstallerQuietMX=installStudioP1;
+installStudioP1=function(){previousStudioInstallerQuietMX();installQuietWorkspaceMX();};
