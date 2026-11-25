@@ -17,3 +17,9 @@ Connect the previously missing manifest and service worker registration; use a v
 ## Next
 
 Split the embedded personal catalog from reusable application code; add browser regression tests and a native notification layer. Expand verified source hierarchies, media and dictionary metadata. Direct assistant integration is not implemented.
+
+## 0.7 — Daily Studio / Learning Quest
+- One-time local catalog snapshot: English Main Plan, ALL RESOURCES and _CATALOG; 2,465 populated source rows, one exact duplicate removed. 59 source groups enriched, existing resource IDs retained, 67 sources overall. 2,788 currently trackable units across all sources, including numbered/plan-only units retained from earlier versions. Some Drive entries are only group labels or approximate page ranges; this is not a claim that every book's table of contents is complete.
+- TickTick snapshot: 1–45 and 47 marked completed; task 46 is still open despite a completion-time field. The open task is seeded once, with the existing source scope. The four weekly selection checklist entries are provided as a reusable template, not new completed history.
+- Animated SVG companion, daily focus queue, scalable responsive UI, resource-specific learning path, local focus timer and clickable activity analytics. Keyboard: N new task, T today, O focus (outside input and flashcard views). Reduced-motion preference respected.
+- Offline cache version updated. Existing local backup key retained. Source-tree migration preserves exact matching titles and existing IDs when unambiguous; unmatched old completion IDs remain in the backup, not credited to different topics. Export a JSON backup before migrating. IndexedDB persistence and notifications still need on-device testing. Private project; do not publish the personal embedded data.
