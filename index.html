@@ -59,7 +59,55 @@ body[data-theme="dark"] .card,body[data-theme="dark"] .pathHero7,body[data-theme
 body[data-theme="dark"] h1,body[data-theme="dark"] h2,body[data-theme="dark"] h3,body[data-theme="dark"] h4,body[data-theme="dark"] #heading{color:#eef1f7!important}body[data-theme="dark"] button:disabled{color:#aab5c6!important;opacity:.75}body[data-theme="dark"] header button{background:#30384b;color:#eef1f7}body[data-theme="dark"] .areaTabs9 button{color:#c8d0df}body[data-theme="dark"] .areaTabs9 button.on{color:#d2c7ff}
 /* The desktop sidebar already lists every page in the active area. */
 @media (min-width: 921px){.areaTabs9{display:none}}
-</style></head><body><div class="shell"><aside class="side"><div class="brand">muses ✦</div><small>LIFE STUDIO · your own rhythm</small><nav id="nav" class="nav"></nav></aside><main><div class="top"><div><div class="muted" id="dateLabel"></div><h1 id="heading"></h1></div><button onclick="go('settings')" title="Ayarlar">⚙</button></div><div id="app"></div></main></div><nav id="mobileNav3" class="mobileNav3" aria-label="Hızlı erişim"></nav><dialog id="mediaDialog3" onclose="this.innerHTML=''"></dialog><dialog id="dialog5"></dialog><div id="celebrate5" aria-live="polite"></div><div id="toast" role="status"></div><input type="file" id="file" hidden accept=".csv,.json" onchange="importFile(this.files[0])"><script>
+
+/* A quiet, high-contrast workspace with a dedicated daily dashboard. */
+body[data-theme="light"]{
+  --bg:#f4f2f8;--paper:#fff;--ink:#262139;--muted:#625b73;
+  --accent:#604493;--soft:#ede6fa;--line:#e3ddeb;--surface9:#fff;
+}
+.shell main{width:100%;min-width:0}
+.top #dateLabel{font-size:.82rem;letter-spacing:.015em}
+.top #heading{margin:.2rem 0 0;line-height:1.15}
+.top>button{display:grid;place-items:center;width:44px;height:44px;border-radius:13px}
+.hero7{
+  min-height:278px;padding:clamp(24px,4vw,52px);gap:clamp(14px,3vw,38px);
+  border-radius:28px;
+  background:radial-gradient(ellipse at 72% 22%,#705297 0,transparent 55%),
+    linear-gradient(115deg,#29213f,#483364 76%,#3c3059);
+  box-shadow:0 18px 36px #30234329;
+}
+.hero7 .heroCopy7 h2{color:#faf5ff;max-width:13ch;margin:0 0 14px;font-size:clamp(2rem,4.1vw,4.15rem);line-height:1.02;letter-spacing:-.055em}
+.hero7 .heroButton7,.hero7 .ghost7{min-height:44px}
+.heroMini7{font-size:.8rem;color:#f0e6fd}
+.mobileProgress{display:none}
+.heroArt7 .orbit7{border-color:#e3cdfc48}
+.heroArt7 .heroCat7{filter:drop-shadow(0 14px 18px #1a102866)}
+.cockpit7{gap:18px}
+.cockpit7>.card{padding:clamp(16px,2.2vw,25px);border-radius:21px}
+.cockpit7 .sectionHead7 h2{margin:0;font-size:1.25rem}
+.cockpit7 .sectionHead7 button{flex-shrink:0;min-height:40px}
+.focusCard7 .event5{margin-block:7px}
+.shortcuts7.card{padding:12px;border-radius:20px}
+.shortcuts7 button{min-height:68px;border-radius:14px}
+.shortcuts7 button span{font-size:1.3rem}
+.smartbar6 input{min-width:0}
+.smartbar6 :is(button,input){min-height:42px}
+body[data-theme="dark"] .hero7{background:radial-gradient(ellipse at 72% 22%,#503a73 0,transparent 58%),linear-gradient(115deg,#201a32,#38284e)}
+@media (min-width:921px){
+  .shell{grid-template-columns:226px minmax(0,1fr)}
+  .shell main{padding-inline:clamp(24px,4vw,68px)}
+}
+@media (max-width:700px){
+  .hero7{min-height:0;padding:20px;gap:10px;border-radius:22px}
+  .heroArt7{height:126px}
+  .hero7 .heroCopy7 h2{font-size:clamp(1.65rem,6vw,2.5rem);margin-bottom:12px}
+  .hero7 .heroButton7,.hero7 .ghost7{padding-inline:11px}
+  .heroMini7{font-size:.72rem}
+  .mobileProgress{display:inline}
+  .cockpit7{gap:12px}
+}
+@media (max-width:350px){.hero7{grid-template-columns:minmax(0,1fr) 70px;padding:16px}}
+</style></head><body><div class="shell"><aside class="side"><div class="brand">muses ✦</div><small>LIFE STUDIO · your own rhythm</small><nav id="nav" class="nav"></nav></aside><main><div class="top"><div><div class="muted" id="dateLabel"></div><h1 id="heading"></h1></div><button onclick="go('settings')" title="Ayarlar" aria-label="Ayarlar">⚙</button></div><div id="app"></div></main></div><nav id="mobileNav3" class="mobileNav3" aria-label="Hızlı erişim"></nav><dialog id="mediaDialog3" onclose="this.innerHTML=''"></dialog><dialog id="dialog5"></dialog><div id="celebrate5" aria-live="polite"></div><div id="toast" role="status"></div><input type="file" id="file" hidden accept=".csv,.json" onchange="importFile(this.files[0])"><script>
 const istanbulDate=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'});
 const $=s=>document.querySelector(s), esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])), day=d=>{let a=d instanceof Date?d:new Date(d+'T12:00:00');return [a.getFullYear(),String(a.getMonth()+1).padStart(2,'0'),String(a.getDate()).padStart(2,'0')].join('-')}, today=()=>istanbulDate.format(new Date()), add=(d,n)=>{let a=new Date(d+'T12:00:00');a.setDate(a.getDate()+n);return day(a)}, uid=()=>globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random(), cloud=typeof google!=='undefined'&&!!google.script?.run;
 const sources={vocabulary:'https://docs.google.com/spreadsheets/d/1WpgnE7x2qeEhsUX_I1Z-6BXQrJgxrTyfwxOWklH5kLk/edit',vocat:'https://docs.google.com/spreadsheets/d/10XTHwZYoAobvtr2N9sBDoy9I9Mj0meYsUskGMkV-q7o/edit',pole:'https://docs.google.com/spreadsheets/d/1SP-HlRTRAB7ev7tsjmTZVNSznjJWiyGN1NRJ2umjIcs/edit',atlas:'https://docs.google.com/spreadsheets/d/19poZlnm8kdYrnF2MAms48Vu3h-r9rXU-iihC5Gs89Zs/edit',notion:'https://app.notion.com/p/421ac1fae85981759730e74e5ebd6665'};
@@ -647,7 +695,7 @@ function pathView7(){let r=resourceRows().find(x=>x.id===pathSource7)||resourceR
 let pathSource7=RESOURCE_SEED[0].id,pathPage7=0;
 function openPathNode7(id,node){route5('resource',id+'~'+node,selected)}
 const englishOld7=english;english=function(){return pathView7()+`<details class="card oldQuest7"><summary>116 haftalık uzun vadeli program</summary>${englishOld7()}</details>`};
-const homeOld7=home;home=function(){let all=agendaRows5(selected),a=all.filter(x=>x.kind!=='actual'),done=a.filter(x=>x.done).length,pending=a.filter(x=>!x.done),rs=resourceRows().map(state6),n=rs.reduce((s,x)=>s+x.n,0),total=rs.reduce((s,x)=>s+x.total,0),started=rs.filter(x=>x.status==='started'||x.status==='done').length;let focus=v7().focus.filter(x=>x.date===selected).reduce((s,x)=>s+x.seconds,0);let favorites=[RESOURCE_SEED[0].id,RESOURCE_SEED[1].id,RESOURCE_SEED[2].id].map(id=>rs.find(x=>x.r.id===id)?.r).filter(Boolean);return `<section class="hero7"><div class="heroCopy7"><span class="eyebrow7"><i></i> MUSES · YOUR DAILY STUDIO</span><h1>Bugün, bir adım.</h1><p>Her şey aynı yerde. Önce tek bir işi seç, sonra yolun açılır.</p><div class="flex"><button class="heroButton7" onclick="showQuick5(selected)">＋ Görev ekle</button><button class="ghost7" onclick="focusOpen7()">◷ Odak modu</button></div><div class="heroMini7"><span>✦ ${started} başlanan kaynak</span><span>◷ ${Math.floor(focus/60)} dk odak</span></div></div><div class="heroArt7"><span class="orbit7 orbitA7"></span><span class="orbit7 orbitB7"></span><span class="star7 starA7">✧</span><span class="star7 starB7">✦</span><button onclick="pet5()" class="heroCat7" aria-label="Mimo ile etkileşim">${catSvg()}</button><div class="catSpeech7">${done&&done===a.length?'Harika bir gün!':pending.length?'Birlikte başlayalım!':'Yeni hedeflere hazırız!'}</div></div>${ring7(done,a.length)}</section>${smartBar6()}<div class="cockpit7"><section class="card focusCard7"><div class="sectionHead7"><div><small>ODAK LİSTESİ</small><h2>Sıradaki 3 adım</h2></div><button onclick="goToday7()">Tüm gün →</button></div>${pending.slice(0,3).map(r=>row5(r)).join('')||'<div class="empty7">✧<b>Açık görev yok</b><span>Bir hedef seç veya yeni görev ekle.</span></div>'}<div class="flex"><button onclick="showQuick5(selected)">＋ Görev</button><button onclick="focusOpen7(decodeURIComponent(\'${encodeURIComponent(pending[0]?.label||'').replace(/'/g,'%27')}\'))">◷ Odaklan</button></div></section><section class="card"><div class="sectionHead7"><div><small>LEARNING QUEST</small><h2>Öğrenme yolculuğu</h2></div><button onclick="go('resources')">Tümü →</button></div><p class="muted mini">${n}/${total} takip birimi · ${started}/${rs.length} kaynakta çalışma</p>${favorites.map(miniPath7).join('')}</section></div><div class="card shortcuts7">${[['calendar','▦','Ajanda'],['goals','◎','Hedefler'],['flash','✦','Flashcards'],['atlas','◈','Pole'],['p90','↗','P90X'],['library','▤','Kitaplar']].map(([id,ico,n])=>`<button onclick="go('${id}')"><span>${ico}</span><b>${n}</b></button>`).join('')}</div>${graph5()}`};
+const homeOld7=home;home=function(){let all=agendaRows5(selected),a=all.filter(x=>x.kind!=='actual'),done=a.filter(x=>x.done).length,pending=a.filter(x=>!x.done),rs=resourceRows().map(state6),n=rs.reduce((s,x)=>s+x.n,0),total=rs.reduce((s,x)=>s+x.total,0),started=rs.filter(x=>x.status==='started'||x.status==='done').length;let focus=v7().focus.filter(x=>x.date===selected).reduce((s,x)=>s+x.seconds,0);let favorites=[RESOURCE_SEED[0].id,RESOURCE_SEED[1].id,RESOURCE_SEED[2].id].map(id=>rs.find(x=>x.r.id===id)?.r).filter(Boolean);return `<section class="hero7"><div class="heroCopy7"><h2>Bugün, bir adım.</h2><div class="flex"><button class="heroButton7" onclick="showQuick5(selected)">＋ Görev ekle</button><button class="ghost7" onclick="focusOpen7()">◷ Odak modu</button></div><div class="heroMini7"><span>✦ ${started} başlanan kaynak</span><span>◷ ${Math.floor(focus/60)} dk odak</span><span class="mobileProgress">${done}/${a.length} görev tamamlandı</span></div></div><div class="heroArt7"><span class="orbit7 orbitA7"></span><span class="orbit7 orbitB7"></span><span class="star7 starA7">✧</span><span class="star7 starB7">✦</span><button onclick="pet5()" class="heroCat7" aria-label="Mimo ile etkileşim">${catSvg()}</button><div class="catSpeech7">${done&&done===a.length?'Harika bir gün!':pending.length?'Birlikte başlayalım!':'Yeni hedeflere hazırız!'}</div></div>${ring7(done,a.length)}</section>${smartBar6()}<div class="cockpit7"><section class="card focusCard7"><div class="sectionHead7"><div><h2>Sıradaki adımlar</h2></div><button onclick="goToday7()">Tüm gün →</button></div>${pending.slice(0,3).map(r=>row5(r)).join('')||'<div class="empty7">✧<b>Açık görev yok</b><span>Bir hedef seç veya yeni görev ekle.</span></div>'}<div class="flex"><button onclick="showQuick5(selected)">＋ Görev</button><button onclick="focusOpen7(decodeURIComponent(\'${encodeURIComponent(pending[0]?.label||'').replace(/'/g,'%27')}\'))">◷ Odaklan</button></div></section><section class="card"><div class="sectionHead7"><div><h2>Öğrenme yolculuğu</h2></div><button onclick="go('resources')">Tümü →</button></div><p class="muted mini">${n}/${total} takip birimi · ${started}/${rs.length} kaynakta çalışma</p>${favorites.map(miniPath7).join('')}</section></div><div class="card shortcuts7">${[['calendar','▦','Ajanda'],['goals','◎','Hedefler'],['flash','✦','Flashcards'],['atlas','◈','Pole'],['p90','↗','P90X'],['library','▤','Kitaplar']].map(([id,ico,n])=>`<button onclick="go('${id}')"><span>${ico}</span><b>${n}</b></button>`).join('')}</div>${graph5()}`};
 const metricOld7=metricRows5;metricRows5=function(d){return {...metricOld7(d),focus:Math.round(v7().focus.filter(x=>x.date===d).reduce((s,x)=>s+x.seconds,0)/60)}};if(!graphLabels5.some(x=>x[0]==='focus'))graphLabels5.push(['focus','Odak dakikası']);
 // Keep native input shortcuts intact; global keys are ignored while editing.
 document.addEventListener('keydown',e=>{if(e.defaultPrevented||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.repeat||/INPUT|TEXTAREA|SELECT/.test(e.target?.tagName)||e.target?.isContentEditable||$('#dialog5')?.open||view==='flash')return;if(e.key.toLowerCase()==='n'){e.preventDefault();showQuick5(selected)}else if(e.key.toLowerCase()==='t'){e.preventDefault();goToday7()}else if(e.key.toLowerCase()==='o'){e.preventDefault();focusOpen7()}},false);

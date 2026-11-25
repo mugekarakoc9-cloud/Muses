@@ -65,3 +65,7 @@ Bozuk veya geçersiz localStorage kopyası bulunduğunda geçerli IndexedDB kopy
 - Gün, hafta ve ay görünümündeki planlanan ve tamamlanan görev toplamları yalnızca plan satırlarından hesaplanır. Otomatik çalışma süreleri gerçekleşen görünümünde yer alır ve yıllık görünümde plan dışı kayıt sayısını artırmaz.
 - Saatli hatırlatmalar modern İstanbul saatine göre hesaplanır. ICS dışa aktarımı aynı saati UTC olarak kodlar, böylece başka saat dilimindeki bir cihaz zamanı doğru yorumlayabilir.
 - Chromium testi Türkçe ve İngilizce tekrar girişini, 12 aylık Pazartesi/Perşembe serisini, hariç tutulan tarihi, mükerrer üretimi ve Los Angeles saat dilimindeki İstanbul hatırlatma hesabını kapsar. Tek tekrar düzenleme akışı ve fiziksel cihaz bildirimleri ayrı doğrulama bekliyor.
+
+### P1 — Bugün ekranı ve ortak görünüm
+
+Bugün ekranının görsel hiyerarşisi, kart aralıkları ve dokunma alanları güncellendi. Mobilde günlük görev ilerlemesi metin olarak da erişilebilir. Chromium'da 320–1440 px arasında beş ekran genişliği, açık/koyu görünüm, görev ve odak pencereleri doğrulandı. Mevcut 16 ekranın smoke testleri, okuyucu, Flashcard, hedef ağacı ve IndexedDB kurtarma testleri geçti. Fiziksel cihazlar ve canlı sağlayıcılar bu değişiklikte test edilmedi.
