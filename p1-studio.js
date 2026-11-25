@@ -924,3 +924,56 @@ function installTrainingWorkspaceMX(){
 }
 const previousStudioInstallerTrainingMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerTrainingMX();installTrainingWorkspaceMX();};
+
+
+/* Interactive connected root map. */
+function mxRelaxRoot(points,dragIndex,dx,dy){
+ const result=points.map(p=>({...p}));
+ if(!result[dragIndex]||!Number.isFinite(dx)||!Number.isFinite(dy))return result;
+ const dragged=result[dragIndex];dragged.x+=dx;dragged.y+=dy;
+ for(let i=0;i<result.length;i++){
+  if(i===dragIndex)continue;
+  const p=result[i],dist=Math.hypot(p.x-dragged.x,p.y-dragged.y),weight=dragIndex===0?.7:i===0?.36:.09+.22*Math.exp(-dist/180);
+  p.x+=dx*weight;p.y+=dy*weight;
+ }
+ // Resolve nearby collisions without introducing unverified word relationships.
+ for(let pass=0;pass<3;pass++)for(let i=1;i<result.length;i++)for(let j=i+1;j<result.length;j++){
+  const a=result[i],b=result[j],x=b.x-a.x,y=b.y-a.y;
+  if(Math.abs(x)>=95||Math.abs(y)>=38)continue;
+  const sy=y===0?(j%2?1:-1):Math.sign(y),shift=(38-Math.abs(y))*.55;
+  if(i!==dragIndex)a.y-=sy*shift;if(j!==dragIndex)b.y+=sy*shift;
+ }
+ return result;
+}
+function installRootInteractionMX(){
+ if(window.mxRootInteraction)return;window.mxRootInteraction=true;
+ let graph=null,gesture=null;
+ const oldRender=render;
+ function init(){
+  const svg=document.querySelector('#rootSvg6'),g=svg?.querySelector('#networkGroup6');if(!svg||!g){graph=null;gesture=null;return;}
+  if(graph?.svg===svg)return;
+  svg.style.touchAction='none';svg.style.cursor='grab';
+  const nodes=[...g.querySelectorAll('.rootnode6')],center=document.createElementNS('http://www.w3.org/2000/svg','g');
+  center.id='mx-root-center';center.style.cursor='grab';const initial=[...g.children].filter(x=>x.matches('circle.rootpulse6')||x.matches('text'));
+  for(const el of initial)center.append(el);g.prepend(center);
+  const points=[{x:380,y:245},...nodes.map(n=>({x:Number(n.dataset.x),y:Number(n.dataset.y)}))];
+  graph={svg,g,center,nodes,points,base:points.map(p=>({...p})),panX:380*(1-rootZoom6),panY:245*(1-rootZoom6),zoom:rootZoom6};
+  for(const n of nodes)n.style.cursor='grab';
+  svg.addEventListener('wheel',e=>{if(!graph||graph.svg!==svg)return;e.preventDefault();const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const p=pt.matrixTransform(svg.getScreenCTM().inverse()),a=graph,scale=Math.max(.5,Math.min(3,a.zoom*(e.deltaY<0?1.1:.91)));a.panX=p.x-(p.x-a.panX)*scale/a.zoom;a.panY=p.y-(p.y-a.panY)*scale/a.zoom;a.zoom=scale;transform();},{passive:false});
+  function transform(){const a=graph;if(a)a.g.setAttribute('transform',`translate(${a.panX} ${a.panY}) scale(${a.zoom})`);}
+ }
+ function draw(){
+  const a=graph;if(!a)return;
+  a.center.setAttribute('transform',`translate(${a.points[0].x-380} ${a.points[0].y-245})`);
+  for(let i=0;i<a.nodes.length;i++){const n=a.nodes[i],p=a.points[i+1],base=a.base[i+1],edge=a.g.querySelector('#edge6-'+n.dataset.i);n.setAttribute('transform',`translate(${p.x-base.x} ${p.y-base.y})`);if(edge){edge.setAttribute('x1',a.points[0].x);edge.setAttribute('y1',a.points[0].y);edge.setAttribute('x2',p.x);edge.setAttribute('y2',p.y);}}
+  a.g.setAttribute('transform',`translate(${a.panX} ${a.panY}) scale(${a.zoom})`);
+ }
+ function coords(e,el){const p=graph.svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(el.getScreenCTM().inverse());}
+ rootDown6=function(e){init();if(!graph||gesture||e.button!==0)return;const a=graph,n=e.target.closest('.rootnode6'),i=n?a.nodes.indexOf(n)+1:e.target.closest('#mx-root-center')?0:-1;gesture={id:e.pointerId,i,point:coords(e,i<0?a.svg:a.g),clientX:e.clientX,clientY:e.clientY,moved:false};a.svg.setPointerCapture(e.pointerId);};
+ rootMove6=function(e){const a=graph,s=gesture;if(!a||!s||s.id!==e.pointerId)return;const p=coords(e,s.i<0?a.svg:a.g),dx=p.x-s.point.x,dy=p.y-s.point.y;if(!s.moved&&Math.hypot(e.clientX-s.clientX,e.clientY-s.clientY)<4)return;s.moved=true;s.point=p;
+  if(s.i<0){a.panX+=dx;a.panY+=dy;}else a.points=mxRelaxRoot(a.points,s.i,dx,dy);draw();};
+ rootUp6=function(e){const a=graph,s=gesture;if(!s||s.id!==e.pointerId)return;gesture=null;if(!s.moved&&s.i>0&&e.type==='pointerup')chooseEncoded4(a.nodes[s.i-1].dataset.key);};
+ render=function(){oldRender();init();};
+}
+const previousStudioInstallerRootMX=installStudioP1;
+installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractionMX();};
