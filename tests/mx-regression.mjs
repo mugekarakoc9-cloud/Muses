@@ -31,3 +31,7 @@ assert.equal(current([{done:true},{skipped:true},{done:false}]),2);
 assert.deepEqual(path([{done:false},{unlocked:true},{done:false}]).map(x=>x.state),['open','open','open']);
 assert.equal(current([{skipped:true,active:true},{done:false}]),1);
 console.log('PASS: skipped and explicitly unlocked path states');
+
+// Date-range resource planning preserves every selected unit and true page spans.
+const pageSource=studio.slice(studio.indexOf('function mxPageSpanMX('),studio.indexOf('/* Unit controls and multi-section goals. */'));
+const pageFns=new Function(pageSource+';return {span:mxPageSpanMX,weighted:mxWeightedPlanMX}')();assert.deepEqual(pageFns.span({note:'s.38–41'}),[38,41]);assert.equal(pageFns.span({title:'Unit 4'}),null);const pagePlan=pageFns.weighted([{id:'a',weight:4},{id:'b',weight:2},{id:'c',weight:6}],['d1','d2']);assert.equal(pagePlan.reduce((n,x)=>n+x.weight,0),12);assert.deepEqual(pagePlan.flatMap(x=>x.items.map(y=>y.id)),['a','b','c']);console.log('PASS: weighted goal planning and page metadata');

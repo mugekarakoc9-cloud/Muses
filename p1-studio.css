@@ -197,3 +197,21 @@ body[data-mx-quiet] .mx-lesson-layout{grid-template-columns:minmax(0,1.3fr) minm
 .mx-ef-panel{margin:10px 0}.mx-ef-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.mx-ef-page{margin:12px 0}.mx-ef-page img{display:block;width:min(100%,900px);height:auto;margin:auto;border-radius:8px}
 
 .mx-path-actions{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));margin:12px 0}.mx-path-actions button{min-height:44px;text-align:center;white-space:normal}.mx-stop[data-state=skipped] .mx-node{--mx-color:#c39b59}.mx-stop[data-state=skipped] .mx-stop-label{border-color:#c39b59}.mx-stop[data-state=locked] .mx-stop-label button{cursor:pointer}
+
+/* MUSES task and path typography, accessible bulk selection. */
+.mx-range-choice{display:flex;align-items:center;gap:8px;padding:7px 5px;touch-action:none;user-select:none;border-bottom:1px solid var(--line)}
+.mx-range-choice input{accent-color:#8655c7}
+.mx-task-check{border:1.5px solid #8a60c3!important;background:#f5edff!important;color:#9b69d7!important;border-radius:7px!important;font-size:19px!important;font-weight:850!important;line-height:1!important}
+.mx-task-check[aria-pressed="true"]{background:#7445b5!important;border-color:#7445b5!important;color:#ff9ad5!important}
+.mx-stop[data-state=done] .mx-node{background:#7445b5!important;border-color:#8859ca!important;box-shadow:0 6px 0 #52317e,0 9px 15px #30253b24!important;color:#ff9ad5!important}
+.mx-path-tick{font-family:system-ui,sans-serif;font-size:31px;font-weight:900;line-height:1;color:#ff9ad5}
+.mx-stop[data-state=done] .mx-stop-label b,.mx-bulk-task-done .mx-hour-task span,.mx-bulk-task-done .eventTitle,.mx-bulk-task-done .eventtitle,.event5.mx-bulk-task-done>button:not(.mx-task-check),.event5.mx-bulk-task-done strong,.event5.mx-bulk-task-done b{text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:#b783df}
+.mx-stop-label,.mx-hour-task,.event5,.mx-path-actions,.mx-range-choice,.mx-bulk-tools{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif!important;letter-spacing:.005em;line-height:1.45}
+.mx-stop-label b,.mx-hour-task span{font-weight:650}
+.mx-bulk-tools{position:fixed;z-index:8500;bottom:calc(68px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;max-width:calc(100% - 24px);width:max-content;padding:7px;border:1px solid #b79ae8;background:var(--paper);border-radius:14px;box-shadow:0 6px 24px #32234433}
+.mx-bulk-tools[hidden]{display:none!important}.mx-bulk-tools button{white-space:normal;min-height:36px;font-size:.8rem}.mx-bulk-tools strong{padding:4px;color:#885bc4}
+.mx-bulk-mode [data-mx-bulk-task],.mx-bulk-mode [data-mx-bulk-resource],.mx-bulk-mode [data-mx-bulk-goal]{touch-action:none;user-select:none;cursor:crosshair}
+.mx-bulk-selected{outline:2px solid #a16bd8!important;outline-offset:2px;background:color-mix(in srgb,#d5b8ff 25%,var(--paper))!important;border-radius:10px}
+.mx-bulk-selected .mx-stop-label{background:#e9d8ff!important;color:#42245f!important}
+.mx-bulk-selected .mx-stop-label button{color:#42245f!important}
+@media(max-width:700px){.mx-bulk-tools{bottom:calc(82px + env(safe-area-inset-bottom,0px));padding:5px;gap:4px}.mx-bulk-tools button{min-height:40px;font-size:.75rem}}
