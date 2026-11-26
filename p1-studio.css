@@ -382,3 +382,23 @@ body.mxv-focus-screen :is(.mx-floating-cat,.mx-focus-dock,.mobileNav3){visibilit
  #mxv-root .mxv-word small{font-size:11px}
  #mxv-root .mxv-head h1{font-size:clamp(22px,6vw,30px)}
 }
+
+/* Navigation and release indicator: compact, accessible controls in both themes. */
+.mx-home-top .mx-update-icon{display:grid;place-items:center;flex:none;width:36px;height:36px;min-width:36px;min-height:36px;padding:0!important;border-radius:50%;font-size:22px;line-height:1;color:inherit}
+.mx-update-notice{position:fixed;top:max(14px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:2147483646;display:flex;align-items:center;gap:10px;max-width:calc(100% - 28px);width:max-content;padding:10px 12px;border:1px solid var(--line,#d8d0e6);border-radius:12px;background:var(--paper,#fff);color:var(--ink,#293447);box-shadow:0 8px 24px #0003;font-size:13px}
+body[data-theme=dark] .mx-update-notice{background:#292d3d;color:#f1eafa;border-color:#55516b}
+.mx-update-notice button{padding:0!important;width:28px;min-width:28px;height:28px;min-height:28px;font-size:18px;flex:none}
+#mxv-root[data-mxv-page=dashboard] .mxv-sidebar,#mxv-root[data-mxv-page=review] .mxv-sidebar{max-height:75vh}
+#mxv-root .mxv-sidebar .mxv-side-foot button{min-height:34px;padding:6px 9px}
+@media(max-width:750px){
+ #mxv-root[data-mxv-page=dashboard] .mxv-sidebar,#mxv-root[data-mxv-page=review] .mxv-sidebar{display:none}
+ #mxv-root[data-mxv-page=list] .mxv-main,#mxv-root[data-mxv-page=settings] .mxv-main{width:100%}
+ .mx-home-grid button{min-height:66px;padding:8px!important}
+ .mx-route-dialog[open]{position:fixed!important;inset:0!important;width:100%!important;max-width:none!important;height:100vh;height:100dvh;max-height:100dvh!important;margin:0!important;box-sizing:border-box;border-radius:0!important;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));overflow:auto;overscroll-behavior:contain;background:var(--paper,#fff)}
+ body[data-theme=dark] .mx-route-dialog[open]{background:var(--paper,#232737);color:var(--ink,#f1eafa)}
+ .mx-route-dialog .modalhead5{position:sticky;top:0;z-index:10;background:inherit;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0}
+ .mx-route-dialog .modalhead5 button{min-width:36px;min-height:36px;padding:4px}
+ .mx-route-dialog :is(input:not([type=checkbox]):not([type=radio]),select,textarea){max-width:100%;box-sizing:border-box}
+ .mx-route-dialog button:not(.mx-task-check){max-width:100%;white-space:normal}
+ .mx-route-dialog::backdrop{background:var(--bg,#171b25)}
+}
