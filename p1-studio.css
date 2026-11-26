@@ -446,3 +446,14 @@ body:has(#mx-source-task) :is(.mx-focus-dock,.mx-floating-cat){visibility:hidden
  .mxv-map .mx-word-universe{grid-template-columns:repeat(auto-fill,minmax(15px,1fr))}
  #mx-range-goal .mx-range-choice{min-height:32px}
 }
+
+body.mx-modal-active :is(.mx-focus-dock,.mx-floating-cat){visibility:hidden!important;pointer-events:none!important}
+.mx-global-search{min-height:34px;width:34px;padding:4px!important;float:right;border-radius:9px;font-size:20px}
+.mx-goal-hub input[type=search]{width:100%;max-width:100%;margin-top:8px}
+.mx-source-checks .mx-range-choice input:checked{accent-color:#8754c7}
+@media(max-width:750px){
+ body.mx-modal-active .mx-route-dialog{position:fixed!important;inset:0!important;margin:0!important;width:100%!important;max-width:100%!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;box-sizing:border-box;overflow:auto!important;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))!important;background:var(--paper,#fff);overscroll-behavior:contain}
+ body.mx-modal-active .mx-route-dialog .modalhead5{background:var(--paper,#fff)}
+ #mxv-root[data-mxv-page=library] .mxv-sidebar{min-width:0}
+ .mx-goal-hub .flex{gap:5px}
+}
