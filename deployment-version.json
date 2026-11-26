@@ -1,5 +1,5 @@
 {
-  "release": "0.16.7",
+  "release": "0.16.8",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Compact navigation and study method chooser, in-app update checks"
+  "purpose": "Daily vocabulary, word map, unit-aware goals, recurring tasks, independent Pomodoro, mobile theme fixes"
 }
