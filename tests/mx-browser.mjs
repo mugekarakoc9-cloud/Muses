@@ -82,7 +82,25 @@ try{
  const leafId=await sourceTask.locator('[name=leaf] option').first().getAttribute('value');
  await sourceTask.locator('[name=leaf]').selectOption(leafId);
  assert.equal(await sourceTask.locator('[name=leaf]').inputValue(),leafId);
+ await sourceTask.locator('[name=search]').fill('');
+ assert.equal(await sourceTask.locator('[name=leaf]').evaluate(el=>el.multiple),true);
+ const choices=await sourceTask.locator('[name=leaf] option').evaluateAll(opts=>opts.slice(0,2).map(o=>o.value));
+ assert.equal(choices.length,2);
+ await sourceTask.locator('[name=leaf]').selectOption(choices);
+ assert.equal(await sourceTask.locator('[name=leaf]').evaluate(el=>el.selectedOptions.length),2);
  await page.evaluate(()=>close5());
+ await page.evaluate(()=>go('flash'));
+ await page.waitForSelector('#mxv-root .mxv-sidebar');
+ const themes=await page.evaluate(()=>{
+   const body=document.body,old=body.getAttribute('data-theme'),side=document.querySelector('#mxv-root .mxv-sidebar'),out={};
+   for(const mode of ['light','dark']){body.dataset.theme=mode;out[mode]={bg:getComputedStyle(side).backgroundColor,fg:getComputedStyle(side).color};}
+   if(old===null)body.removeAttribute('data-theme');else body.setAttribute('data-theme',old);
+   return out;
+ });
+ assert.equal(themes.light.bg,'rgb(255, 255, 255)');
+ assert.equal(themes.dark.bg,'rgb(38, 42, 56)');
+ assert.notEqual(themes.light.fg,themes.dark.fg);
+ await page.evaluate(()=>go('calendar'));
  await page.evaluate(()=>mxHourlyMode('month'));assert(await page.locator('.cell5').count()>=28);await page.locator('.calendar5 button[onclick="mxHourlyMode(\'day\')"]').first().click();assert.equal(await page.locator('[data-mx-drop-date]').count(),25);await page.evaluate(()=>mxMimoGallery());assert.equal(await page.locator('[data-mimo-pose]').count(),11);await page.evaluate(()=>close5());
  const views=['home','resources','flash','library','english','goals','calendar','p90','atlas','habits','journal'];
  for(const view of views){await page.evaluate(v=>go(v),view);await page.waitForTimeout(100);assert(await page.locator('#app').innerText());assert.equal(errors.length,0,view+': '+errors.join('; '));}
