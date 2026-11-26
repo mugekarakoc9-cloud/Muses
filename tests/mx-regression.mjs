@@ -21,3 +21,6 @@ console.log('MUSES regression: syntax, unique words, ink geometry, SRS, rewards,
 const hour=extract(studio,'mxHourSlot','installHourlyAgendaMX');for(const [t,n] of [['00:00',0],['18:15',18],['23:59',23],['24:00',-1],['12:60',-1],['',-1]])assert.equal(hour(t),n);
 const key=extract(studio,'mxBackupMediaKey','mxValidPack');for(const k of ['p90-2','mx-original-mx-reader-abc','mx-audio-mx-reader-abc','mx-focus-sound-break','mx-mimo-character-pack-v2'])assert(key(k));for(const k of ['__proto__','unknown','p90-13'])assert(!key(k));
 console.log('PASS: calendar hours and full-media backup key validation');
+
+const current=extract(studio,'pathCurrentMX','pathVideoMX');
+const puzzle=Array.from({length:60},(_,i)=>({id:i+1,done:i<17||i===46,active:i===47}));assert.equal(current(puzzle),47);assert.equal(path(puzzle)[47].state,'open');assert.equal(path(puzzle)[48].state,'open');assert.equal(path(puzzle)[49].state,'locked');assert.equal(current([{done:false},{done:true},{done:false}]),2);assert.equal(path([{done:false},{done:true},{done:false}])[2].state,'open');console.log('PASS: active puzzle 48 and progression despite earlier gaps');
