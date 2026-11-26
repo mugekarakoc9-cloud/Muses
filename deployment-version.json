@@ -1,5 +1,5 @@
 {
-  "release": "0.16.3",
+  "release": "0.16.4",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Cloudflare deployment connectivity check"
+  "purpose": "Vocabulary theme and multiple source task selection"
 }
