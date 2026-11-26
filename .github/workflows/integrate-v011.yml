@@ -1,0 +1,32 @@
+name: Integrate v0.11
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/integrate-v011.yml', 'upgrades/v0.11.js', 'upgrades/apply-v0.11.mjs']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: integrate-v011
+  cancel-in-progress: false
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node upgrades/apply-v0.11.mjs
+      - run: node tests/check.mjs
+      - name: Commit verified integration
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html sw.js
+          if ! git diff --cached --quiet; then
+            git commit -m "Integrate MUSES v0.11 and refresh offline cache"
+            git push origin main
+          fi
