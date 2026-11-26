@@ -1,5 +1,5 @@
 {
-  "release": "0.16.9",
+  "release": "0.16.10",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Safe goal editing, compact actions and accessible day/night surfaces"
+  "purpose": "Reader preferences and editing, bulk tasks, habit duration, full-page translation"
 }
