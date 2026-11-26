@@ -1750,3 +1750,23 @@ function installGoalActionsMX(){
  };
 }
 const beforeGoalActionsMX=installStudioP1;installStudioP1=function(){beforeGoalActionsMX();installGoalActionsMX();};
+
+/* Edit imported text in place; keep page indices, IDs, media and reading history. */
+function installReaderEditMX(){
+ if(window.mxReaderEditReady)return;window.mxReaderEditReady=true;
+ window.mxEditReaderText=function(k){
+  const id=dec5(k),book=v9().customReaders.find(x=>x.id===id);
+  if(!book)return toast('Yalnızca içe aktarılan metinler düzenlenebilir.');
+  const current=readerCurrent10(),index=current?.b?.id===id?current.i:0;
+  modal5('<div class="modalhead5"><h2>Kitap ve metni düzenle</h2><button onclick="close5()" aria-label="Kapat">×</button></div><form id="mx-reader-edit"><label>Kitap adı<input name="title" required></label><label>Bölüm<select name="page"></select></label><label>Bölüm adı<input name="pageTitle"></label><label>Metin<textarea name="text" rows="12"></textarea></label><p>Kitap kimliği, ilerleme ve diğer bölümler korunur.</p><button class="primary">Kaydet</button></form>');
+  const f=document.querySelector('#mx-reader-edit'),fields=f.elements,drafts=new Map();fields.title.value=book.title;
+  book.pages.forEach((p,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=(i+1)+' · '+(p.title||'Bölüm');fields.page.append(o);});
+  let active=Math.min(Math.max(0,index||0),book.pages.length-1);
+  const capture=()=>drafts.set(active,{title:fields.pageTitle.value,text:fields.text.value});
+  const load=()=>{const p=drafts.get(active)||book.pages[active]||{};fields.page.value=String(active);fields.pageTitle.value=p.title||'';fields.text.value=p.text||'';};
+  fields.page.onchange=()=>{capture();active=Number(fields.page.value);load();};load();
+  f.onsubmit=e=>{e.preventDefault();capture();const title=fields.title.value.trim();if(!title)return;let length=0;for(let i=0;i<book.pages.length;i++)length+=String(drafts.get(i)?.text??book.pages[i].text??'').length;if(length>3000000)return toast('Metin 3 milyon karakteri aşamaz.');readerStop9();book.title=title;for(const [i,p] of drafts){const old=book.pages[i];if(old)Object.assign(old,p);}save();close5();render();toast('Metin kaydedildi.');};
+ };
+ const old=readerView9;readerView9=function(){const html=old(),id=v9().readerId;if(!v9().customReaders.some(x=>x.id===id))return html;return '<section class="card"><button onclick="mxEditReaderText(\''+enc5(id)+'\')">✎ Kitap / metin düzenle</button></section>'+html;};
+}
+const priorReaderEditMX=installStudioP1;installStudioP1=function(){priorReaderEditMX();installReaderEditMX();};
