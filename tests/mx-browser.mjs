@@ -38,7 +38,7 @@ try{
  await page.evaluate(()=>go('english'));assert(await page.locator('.mx-palace').count(),'New journey should be the default');await page.evaluate(()=>go('home'));
 
  await page.waitForFunction(()=>[...document.querySelectorAll('img.mx-real-cat')].some(img=>img.complete&&img.naturalWidth>0),{},{timeout:20000});
- assert.match(await page.locator('#app').innerText(),/0\.15\.0/);
+ assert.match(await page.locator('#app').innerText(),/0\.16\.7/);
  await page.evaluate(()=>openPaletteP1());
  await page.locator('#paletteKindP1').waitFor();
  const kinds=await page.locator('#paletteKindP1 option').allTextContents();
@@ -108,8 +108,9 @@ try{
  });
  await page.locator('#mxv-root [data-act="allGroups"]').click();
  assert(await page.locator('#mxv-root [data-group-check]').evaluateAll(els=>els.every(el=>el.checked)));
- await page.locator('#mxv-root [data-group="src:English File"]').first().click();
- await page.locator('#mxv-root [data-act="startFlash"]').click();
+ if(!(await page.locator('#mxv-root [data-act="chooseList"]').isVisible())){if(await page.locator('#mxv-root [data-act="listLibrary"]').isVisible())await page.locator('#mxv-root [data-act="listLibrary"]').click();await page.locator('#mxv-root [data-group="src:English File"]').first().click();}
+ await page.locator('#mxv-root [data-act="chooseList"]').click();
+ await page.locator('#mxv-root [data-act="chooseMode:flash"]').click();
  await page.locator('#mxv-root [data-act="full"]').click();
  await page.setViewportSize({width:360,height:640});
  await page.locator('#mxv-root.mxv-full-study').waitFor();
@@ -119,22 +120,24 @@ try{
  await page.locator('#mxv-root [data-act="flip"]').click();
  await page.locator('#mxv-root [data-act="rate2"]').click();
  await page.locator('#mxv-root .mxv-recap').waitFor();
- assert.equal(await page.locator('#mxv-root [data-act="dashboard"]').last().isVisible(),true);
- await page.locator('#mxv-root .mxv-recap [data-act="dashboard"]').first().click();
+ assert.equal(await page.locator('#mxv-root [data-act="finishPractice"]').isVisible(),true);
+ await page.locator('#mxv-root .mxv-recap [data-act="finishPractice"]').click();
  assert.equal(await page.evaluate(()=>S.mxVocabularyV2.session),null,'Review does not force writing');
- await page.locator('#mxv-root [data-group="src:English File"]').first().click();
- await page.locator('#mxv-root [data-act="startQuiz"]').click();
+ if(!(await page.locator('#mxv-root [data-act="chooseList"]').isVisible())){if(await page.locator('#mxv-root [data-act="listLibrary"]').isVisible())await page.locator('#mxv-root [data-act="listLibrary"]').click();await page.locator('#mxv-root [data-group="src:English File"]').first().click();}
+ await page.locator('#mxv-root [data-act="chooseList"]').click();
+ await page.locator('#mxv-root [data-act="chooseMode:quiz"]').click();
  await page.locator('#mxv-root [data-quiz]').first().waitFor();
  const correct=await page.evaluate(()=>{const s=S.mxVocabularyV2.session,k=s.keys[s.index];return s.quiz.options.indexOf([...S.words,...(typeof all4==='undefined'?[]:all4)].find(w=>key4(w)===k)?.['Word / Phrase']);});
- if(correct>=0){await page.locator('#mxv-root [data-quiz="'+correct+'"]').click();assert.equal(await page.evaluate(()=>S.mxVocabularyV2.session.result.ok),true);await page.locator('#mxv-root [data-act="next"]').click();}
+ if(correct>=0){await page.locator('#mxv-root [data-quiz="'+correct+'"]').click();assert.equal(await page.evaluate(()=>S.mxVocabularyV2.session.result.ok),true);await page.locator('#mxv-root [data-act="next"]').click();await page.locator('#mxv-root [data-act="finishPractice"]').click();}
  else{await page.evaluate(()=>{S.mxVocabularyV2.session=null;});await page.locator('#mxv-root [data-act="pause"]').click();}
- await page.locator('#mxv-root [data-group="src:English File"]').first().click();
- await page.locator('#mxv-root [data-act="startMatch"]').click();
+ if(!(await page.locator('#mxv-root [data-act="chooseList"]').isVisible())){if(await page.locator('#mxv-root [data-act="listLibrary"]').isVisible())await page.locator('#mxv-root [data-act="listLibrary"]').click();await page.locator('#mxv-root [data-group="src:English File"]').first().click();}
+ await page.locator('#mxv-root [data-act="chooseList"]').click();
+ await page.locator('#mxv-root [data-act="chooseMode:match"]').click();
  const match=page.locator('#mxv-root .mxv-match-grid');await match.waitFor();
  const key=await match.locator('[data-match-col="0"]').first().getAttribute('data-match-key');
  await match.locator('[data-match-col="0"]').first().click();
  await match.locator('[data-match-col="1"]').first().click();
- await page.locator('#mxv-root [data-act="matchNext"]').click();
+ await page.locator('#mxv-root [data-act="matchNext"]').click();await page.locator('#mxv-root [data-act="finishPractice"]').click();
  await page.setViewportSize({width:1440,height:900});
  await page.evaluate(()=>go('calendar'));
  await page.evaluate(()=>mxHourlyMode('month'));assert(await page.locator('.cell5').count()>=28);await page.locator('.calendar5 button[onclick="mxHourlyMode(\'day\')"]').first().click();assert.equal(await page.locator('[data-mx-drop-date]').count(),25);await page.evaluate(()=>mxMimoGallery());assert.equal(await page.locator('[data-mimo-pose]').count(),11);await page.evaluate(()=>close5());
