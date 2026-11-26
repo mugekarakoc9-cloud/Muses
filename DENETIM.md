@@ -1,5 +1,15 @@
 # MUSES Life Studio v0.8 — geçmiş talepler ve teknik denetim
 
+## 26 Kasım 2026 — özel kurulum ve açılış
+
+| Alan | Durum | Kanıt / sınır |
+|---|---|---|
+| Tarayıcı açılışı | Doğrulandı | GitHub `eed0b11` kaynağı managed önizlemede ana ekran ve ajandayı açtı; uygulamadan konsol hatası görülmedi. Eski Codespaces URL’si bu oturumda GitHub girişine yönlendirdi; kullanıcının gördüğü hata sayfasının kesin kodu henüz erişilemedi. |
+| Önbellek | Düzeltildi | `tests/offline-worker.mjs`: 401/403/404/5xx, ağ kesintisi, yönlendirme ve 5 sn zaman aşımında kurulu yerel kopyaya dönüş. Başarısız indirmeler önbelleği ezmez. Bu kontrol simüle ağ yanıtlarıyla yapılır. |
+| Linux | Paketleme eklendi | `linux-wrapper/app.py`, `scripts/package-linux.py`: yalnız loopback, sabit 8765 origin, uygulama menüsü; `.deb` ve taşınabilir ZIP. `tests/linux-launcher.py` HTTP ve dosya kapsamını doğrular. Gerçek kullanıcı Linux masaüstünde kurulum doğrulanmadı. |
+| Android | Mevcut derleme başarılı | `45815109287` iş akışı imzalı APK üretti. Sonraki commit yeni APK oluşturur. Fiziksel telefonda kurulum/dosya dışa aktarma doğrulanmadı. |
+| Kayıtlar | Şema değişmedi | Kullanıcı verisi silinmedi veya taşınmadı. Farklı origin ve APK arasında yedek aktarımı gerekir; otomatik cihaz eşitlemesi yok. |
+
 25 Kasım 2026. Mevcut v0.7 kodu ve önceki MUSES/planlayıcı talepleri karşılaştırıldı. Bu belge tamamlanmış işlerle test edilmemiş veya henüz eksik kalan işleri birbirinden ayırır. Kişisel arşiv içerdiğinden depo özel kalmalıdır.
 
 | Alan | v0.8 durumu | Sınır / açık iş |

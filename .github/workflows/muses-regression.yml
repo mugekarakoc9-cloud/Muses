@@ -10,11 +10,22 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
-      - run: node tests/check.mjs && node tests/mx-regression.mjs
+      - run: node tests/check.mjs && node tests/catalog-check.mjs && node tests/mx-regression.mjs && node tests/offline-worker.mjs
+      - run: python3 tests/linux-launcher.py
       - run: npm install --no-save --package-lock=false playwright@1.51.1
       - run: npx playwright install --with-deps chromium
       - run: node tests/mx-browser.mjs
+      - name: Package private Linux application
+        if: ${{ github.event.repository.private == true }}
+        run: python3 scripts/package-linux.py
+      - uses: actions/upload-artifact@v4
+        if: ${{ github.event.repository.private == true }}
+        with:
+          name: MUSES-private-linux
+          path: dist-linux/MUSES-Linux.*
+          retention-days: 14
+          if-no-files-found: error

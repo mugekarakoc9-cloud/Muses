@@ -4,6 +4,11 @@ Personal local-first learning, agenda and fitness application. This working repo
 
 ## Run
 
+For private Android and Linux installation, see [KURULUM-OZEL.md](KURULUM-OZEL.md).
+Linux packages are produced with `python3 scripts/package-linux.py` and included
+as private Actions artifacts after regression checks. They start a loopback-only
+server and reuse the installed browser; there is no Codespaces dependency.
+
 Open `index.html` for a local preview. For PWA installation, serve this directory on a fixed HTTPS origin (localhost is suitable for development). Browser data are origin-specific. Export a JSON backup before changing origin or version. Standard JSON backups contain records only. In Settings, choose **Videolarla tam yedek al** to include locally imported P90X videos. Full backups are larger and should be stored privately.
 
 ## Check

@@ -10,3 +10,8 @@ backups/
 tests/screenshots/
 
 tests/artifacts/
+dist/
+dist-linux/
+dist-android/
+.openai/
+__pycache__/
