@@ -24,3 +24,10 @@ console.log('PASS: calendar hours and full-media backup key validation');
 
 const current=extract(studio,'pathCurrentMX','pathVideoMX');
 const puzzle=Array.from({length:60},(_,i)=>({id:i+1,done:i<17||i===46,active:i===47}));assert.equal(current(puzzle),47);assert.equal(path(puzzle)[47].state,'open');assert.equal(path(puzzle)[48].state,'open');assert.equal(path(puzzle)[49].state,'locked');assert.equal(current([{done:false},{done:true},{done:false}]),2);assert.equal(path([{done:false},{done:true},{done:false}])[2].state,'open');console.log('PASS: active puzzle 48 and progression despite earlier gaps');
+
+// Path skip is a resolved navigation state, never a completed study.
+assert.deepEqual(path([{skipped:true},{done:false},{done:false}]).map(x=>x.state),['skipped','open','locked']);
+assert.equal(current([{done:true},{skipped:true},{done:false}]),2);
+assert.deepEqual(path([{done:false},{unlocked:true},{done:false}]).map(x=>x.state),['open','open','open']);
+assert.equal(current([{skipped:true,active:true},{done:false}]),1);
+console.log('PASS: skipped and explicitly unlocked path states');

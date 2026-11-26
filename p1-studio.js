@@ -591,8 +591,10 @@ function installPalaceMX(){
    }
  }
  function pathOpenLeaf(r,n,withTimer){
-   const key=target(r,n);(P().unlocked??={})[key]=true;delete (P().skipped??={})[key];
-   if(withTimer){if(typeof window.mxStartLinkedFocus!=='function'||!window.mxStartLinkedFocus('resource',key))return;pathTask(r,n,today(),'start');}
+   const key=target(r,n);
+   if(withTimer&&(typeof window.mxStartLinkedFocus!=='function'||!window.mxStartLinkedFocus('resource',key)))return;
+   (P().unlocked??={})[key]=true;delete (P().skipped??={})[key];
+   if(withTimer){pathTask(r,n,today(),'start');}
    else if(S.tasks.some(x=>x.module==='resource'&&x.target===key&&x.date===today()&&x.mxPathSkipped))pathTask(r,n,today(),'reopen',false);
    close5();window.mxPalaceOpen(K(r.id),K(n.id),false);save();render();
  }
@@ -1376,7 +1378,7 @@ function installTaskStudioMX(){
  taskDone5=function(t){const x=leaf(t);return x?leafDone(x.n):baseDone(t);};
  window.mxTaskCheckHTML=id=>{const t=S.tasks.find(x=>x.id===id);if(!t)return '';const done=taskDone5(t),label=done?'Tamamlandı':t.mxPathSkipped?'Atlandı · tamamlamak için tıkla':'Tamamla';return '<button type="button" class="mx-task-check" aria-label="'+H(label+': '+t.title)+'" aria-pressed="'+Boolean(done)+'" title="'+label+'" onclick="event.stopPropagation();mxTaskCheck(\''+H(K(id))+'\')">'+(done?'✓':'')+'</button>';};
  window.mxTaskCheck=k=>{const t=S.tasks.find(x=>x.id===dec5(k));if(!t)return;const x=leaf(t);if(x){if(!leafDone(x.n))return window.mxCompleteResourceLeaf(x.r.id,x.n.id,today(),true);return toast('Bu kaynak tamamlandı. Geri almak için kaynak kaydını aç.');}if(!linked5(t)){t.done=!taskDone5(t);save();render();return;}if(!taskDone5(t))return rowAction5(t.date,K(t.id));return toast('Bağlı çalışmayı kendi kaydından düzenleyebilirsin.');};
- const baseRow=row5;row5=function(row,compact=false){const html=baseRow(row,compact);if(!S.tasks.some(t=>t.id===row.id)||!html.endsWith('</div>'))return html;return html.slice(0,-6)+window.mxTaskCheckHTML(row.id)+'</div>';};
+ const baseRow=row5;row5=function(row,compact=false){const html=baseRow(row,compact),task=S.tasks.find(t=>t.id===row.id);if(!task||!html.endsWith('</div>'))return html;return html.slice(0,-6)+(task.mxPathSkipped?'<small class="mx-path-skipped-label">Atlandı</small>':'')+window.mxTaskCheckHTML(row.id)+'</div>';};
  const baseQuick=quickForm5;
  function currentTask(){return S.tasks.find(t=>t.id===q5Id||K(t.id)===q5Id);}
  function draft(){const f=document.querySelector('#quick5'),get=(k,d)=>f?.elements?.[k]?.value??d;return {...q5Draft,date:get('date',q5Draft?.date||q5Date||today()),time:get('time',q5Draft?.time||''),title:get('title',q5Draft?.title||''),note:get('note',q5Draft?.note||'')};}
