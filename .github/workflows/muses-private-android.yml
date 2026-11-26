@@ -14,11 +14,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -31,9 +31,11 @@ jobs:
       - name: Prepare offline Android app
         run: bash scripts/prepare-android.sh
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: 'false'
       - name: Compile APK
         run: |
-          sdkmanager "platforms;android-35" "build-tools;35.0.0"
           cd android-wrapper/android
           sed -i -E "s/versionCode [0-9]+/versionCode $GITHUB_RUN_NUMBER/; s/versionName \"[^\"]+\"/versionName \"1.0.$GITHUB_RUN_NUMBER\"/" app/build.gradle
           chmod +x gradlew
