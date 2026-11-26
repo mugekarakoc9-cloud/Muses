@@ -169,3 +169,12 @@ body[data-mx-quiet] .mx-lesson-layout{grid-template-columns:minmax(0,1.3fr) minm
 .mx-hour-cell .mx-hour-task{position:relative;z-index:1}
 .mx-hour-header>button.primary{display:none}
 .mx-month-grid .cell5[data-p1-date]{cursor:pointer}
+
+.mx-hour-entry{display:flex;align-items:stretch;gap:4px;position:relative;z-index:1;min-width:0}
+.mx-hour-entry .mx-hour-task{flex:1;width:auto!important;min-width:0!important}
+.mx-task-check{display:inline-grid!important;place-items:center;flex:none;align-self:center;width:25px!important;height:25px!important;min-width:25px!important;min-height:25px!important;padding:0!important;border:1.5px solid var(--accent)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--accent)!important;font-weight:bold;cursor:pointer}
+.mx-task-check[aria-pressed="true"]{background:var(--accent)!important;color:white!important}
+.event5 .mx-task-check{margin:3px}
+.mx-source-picker-launch{width:100%;margin-bottom:9px}
+#mx-source-task select[name=leaf]{width:100%;min-height:140px}
+#mx-source-task select[name=leaf] option{padding:7px;white-space:normal}

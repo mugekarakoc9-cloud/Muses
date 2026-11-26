@@ -73,6 +73,16 @@ try{
  await page.mouse.move(startBox.x+startBox.width/2,startBox.y+startBox.height/2);await page.mouse.down();await page.mouse.move(targetBox.x+targetBox.width/2,targetBox.y+targetBox.height/2,{steps:8});await page.mouse.up();
  assert.equal(await page.evaluate(()=>S.tasks.find(t=>t.id==='mx-test-drag-task').time),'11:00','Mouse drag persists exact target hour');
  await page.evaluate(()=>{S.tasks=S.tasks.filter(t=>t.id!=='mx-test-drag-task');save();render();});
+ await page.evaluate(()=>{mxHourlyCreate(today(),'12:00');mxResourceTaskPicker();});
+ const sourceTask=page.locator('#mx-source-task');
+ const fono=await page.evaluate(()=>resourceRows().find(r=>r.title.includes('Fono')).id);
+ await sourceTask.locator('[name=source]').selectOption(fono);
+ await sourceTask.locator('[name=search]').fill('47');
+ assert(await sourceTask.locator('[name=leaf] option').count()>0,'Fono 47 must be selectable');
+ const leafId=await sourceTask.locator('[name=leaf] option').first().getAttribute('value');
+ await sourceTask.locator('[name=leaf]').selectOption(leafId);
+ assert.equal(await sourceTask.locator('[name=leaf]').inputValue(),leafId);
+ await page.evaluate(()=>close5());
  await page.evaluate(()=>mxHourlyMode('month'));assert(await page.locator('.cell5').count()>=28);await page.locator('.calendar5 button[onclick="mxHourlyMode(\'day\')"]').first().click();assert.equal(await page.locator('[data-mx-drop-date]').count(),25);await page.evaluate(()=>mxMimoGallery());assert.equal(await page.locator('[data-mimo-pose]').count(),11);await page.evaluate(()=>close5());
  const views=['home','resources','flash','library','english','goals','calendar','p90','atlas','habits','journal'];
  for(const view of views){await page.evaluate(v=>go(v),view);await page.waitForTimeout(100);assert(await page.locator('#app').innerText());assert.equal(errors.length,0,view+': '+errors.join('; '));}
