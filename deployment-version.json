@@ -1,5 +1,5 @@
 {
-  "release": "0.16.10",
+  "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Reader preferences and editing, bulk tasks, habit duration, full-page translation"
+  "purpose": "Reader editing and preferences, catalog phrase highlights, interface sounds, bulk task planning and habit progress"
 }
