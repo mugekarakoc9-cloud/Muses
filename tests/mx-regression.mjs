@@ -35,3 +35,14 @@ console.log('PASS: skipped and explicitly unlocked path states');
 // Date-range resource planning preserves every selected unit and true page spans.
 const pageSource=studio.slice(studio.indexOf('function mxPageSpanMX('),studio.indexOf('/* Unit controls and multi-section goals. */'));
 const pageFns=new Function(pageSource+';return {span:mxPageSpanMX,weighted:mxWeightedPlanMX}')();assert.deepEqual(pageFns.span({note:'s.38–41'}),[38,41]);assert.equal(pageFns.span({title:'Unit 4'}),null);const pagePlan=pageFns.weighted([{id:'a',weight:4},{id:'b',weight:2},{id:'c',weight:6}],['d1','d2']);assert.equal(pagePlan.reduce((n,x)=>n+x.weight,0),12);assert.deepEqual(pagePlan.flatMap(x=>x.items.map(y=>y.id)),['a','b','c']);console.log('PASS: weighted goal planning and page metadata');
+
+ // Flashcard presentation numbers are the inverse of the persisted legacy SRS grade.
+ const vocabStudio=studio.slice(studio.indexOf('function installVocabularyStudioV2(){'),studio.indexOf('const previousStudioVocabularyV2='));
+ const mapping=vocabStudio.match(/const gradeFromDisplay=n=>6-n;\s+const ratingKeys=\{a:1,s:2,d:3,g:4,f:5\};/)[0];
+ const ratings=new Function(mapping+'return {gradeFromDisplay,ratingKeys};')();
+ assert.deepEqual([1,2,3,4,5].map(ratings.gradeFromDisplay),[5,4,3,2,1]);
+ assert.deepEqual(ratings.ratingKeys,{a:1,s:2,d:3,g:4,f:5});
+ assert(vocabStudio.includes("cfg.mode==='flash'&&s.side?"));
+ assert(vocabStudio.includes("start(keys,'type',false,true)"));
+ assert(vocabStudio.includes("d.lastReviewSession=s.id"));
+ console.log('PASS: reversed display grade and explicit practice routing');
