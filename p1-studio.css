@@ -457,3 +457,6 @@ body.mx-modal-active :is(.mx-focus-dock,.mx-floating-cat){visibility:hidden!impo
  #mxv-root[data-mxv-page=library] .mxv-sidebar{min-width:0}
  .mx-goal-hub .flex{gap:5px}
 }
+
+#mxv-root .mxv-face[data-flip]{touch-action:pan-y!important;min-width:0;overflow-y:auto}
+#mxv-root .mxv-face[data-flip]>*{zoom:var(--mxv-pinch,1);max-width:100%}
