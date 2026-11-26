@@ -1316,3 +1316,40 @@ function installTaskStudioMX(){
 }
 const previousStudioInstallerTaskMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerTaskMX();installTaskStudioMX();};
+
+/* Large, distraction-free flashcards; reuse original actions and saved flags. */
+function installFlashStageMX(){
+ if(window.mxFlashStageReady)return;window.mxFlashStageReady=true;
+ const icons={left:'<path d="m15 18-6-6 6-6"/>',right:'<path d="m9 18 6-6-6-6"/>',flip:'<path d="M20 7H4l4-4M4 17h16l-4 4"/>',sound:'<path d="M3 9h4l5-4v14l-5-4H3zM16 9a4 4 0 0 1 0 6m3-9a8 8 0 0 1 0 12"/>',play:'<path d="m8 5 12 7-12 7z"/>',pause:'<path d="M9 5v14M15 5v14"/>',shuffle:'<path d="M3 7h3c5 0 7 10 12 10h3m-4-4 4 4-4 4M3 17h3c2 0 4-3 5-5m3-3c1-1 2-2 4-2h3m-4-4 4 4-4 4"/>',expand:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',flag:'<path d="M5 21V3m0 1h13l-3 5 3 5H5" fill="currentColor"/>'};
+ const svg=k=>'<svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+icons[k]+'</svg>';
+ function icon(b,k,label){b.classList.add('mx-fc-icon');b.title=label;b.setAttribute('aria-label',label);b.innerHTML=svg(k);return b;}
+ function button(k,label,fn){const b=document.createElement('button');b.type='button';b.onclick=fn;return icon(b,k,label);}
+ function layout(){
+  const studio=document.querySelector('#fcstudio4'),face=studio?.querySelector('.face4'),dock=face?.querySelector('.mx-dock');if(!face||!dock||s4().mode!=='flash')return;
+  studio.classList.add('mx-fc-stage');studio.classList.toggle('mx-fc-expanded',!!full4);
+  const controls=dock.querySelector('.controls4'),ratings=dock.querySelector('.ratings4');if(!controls)return;
+  const content=document.createElement('div');content.className='mx-fc-content';for(const el of [...face.children])if(el!==dock)content.append(el);face.prepend(content);
+  const bs=[...controls.querySelectorAll('button')];
+  for(const b of bs){const action=b.getAttribute('onclick')||'',label=b.textContent.trim(),s=action+' '+label;let k,l;
+   if(/move4\(\s*-1|^[‹«←]$/i.test(s)||/^[‹«←]$/.test(label)){k='left';l='Önceki kart';}
+   else if(/move4\(\s*1|^[›»→]$/i.test(s)||/^[›»→]$/.test(label)){k='right';l='Sonraki kart';}
+   else if(/flip4|çevir/i.test(s)){k='flip';l='Kartı çevir';}
+   else if(/autoToggle4|otomatik|duraklat/i.test(s)){k=auto4?'pause':'play';l=auto4?'Otomatik çevirme durdur':'Otomatik çevirme başlat';}
+   else if(/shuffle|karıştır/i.test(s)){k='shuffle';l='Karıştır';}
+   else if(/voice4|speak|ses/i.test(s)){k='sound';l='Seslendir / durdur';const old=b.onclick;b.onclick=e=>{if(window.speechSynthesis?.speaking){speechSynthesis.cancel();return;}old?.call(b,e);};}
+   if(k){icon(b,k,l);if(k==='left'||k==='right'){b.classList.add('mx-fc-'+k);face.append(b);}}
+  }
+  if(!controls.querySelector('[aria-label="Seslendir / durdur"]'))controls.append(button('sound','Seslendir / durdur',()=>{if(window.speechSynthesis?.speaking)speechSynthesis.cancel();else voice4();}));
+  controls.append(button('expand',full4?'Tam ekrandan çık':'Tam ekran',()=>fullscreen4()));
+  if(ratings){ratings.classList.add('mx-fc-ratings');[...ratings.querySelectorAll('button')].forEach((b,i)=>b.style.setProperty('--rating-color',['#d66a72','#e49b61','#d9bb68','#8ab99a','#4b9878'][i]||'var(--accent)'));}
+  const select=[...studio.querySelectorAll('select')].find(s=>[...s.options].some(o=>/bayrak yok|no flag/i.test(o.textContent)));
+  if(select){const flags=document.createElement('div');flags.className='mx-fc-flags';const opts=[...select.options],none=opts.find(o=>/bayrak yok|no flag/i.test(o.textContent)),colors=[['Sarı','#e9c34d',/sar[ıi]|yellow/i],['Yeşil','#54b987',/yeşil|yesil|green/i],['Turuncu','#e98b42',/turuncu|orange/i],['Kırmızı','#df626d',/k[ıi]rm[ıi]z[ıi]|red/i]];
+   const used=new Set();for(const [name,color,re] of colors){const o=opts.find(x=>x!==none&&!used.has(x)&&re.test(x.value+' '+x.textContent));if(!o)continue;used.add(o);const b=button('flag',name+' bayrak',()=>{select.value=select.value===o.value?(none?.value||''):o.value;select.dispatchEvent(new Event('change',{bubbles:true}));});b.style.color=color;b.setAttribute('aria-pressed',String(select.value===o.value));flags.append(b);}
+   if(flags.children.length===4){select.hidden=true;select.style.display='none';select.after(flags);}
+  }
+ }
+ const old=render;render=function(){old();layout();};
+ document.addEventListener('fullscreenchange',()=>{const s=document.querySelector('#fcstudio4');if(s)s.classList.toggle('mx-fc-expanded',!!full4||!!document.fullscreenElement);});
+}
+const previousStudioInstallerFlashStageMX=installStudioP1;
+installStudioP1=function(){previousStudioInstallerFlashStageMX();installFlashStageMX();};
