@@ -1,5 +1,5 @@
 {
-  "release": "0.16.6",
+  "release": "0.16.7",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Fullscreen study, independent review, quiz and matching, English File hierarchy"
+  "purpose": "Compact navigation and study method chooser, in-app update checks"
 }
