@@ -1,5 +1,5 @@
 {
-  "release": "0.16.8",
+  "release": "0.16.9",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Daily vocabulary, word map, unit-aware goals, recurring tasks, independent Pomodoro, mobile theme fixes"
+  "purpose": "Safe goal editing, compact actions and accessible day/night surfaces"
 }
