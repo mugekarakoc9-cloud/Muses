@@ -468,15 +468,15 @@ installStudioP1 = function(){originalStudioInstallMXCards();installBilingualCard
 
 /* Progressive path studio, media, companion. Code only. */
 function pathStatusMX(rows,strict=true){
- let frontier=-1;rows.forEach((x,i)=>{if(x.done||x.active||x.started)frontier=i;});
- return rows.map((x,i)=>({...x,state:x.done?'done':!strict||i<=frontier+1?'open':'locked'}));
+ let frontier=-1;rows.forEach((x,i)=>{if(x.done||x.skipped||x.active||x.started||x.unlocked)frontier=i;});
+ return rows.map((x,i)=>({...x,state:x.done?'done':x.skipped?'skipped':!strict||i<=frontier+1?'open':'locked'}));
 }
 function pathCurrentMX(rows){
- const active=rows.findIndex(x=>x.active&&!x.done);if(active>=0)return active;
- let last=-1;rows.forEach((x,i)=>{if(x.done||x.started)last=i;});
- if(last>=0&&!rows[last].done)return last;
- const next=rows.findIndex((x,i)=>i>last&&!x.done);
- const first=rows.findIndex(x=>!x.done);return next>=0?next:first>=0?first:rows.length-1;
+ const active=rows.findIndex(x=>x.active&&!x.done&&!x.skipped);if(active>=0)return active;
+ let last=-1;rows.forEach((x,i)=>{if(x.done||x.skipped||x.started||x.unlocked)last=i;});
+ if(last>=0&&!rows[last].done&&!rows[last].skipped)return last;
+ const next=rows.findIndex((x,i)=>i>last&&!x.done&&!x.skipped);
+ const first=rows.findIndex(x=>!x.done&&!x.skipped);return next>=0?next:first>=0?first:rows.length-1;
 }
 function pathVideoMX(raw){
  const m=String(raw||'').trim().match(/^https:\/\/([a-z0-9.-]+)(?::443)?(\/[^?#\s]*)?(?:\?([^#\s]*))?(?:#[^\s]*)?$/i);
@@ -555,7 +555,7 @@ function installPalaceMX(){
  function tile(t,s,c,i,action,a=0,b=0){return `<button class="mx-palace-tile" style="--mx-color:${c}" onclick="${action}"><span class="mx-palace-icon">${icon(i)}</span><b>${H(t)}</b><small>${H(s)}</small>${b?bar(a,b):''}</button>`;}
  function road(rows,color,act,strict=P().strict!==false){
    const all=pathStatusMX(rows,strict),next=pathCurrentMX(all),pathKey=JSON.stringify([sourceSelected||'',P().goal||'',P().day||'',rows[0]?.id,rows.at(-1)?.id]);if(P().pageKey!==pathKey){P().pageKey=pathKey;P().page=P().roadPages?.[pathKey]??Math.max(0,Math.floor(next/18));}const page=Math.min(Math.max(0,P().page||0),Math.max(0,Math.ceil(all.length/18)-1)),start=page*18;
-   return `<div class="mx-palace-tools"><button onclick="mxPalacePage(-1)" ${page?'':'disabled'}>‹</button><small>${all.length?start+1:0}–${Math.min(start+18,all.length)} / ${all.length}</small><button onclick="mxPalacePage(1)" ${start+18>=all.length?'disabled':''}>›</button><small>${all.filter(x=>x.done).length}/${all.length} tamamlandı</small><button onclick="mxPathSettings()" title="Yol ayarları" aria-label="Yol ayarları">⚙</button></div><div class="mx-road-view" tabindex="0" aria-label="Öğrenme yolu"><div class="mx-road" style="--mx-color:${color};zoom:${P().zoom||1}"><svg class="mx-road-line" aria-hidden="true"></svg>${all.slice(start,start+18).map((x,i)=>{const cmd=act(x).replace(/^mxPalaceOpen\(/,'mxPalacePathOpen('),status=x.state==='done'?'Tamamlandı':x.state==='locked'?'Kilitli · önceki durak':x.started?'Devam ediyor':'Açık';return `<div class="mx-stop" data-state="${x.state}" data-current="${start+i===next?'yes':'no'}" data-stop-id="${H(x.id)}" data-side="${i%2?'right':'left'}" style="--mx-shift:${Math.round(Math.sin(i*Math.PI/2)*48)}px"><button class="mx-node" aria-label="${H(x.title+' · '+status)}" onclick="${cmd}">${x.state==='done'&&((start+i+1)%5===0)?'🏆':icon(x.state==='done'?3:x.state==='locked'?4:x.icon||0)}</button><div class="mx-stop-label"><button onclick="${cmd}"><b>${H(x.title)}</b><small>${H(x.sub||'')}</small><small>${status}</small></button></div>${start+i===next&&!P().hideCat?'<span class="mx-next-tag">Şu an</span>':''}</div>`;}).join('')||'<p>Bu dalda kayıtlı durak yok.</p>'}</div></div>`;
+   return `<div class="mx-palace-tools"><button onclick="mxPalacePage(-1)" ${page?'':'disabled'}>‹</button><small>${all.length?start+1:0}–${Math.min(start+18,all.length)} / ${all.length}</small><button onclick="mxPalacePage(1)" ${start+18>=all.length?'disabled':''}>›</button><small>${all.filter(x=>x.done).length}/${all.length} tamamlandı${all.some(x=>x.skipped)?' · '+all.filter(x=>x.skipped).length+' atlandı':''}</small><button onclick="mxPathSettings()" title="Yol ayarları" aria-label="Yol ayarları">⚙</button></div><div class="mx-road-view" tabindex="0" aria-label="Öğrenme yolu"><div class="mx-road" style="--mx-color:${color};zoom:${P().zoom||1}"><svg class="mx-road-line" aria-hidden="true"></svg>${all.slice(start,start+18).map((x,i)=>{const cmd=act(x).replace(/^mxPalaceOpen\(/,'mxPalacePathOpen('),status=x.state==='done'?'Tamamlandı':x.state==='skipped'?'Atlandı':x.state==='locked'?'Kilitli · tıkla ve aç':x.started?'Devam ediyor':'Açık';return `<div class="mx-stop" data-state="${x.state}" data-current="${start+i===next?'yes':'no'}" data-stop-id="${H(x.id)}" data-side="${i%2?'right':'left'}" style="--mx-shift:${Math.round(Math.sin(i*Math.PI/2)*48)}px"><button class="mx-node" aria-label="${H(x.title+' · '+status)}" onclick="${cmd}">${x.state==='done'&&((start+i+1)%5===0)?'🏆':icon(x.state==='done'?3:x.state==='locked'?4:x.icon||0)}</button><div class="mx-stop-label"><button onclick="${cmd}"><b>${H(x.title)}</b><small>${H(x.sub||'')}</small><small>${status}</small></button></div>${start+i===next&&!P().hideCat?'<span class="mx-next-tag">Şu an</span>':''}</div>`;}).join('')||'<p>Bu dalda kayıtlı durak yok.</p>'}</div></div>`;
  }
  window.mxPalacePage=n=>{P().page=Math.max(0,(P().page||0)+n);(P().roadPages??={})[P().pageKey]=P().page;save();render();};
  window.mxPalaceZoom=n=>{P().zoom=n?Math.max(.7,Math.min(1.5,Math.round(((P().zoom||1)+n)*10)/10)):1;save();render();};
@@ -566,7 +566,79 @@ function installPalaceMX(){
  window.mxPalaceCategory=k=>{sourceSelected='';P().category=D(k);P().page=0;sourceFilter='';save();go('resources');};
  window.mxLeaveLesson=()=>{const r=resourceRows().find(x=>x.id===String(sourceSelected||'').split('~')[0]);if(!r)return go('resources');const id=P().nodes[r.id]||'',chain=lineage(sourceTree(r),id);select(r.id,chain.at(-2)?.id||'');go('resources');};
  window.mxPalaceOpen=(rk,nk='',locked=false)=>{if(locked&&P().strict!==false)return toast('Önce önceki durağı tamamla. Serbest erişim ile çalışma sırasını değiştirebilirsin.');if(select(D(rk),D(nk))){meow('step');if(view==='resources')render();else{go('resources');select(D(rk),D(nk));render();}}};
- window.mxPalacePathOpen=(rk,nk='',locked=false)=>{const rid=D(rk),nid=D(nk),r=resourceRows().find(x=>x.id===rid),n=nid&&r?findNode6(sourceTree(r),nid):null;if(!r||nid&&!n)return;window.mxPalaceOpen(rk,nk,false);if(!n||n.children?.length)return;const t=rid+'~'+nid;if(typeof window.mxStartLinkedFocus!=='function'||!window.mxStartLinkedFocus('resource',t))return;const date=today(),time=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Istanbul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date());let task=S.tasks.find(x=>x.module==='resource'&&x.target===t&&x.date===date&&!taskDone5(x));if(!task){task={id:uid(),title:r.title+' · '+n.title,module:'resource',target:t,date,time,amount:1,priority:'normal',done:false,note:'Path üzerinden başlatıldı',mxActualStart:Date.now()};S.tasks.push(task);}else{task.mxActualStart??=Date.now();if(!task.time)task.time=time;}save();};
+
+ const pathSkipped=(r,n)=>!!P().skipped?.[r.id+'~'+n.id];
+ const pathResolved=(r,n)=>leafDone(n)||pathSkipped(r,n);
+ const pathLeaves=(r,n)=>n?leaves([n]):leaves(sourceTree(r));
+ function pathTask(r,n,date,action,create=true){
+   const key=r.id+'~'+n.id,now=Date.now(),time=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Istanbul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(now));
+   let t=S.tasks.find(x=>x.module==='resource'&&x.target===key&&x.date===date);
+   if(!t&&!create)return null;
+   if(!t){t={id:uid(),title:r.title+' · '+n.title,module:'resource',target:key,date,time:action==='plan'?'':time,amount:1,priority:'normal',done:false,note:''};S.tasks.push(t);}
+   if(action==='start'){t.mxActualStart??=now;if(!t.time)t.time=time;delete t.mxPathSkipped;delete t.mxPathStatus;}
+   if(action==='complete'){t.done=true;t.mxPathStatus='completed';delete t.mxPathSkipped;t.mxCompletedAt??=now;}
+   if(action==='skip'){t.done=false;t.mxPathSkipped=true;t.mxPathStatus='skipped';}
+   if(action==='reopen'){t.done=false;delete t.mxPathSkipped;delete t.mxPathStatus;delete t.mxCompletedAt;}
+   return t;
+ }
+ function pathNext(r,n){
+   const ordered=pathLeaves(r),last=pathLeaves(r,n).at(-1),i=ordered.findIndex(x=>x.id===last?.id),next=ordered.slice(i+1).find(x=>!pathResolved(r,x))||ordered.find(x=>!pathResolved(r,x));
+   (P().activeStops??={})[r.id]=next?.id||'';
+   const chain=lineage(sourceTree(r),n.id),parent=chain.at(-2);
+   if(select(r.id,parent?.id||'')){
+     const siblings=parent?.children||sourceTree(r),idx=siblings.findIndex(x=>pathLeaves(r,x).some(y=>y.id===next?.id));
+     if(idx>=0){P().page=Math.floor(idx/18);P().pageKey=JSON.stringify([sourceSelected||'',P().goal||'',P().day||'',siblings[0]?.id,siblings.at(-1)?.id]);(P().roadPages??={})[P().pageKey]=P().page;}
+   }
+ }
+ function pathOpenLeaf(r,n,withTimer){
+   const key=target(r,n);(P().unlocked??={})[key]=true;delete (P().skipped??={})[key];
+   if(withTimer){if(typeof window.mxStartLinkedFocus!=='function'||!window.mxStartLinkedFocus('resource',key))return;pathTask(r,n,today(),'start');}
+   else if(S.tasks.some(x=>x.module==='resource'&&x.target===key&&x.date===today()&&x.mxPathSkipped))pathTask(r,n,today(),'reopen',false);
+   close5();window.mxPalaceOpen(K(r.id),K(n.id),false);save();render();
+ }
+ function pathMarkLeaf(r,n,date,action,create=true){
+   const key=target(r,n);
+   if(action==='complete'){
+     if(leafDone(n))return false;
+     delete (P().skipped??={})[key];
+     P().evidence[key]={method:'Tamamlandı (kullanıcı beyanı)',note:String(P().notes[key]||'').trim(),date,reported:true};
+     v2().chapterDone[n.id]=true;s4().chapterDates[n.id]=date;v6().resourceStarted[r.id]=true;
+   }else{
+     if(leafDone(n)||pathSkipped(r,n))return false;
+     (P().skipped??={})[key]={date,at:Date.now()};
+   }
+   (P().unlocked??={})[key]=true;
+   window.mxStopLinkedFocus?.('resource',key);pathTask(r,n,date,action,create);return true;
+ }
+ window.mxPathAction=(rk,nk,action)=>{
+   const {r,n}=node(D(rk),D(nk));if(!r||!n)return;
+   const children=pathLeaves(r,n),group=!!n.children?.length,date=today(),key=target(r,n);
+   if(action==='open'){(P().unlocked??={})[key]=true;close5();if(group){window.mxPalaceOpen(rk,nk,false);save();}else pathOpenLeaf(r,n,false);return;}
+   if(action==='start'){
+     const leaf=group?children.find(x=>!pathResolved(r,x))||children[0]:n;
+     if(leaf)pathOpenLeaf(r,leaf,true);return;
+   }
+   if(action==='plan'){pathTask(r,n,date,'plan');save();close5();render();toast('Bugünün ajandasına eklendi.');return;}
+   if(action==='reopen'){
+     if(group)return;
+     if(leafDone(n)){window.mxPalaceUndo(rk,nk);return;}
+     delete (P().skipped??={})[key];(P().unlocked??={})[key]=true;
+     pathTask(r,n,date,'reopen',false);(P().activeStops??={})[r.id]=n.id;save();close5();render();return;
+   }
+   if(action!=='complete'&&action!=='skip')return;
+   const affected=children.filter(x=>action==='complete'?!leafDone(x):!pathResolved(r,x));
+   if(!affected.length){close5();return;}
+   if(group&&!confirm(affected.length+' alt durağı '+(action==='complete'?'tamamlandı olarak işaretle':'atla')+'? Gerçek çalışma süresi eklenmez.'))return;
+   for(const leaf of affected)pathMarkLeaf(r,leaf,date,action,!group);
+   if(group)pathTask(r,n,date,action);
+   pathNext(r,n);save();close5();render();if(action==='complete')meow('win');else toast('Durak atlandı; sıradaki durak açıldı.');
+ };
+ window.mxPalacePathOpen=(rk,nk='',locked=false)=>{
+   const {r,n}=node(D(rk),D(nk));if(!r)return;if(!n){window.mxPalaceOpen(rk,nk,false);return;}
+   const children=pathLeaves(r,n),group=!!n.children?.length,done=children.length>0&&children.every(leafDone),skipped=!done&&children.length>0&&children.every(x=>pathResolved(r,x)),status=done?'Tamamlandı':skipped?'Atlandı':locked?'Kilitli — açabilir veya atlayabilirsin':'Çalışmaya hazır';
+   const action=(a,label,cls='')=>'<button class="'+cls+'" onclick="mxPathAction(\''+H(rk)+'\',\''+H(nk)+'\',\''+a+'\')">'+label+'</button>';
+   modal5('<div class="modalhead5"><h2>'+H(n.title)+'</h2><button onclick="close5()">×</button></div><p>'+H(status)+'</p>'+(group?'<p>'+children.filter(leafDone).length+' / '+children.length+' alt durak tamamlandı</p>':'')+'<div class="mx-path-actions">'+action('open',group?'Alt bölümleri aç':'Durağı aç')+action('start','▶ '+(done?'Tekrar çalış':'Çalışmayı başlat')+' · Pomodoro','primary')+action('plan','＋ Bugünün ajandasına ekle')+(!done?action('complete',group?'✓ Tüm alt durakları tamamla':'✓ Tamamla'):'')+(!done&&!skipped?action('skip',group?'↷ Alt durakları atla':'↷ Atla'):'')+(!group&&(done||skipped)?action('reopen',done?'Tamamlanmayı geri al':'Atlamayı geri al'):'')+'</div><p class="muted">Atlamak tamamlanma veya çalışma süresi sayılmaz.</p>');
+ };
  window.mxPalaceClassic=()=>{P().classic=!P().classic;save();render();};
  const oldSourceOpen=sourceOpen6;sourceOpen6=function(id){if(!P().classic&&select(id))return go('resources');return oldSourceOpen(id);};
  const oldRoute=route5;route5=function(m,t,d){if(m==='resource'){const [rid,nid='']=String(t).split('~');if(select(rid,nid)){selected=d||today();calMonth=selected.slice(0,7);return go('resources');}}return oldRoute(m,t,d);};
@@ -586,24 +658,17 @@ function installPalaceMX(){
  window.mxLessonRemove=k=>{if(!confirm('Video bağlantısı kaldırılsın mı? Çalışma kayıtları korunur.'))return;P().media[D(k)]=null;save();render();};
  window.mxLessonPlay=k=>{const key=D(k),[rid,nid='']=key.split('~'),{r,n}=node(rid,nid),m=r&&getMedia(r,n);if(m?.kind!=='embed')return;const box=[...document.querySelectorAll('[data-mx-lesson]')].find(e=>e.dataset.mxLesson===k);if(!box||box.querySelector('iframe'))return;const frame=document.createElement('iframe');frame.className='mx-lesson-player';frame.src=m.src;frame.title=n?.title||r.title;frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';box.replaceChildren(frame);};
  function media(r,n){const k=K(target(r,n)),m=getMedia(r,n);return `<section class="card"><h3>${icon(1,18)} Ders videosu</h3>${m?`<div data-mx-lesson="${k}">${m.kind==='embed'?`<button class="primary" onclick="mxLessonPlay('${k}')">▶ Uygulama içinde oynat</button>`:m.kind==='local'?`<video class="mx-lesson-player" controls playsinline preload="metadata"></video><small>Yerel video</small>`:m.kind==='audio'?`<audio controls preload="none" src="${H(m.src)}"></audio>`:`<video class="mx-lesson-player" controls playsinline preload="none" src="${H(m.src)}"></video>`}</div><p class="muted"> ${m.kind==='local'?'Yerel dosya':'İnternet ve yayıncı gömme izni gerekir.'}</p>`:'<p class="muted">Doğrulanmış ders videosu henüz kayıtlı değil.</p>'}<div class="mx-palace-tools"><button onclick="mxLessonAdd('${K(r.id)}','${K(n?.id||'')}')">${m?'Değiştir':'Video / bağlantı ekle'}</button>${m?`<button onclick="mxLessonRemove('${k}')">Kaldır</button>`:''}</div></section>`;}
- window.mxPalaceFocus=k=>{const t=D(k);if(typeof window.mxStartLinkedFocus==='function')window.mxStartLinkedFocus('resource',t);else if(typeof window.toggleActivityP1==='function')window.toggleActivityP1('resource',K(t));else toast('Pomodoro modülü bulunamadı.');};
+ window.mxPalaceFocus=k=>{const t=D(k),[rid,nid]=t.split('~'),{r,n}=node(rid,nid);if(r&&n){const leaf=n.children?.length?pathLeaves(r,n).find(x=>!pathResolved(r,x))||pathLeaves(r,n)[0]:n;if(leaf)return pathOpenLeaf(r,leaf,true);}if(typeof window.mxStartLinkedFocus==='function')window.mxStartLinkedFocus('resource',t);else if(typeof window.toggleActivityP1==='function')window.toggleActivityP1('resource',K(t));else toast('Pomodoro modülü bulunamadı.');};
  window.mxPalaceStop=k=>{const t=D(k);if(typeof window.mxStopLinkedFocus==='function'&&window.mxStopLinkedFocus('resource',t)){for(const e of document.querySelectorAll('[data-mx-path-time]'))if(e.dataset.mxPathTime===k)e.textContent=fmtTime9(seconds9(today(),'resource',t));toast('Çalışma süresi kaydedildi.');}else toast('Bu durağın çalışan sayacı yok.');};
  // A deliberate click records self-reported completion; a timer alone never does.
  window.mxCompleteResourceLeaf=(rid,nid,d=today(),stay=true)=>{
    const {r,n}=node(rid,nid);if(!r||!n||n.children?.length)return false;
    if(leafDone(n))return true;
-   const key=target(r,n),note=String(P().notes[key]||'').trim();
-   P().evidence[key]={method:'Tamamlandı (kullanıcı beyanı)',note,date:d,reported:true};
-   v2().chapterDone[n.id]=true;s4().chapterDates[n.id]=d;v6().resourceStarted[r.id]=true;
-   window.mxStopLinkedFocus?.('resource',key);
-   const chain=lineage(sourceTree(r),n.id),parent=chain.at(-2),siblings=parent?parent.children:sourceTree(r);
-   const next=siblings.slice(siblings.findIndex(y=>y.id===n.id)+1).flatMap(x=>leaves([x])).find(x=>!leafDone(x));
-   (P().activeStops??={})[r.id]=next?.id||'';
-   if(!stay)select(r.id,parent?.id||'');
+   pathMarkLeaf(r,n,d,'complete');if(!stay)pathNext(r,n);else{const ordered=pathLeaves(r),i=ordered.findIndex(x=>x.id===n.id);(P().activeStops??={})[r.id]=ordered.slice(i+1).find(x=>!pathResolved(r,x))?.id||ordered.find(x=>!pathResolved(r,x))?.id||'';}
    save();close5();render();meow('win');return true;
  };
  window.mxPalaceComplete=(rk,nk)=>window.mxCompleteResourceLeaf(D(rk),D(nk),today(),false);
- window.mxPalaceUndo=(rk,nk)=>{const {r,n}=node(D(rk),D(nk));if(!r||!n||n.children?.length||!confirm('Tamamlanma geri alınsın mı? Süre kaydı korunur.'))return;delete P().evidence[target(r,n)];v2().chapterDone[n.id]=false;delete s4().chapterDates[n.id];persist();};
+ window.mxPalaceUndo=(rk,nk)=>{const {r,n}=node(D(rk),D(nk));if(!r||!n||n.children?.length||!confirm('Tamamlanma geri alınsın mı? Süre kaydı korunur.'))return;delete P().evidence[target(r,n)];v2().chapterDone[n.id]=false;delete s4().chapterDates[n.id];for(const t of S.tasks.filter(x=>x.module==='resource'&&x.target===target(r,n)&&x.mxPathStatus==='completed')){t.done=false;delete t.mxPathStatus;delete t.mxCompletedAt;}persist();};
  let noteSaveTimer=0;function flushLessonNotes(){if(noteSaveTimer){clearTimeout(noteSaveTimer);noteSaveTimer=0;save();}}window.addEventListener('pagehide',flushLessonNotes);window.mxLessonNote=(k,value,immediate=false)=>{P().notes[D(k)]=String(value).slice(0,50000);clearTimeout(noteSaveTimer);if(immediate){noteSaveTimer=0;save();}else noteSaveTimer=setTimeout(()=>{noteSaveTimer=0;save();},350);};
  function detail(r,n){const k=target(r,n),e=P().evidence[k];return `<div class="mx-lesson-layout"><div>${media(r,n)}<section class="card"><h3>Çalışma</h3><p>${H(n.note||'Kaynakta süre belirtilmemiş.')}</p>${n.detail?`<p>${H(n.detail)}</p>`:''}<p>Bugün kayıtlı süre: <b data-mx-path-time="${K(k)}">${H(fmtTime9(seconds9(today(),'resource',k)))}</b></p><div class="mx-palace-tools">${leafDone(n)?`<button onclick="mxPalaceUndo('${K(r.id)}','${K(n.id)}')">Tamamlanmayı geri al</button>`:`<button class="primary" onclick="mxPalaceComplete('${K(r.id)}','${K(n.id)}')">Çalışmayı kaydet ve bitir</button>`}</div>${e?`<p>${H(e.method)} · ${H(e.date)}</p><p>${H(e.note)}</p>`:leafDone(n)?'<p>Önceden tamamlanmış kayıt.</p>':''}</section></div><section class="card"><h3>Çalışma notları</h3><textarea rows="8" placeholder="Notların…" oninput="mxLessonNote('${K(k)}',this.value)" onchange="mxLessonNote('${K(k)}',this.value,true)">${H(P().notes[k]||'')}</textarea><button onclick="go('flash')">Kelime çalışması</button></section></div>`;}
  const oldResources=resourcesView;
@@ -611,7 +676,7 @@ function installPalaceMX(){
    if(P().classic)return `<button onclick="mxPalaceClassic()">Hafıza sarayına dön</button>`+oldResources();
    const all=resourceRows(),r=all.find(x=>x.id===String(sourceSelected||'').split('~')[0]),catg=P().category||'';
    if(r){const tree=sourceTree(r),id=String(sourceSelected).includes('~')?String(sourceSelected).split('~')[1]:P().nodes[r.id]||'',chain=lineage(tree,id),n=chain.at(-1),children=n?n.children||[]:tree,[c,i]=tone(r.type),s=state6(r);
-     return `<div class="mx-palace"><div class="mx-crumb"><button onclick="mxPalaceCategory('${K(r.type||'Diğer')}')">‹ Kaynaklar</button><button onclick="mxPalaceOpen('${K(r.id)}')">${H(r.title)}</button>${chain.map(x=>`<span>›</span><button onclick="mxPalaceOpen('${K(r.id)}','${K(x.id)}')">${H(x.title)}</button>`).join('')}</div>${hero(n?.title||r.title,n?n.children?.length?'Alt durakları seç':'Çalışma alanın':r.method||'Bölümlerini seçerek ilerle.')}<div class="mx-palace-tools"><button class="primary" onclick="mxPalaceFocus('${K(target(r,n))}')">◷ Pomodoro başlat / devam et</button><button onclick="mxPalaceStop('${K(target(r,n))}')">Süreyi kaydet ve durdur</button><button onclick="resourceGoal6('${K(r.id)}','${K(n?.id||'')}')">Hedef oluştur</button>${typeof window.mxFinishGoal==='function'?`<button onclick="mxFinishGoal('resource')">Çoklu bölüm hedefi</button>`:''}<button onclick="mxPathSettings()" aria-label="Yol ayarları">⚙</button></div><p>${s.n}/${s.total} kaynak geneli</p>${bar(s.n,s.total)}${children.length?road(children.map(x=>{const a=leaves([x]),done=a.filter(leafDone).length;return {id:x.id,title:x.title,sub:[x.note,a.length>1?done+'/'+a.length+' alt konu':''].filter(Boolean).join(' · '),done:a.length>0&&done===a.length,started:done>0,active:a.some(y=>y.id===activeResourceStop(r)),icon:x.children?.length?0:i};}),c,x=>`mxPalaceOpen('${K(r.id)}','${K(x.id)}',${x.state==='locked'})`):n?detail(r,n):'<p>Gerçek bölüm listesi henüz yok.</p>'}<details class="card"><summary>Kaynağı düzenle</summary><form class="flex" onsubmit="addNested(event,'${K(n?.id||'')}')"><input name="title" required placeholder="Yeni bölüm"><button>＋ Ekle</button></form>${!n?media(r,null):''}</details></div>`;
+     return `<div class="mx-palace"><div class="mx-crumb"><button onclick="mxPalaceCategory('${K(r.type||'Diğer')}')">‹ Kaynaklar</button><button onclick="mxPalaceOpen('${K(r.id)}')">${H(r.title)}</button>${chain.map(x=>`<span>›</span><button onclick="mxPalaceOpen('${K(r.id)}','${K(x.id)}')">${H(x.title)}</button>`).join('')}</div>${hero(n?.title||r.title,n?n.children?.length?'Alt durakları seç':'Çalışma alanın':r.method||'Bölümlerini seçerek ilerle.')}<div class="mx-palace-tools"><button class="primary" onclick="mxPalaceFocus('${K(target(r,n))}')">◷ Pomodoro başlat / devam et</button><button onclick="mxPalaceStop('${K(target(r,n))}')">Süreyi kaydet ve durdur</button><button onclick="resourceGoal6('${K(r.id)}','${K(n?.id||'')}')">Hedef oluştur</button>${typeof window.mxFinishGoal==='function'?`<button onclick="mxFinishGoal('resource')">Çoklu bölüm hedefi</button>`:''}<button onclick="mxPathSettings()" aria-label="Yol ayarları">⚙</button></div><p>${s.n}/${s.total} kaynak geneli</p>${bar(s.n,s.total)}${children.length?road(children.map(x=>{const a=leaves([x]),done=a.filter(leafDone).length;return {id:x.id,title:x.title,sub:[x.note,a.length>1?done+'/'+a.length+' alt konu':''].filter(Boolean).join(' · '),done:a.length>0&&done===a.length,skipped:a.length>0&&done!==a.length&&a.every(y=>pathResolved(r,y)),unlocked:!!P().unlocked?.[target(r,x)],started:done>0||a.some(y=>pathSkipped(r,y)),active:a.some(y=>y.id===activeResourceStop(r)),icon:x.children?.length?0:i};}),c,x=>`mxPalaceOpen('${K(r.id)}','${K(x.id)}',${x.state==='locked'})`):n?detail(r,n):'<p>Gerçek bölüm listesi henüz yok.</p>'}<details class="card"><summary>Kaynağı düzenle</summary><form class="flex" onsubmit="addNested(event,'${K(n?.id||'')}')"><input name="title" required placeholder="Yeni bölüm"><button>＋ Ekle</button></form>${!n?media(r,null):''}</details></div>`;
    }
    const types=[...new Set(all.map(x=>x.type||'Diğer'))].sort((a,b)=>a.localeCompare(b,'tr'));
    return `<div class="mx-palace">${hero(catg||'Öğrenme sarayım',catg?'Bir kaynak seç.':'Öğrenme alanı → kaynak → bölüm → çalışma.')}<div class="mx-palace-tools">${catg?'<button onclick="mxPalaceCategory(\'\')">‹ Alanlar</button>':''}<button onclick="go('english')">Benim Yolum</button><button onclick="mxPathSettings()" aria-label="Yol ayarları">⚙</button></div>${catg?`<div class="card"><input id="resSearch6" placeholder="Kategori içinde ara" value="${H(sourceFilter)}" oninput="sourceFilter=this.value;searchRender(this)"></div>`:''}<div class="mx-palace-grid">${catg?all.filter(x=>(x.type||'Diğer')===catg&&(!sourceFilter||x.title.toLocaleLowerCase('tr').includes(sourceFilter.toLocaleLowerCase('tr')))).map(x=>{const a=state6(x),[c,i]=tone(x.type);return tile(x.title,`${a.n}/${a.total} çalışma birimi`,c,i,`mxPalaceOpen('${K(x.id)}')`,a.n,a.total);}).join(''):types.map(t=>{const [c,i]=tone(t);return tile(t,all.filter(x=>(x.type||'Diğer')===t).length+' kaynak',c,i,`mxPalaceCategory('${K(t)}')`);}).join('')}</div></div>`;
@@ -1250,7 +1315,7 @@ function installHourlyAgendaMX(){
  window.mxHourlyMove=n=>{selected=add(date(),n*(P().mode==='day'?1:7));calMonth=selected.slice(0,7);render();};
  window.mxHourlyToday=()=>{selected=today();calMonth=selected.slice(0,7);render();};
  window.mxHourlyCreate=(d,time='')=>{q5Id='';q5Date=d;q5Module='general';q5Target='';q5Draft={title:'',date:d,time,priority:'Orta',note:'',amount:1};quickForm5();};
- function card(t){const done=!!t.done,color=colors[t.module]||colors.general,draggable=!done&&S.tasks.some(x=>x.id===t.id&&!taskDone5(x)),name=t.label||t.title||'Çalışma';return '<div class="mx-hour-entry">'+(S.tasks.some(x=>x.id===t.id)?window.mxTaskCheckHTML(t.id):'')+'<button class="mx-hour-task'+(done?' is-done':'')+'" draggable="false" '+(draggable?'data-mx-hour-task="'+H(K(t.id))+'"':'')+' style="--task-color:'+color+'" onclick="'+(t.kind==='task'?'showQuick5':'rowAction5')+'(\''+H(t.date)+'\',\''+H(K(t.id))+'\')" title="'+H(name)+'"><small>'+H(t.time||'')+'</small><span>'+H(name)+'</span></button></div>';}
+ function card(t){const done=!!t.done,color=colors[t.module]||colors.general,draggable=!done&&S.tasks.some(x=>x.id===t.id&&!taskDone5(x)),name=(t.label||t.title||'Çalışma')+(S.tasks.find(x=>x.id===t.id)?.mxPathSkipped?' · Atlandı':'');return '<div class="mx-hour-entry">'+(S.tasks.some(x=>x.id===t.id)?window.mxTaskCheckHTML(t.id):'')+'<button class="mx-hour-task'+(done?' is-done':'')+'" draggable="false" '+(draggable?'data-mx-hour-task="'+H(K(t.id))+'"':'')+' style="--task-color:'+color+'" onclick="'+(t.kind==='task'?'showQuick5':'rowAction5')+'(\''+H(t.date)+'\',\''+H(K(t.id))+'\')" title="'+H(name)+'"><small>'+H(t.time||'')+'</small><span>'+H(name)+'</span></button></div>';}
  function switches(){return '<div class="mx-agenda-switch">'+[['day','Gün'],['week','Hafta'],['month','Ay']].map(([m,l])=>'<button class="'+(P().mode===m?'primary':'')+'" onclick="mxHourlyMode(\''+m+'\')">'+l+'</button>').join('')+'</div>';}
  calendar=function(){
   if(P().mode==='month'){v5().mode='month';return old().replace(/onclick="v5\(\)\.mode='(day|week|month)';save\(\);render\(\)"/g,(_,m)=>'onclick="mxHourlyMode(\''+m+'\')"');}
@@ -1309,7 +1374,7 @@ function installTaskStudioMX(){
  function leaf(t){if(t?.module!=='resource')return null;const [rid,nid]=String(t.target||'').split('~');const r=resourceRows().find(x=>x.id===rid),n=r&&nid?findNode6(sourceTree(r),nid):null;return n&&!n.children?.length?{r,n}:null;}
  const baseDone=taskDone5;
  taskDone5=function(t){const x=leaf(t);return x?leafDone(x.n):baseDone(t);};
- window.mxTaskCheckHTML=id=>{const t=S.tasks.find(x=>x.id===id);if(!t)return '';const done=taskDone5(t),label=done?'Tamamlandı':'Tamamla';return '<button type="button" class="mx-task-check" aria-label="'+H(label+': '+t.title)+'" aria-pressed="'+Boolean(done)+'" title="'+label+'" onclick="event.stopPropagation();mxTaskCheck(\''+H(K(id))+'\')">'+(done?'✓':'')+'</button>';};
+ window.mxTaskCheckHTML=id=>{const t=S.tasks.find(x=>x.id===id);if(!t)return '';const done=taskDone5(t),label=done?'Tamamlandı':t.mxPathSkipped?'Atlandı · tamamlamak için tıkla':'Tamamla';return '<button type="button" class="mx-task-check" aria-label="'+H(label+': '+t.title)+'" aria-pressed="'+Boolean(done)+'" title="'+label+'" onclick="event.stopPropagation();mxTaskCheck(\''+H(K(id))+'\')">'+(done?'✓':'')+'</button>';};
  window.mxTaskCheck=k=>{const t=S.tasks.find(x=>x.id===dec5(k));if(!t)return;const x=leaf(t);if(x){if(!leafDone(x.n))return window.mxCompleteResourceLeaf(x.r.id,x.n.id,today(),true);return toast('Bu kaynak tamamlandı. Geri almak için kaynak kaydını aç.');}if(!linked5(t)){t.done=!taskDone5(t);save();render();return;}if(!taskDone5(t))return rowAction5(t.date,K(t.id));return toast('Bağlı çalışmayı kendi kaydından düzenleyebilirsin.');};
  const baseRow=row5;row5=function(row,compact=false){const html=baseRow(row,compact);if(!S.tasks.some(t=>t.id===row.id)||!html.endsWith('</div>'))return html;return html.slice(0,-6)+window.mxTaskCheckHTML(row.id)+'</div>';};
  const baseQuick=quickForm5;
