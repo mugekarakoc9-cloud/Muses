@@ -1,5 +1,5 @@
 {
-  "release": "0.16.4",
+  "release": "0.16.5",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Vocabulary theme and multiple source task selection"
+  "purpose": "Mobile flashcard drag and directional feedback"
 }
