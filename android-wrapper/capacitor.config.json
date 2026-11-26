@@ -1,0 +1,12 @@
+{
+  "appId": "com.muses.life",
+  "appName": "MUSES",
+  "webDir": "www",
+  "server": {
+    "hostname": "localhost",
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
