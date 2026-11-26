@@ -1635,7 +1635,7 @@ const previousStudioEnglishFileMX=installStudioP1;installStudioP1=function(){pre
 function installBulkSelectionMX(){
  if(window.mxBulkSelectionReady)return;window.mxBulkSelectionReady=true;
  const selector='[data-mx-bulk-task],[data-mx-bulk-resource][data-mx-bulk-node],[data-mx-bulk-goal][data-mx-bulk-day]';
- const chosen=new Map();let enabled=false,gesture=null,bar=null,suppressUntil=0;
+ const chosen=new Map();let enabled=false,gesture=null,bar=null,suppressUntil=0,anchor=null;
  const D=x=>dec5(String(x||''));
  function descriptor(el){if(!el)return null;const d=el.dataset;if(d.mxBulkTask)return {kind:'task',id:D(d.mxBulkTask)};if(d.mxBulkResource&&d.mxBulkNode)return {kind:'resource',rid:D(d.mxBulkResource),nid:D(d.mxBulkNode)};if(d.mxBulkGoal&&d.mxBulkDay)return {kind:'goal',id:D(d.mxBulkGoal),day:d.mxBulkDay};return null;}
  const key=x=>JSON.stringify(x);
@@ -1649,10 +1649,17 @@ function installBulkSelectionMX(){
   if(!enabled){btn('☑ Çoklu seç',()=>{enabled=true;paint();});return;}
   const count=document.createElement('strong');count.textContent=chosen.size+' seçili';bar.append(count);
   btn('Görünenleri seç',()=>{for(const el of available()){const d=descriptor(el);chosen.set(key(d),d);}paint();});
-  btn('Temizle',()=>{chosen.clear();paint();});const done=btn('✓ Seçileni tamamla',complete,true);done.disabled=!chosen.size;
-  btn('Çık',()=>{chosen.clear();enabled=false;gesture=null;paint();});
+  btn('Temizle',()=>{chosen.clear();anchor=null;paint();});const done=btn('✓ Seçileni tamamla',complete,true);done.disabled=!chosen.size;
+  const tasks=[...chosen.values()].filter(d=>d.kind==='task');
+  const edit=btn('Tarih / saat değiştir',()=>editTasks(tasks));edit.disabled=!tasks.length||tasks.length!==chosen.size;
+  const del=btn('Seçili görevleri sil',()=>deleteTasks(tasks));del.disabled=!tasks.length||tasks.length!==chosen.size;
+  btn('Çık',()=>{chosen.clear();enabled=false;gesture=null;anchor=null;paint();});
  }
  function set(el,value){const d=descriptor(el);if(!d)return;const k=key(d);if(value)chosen.set(k,d);else chosen.delete(k);}
+ function reset(){chosen.clear();enabled=false;gesture=null;anchor=null;save();render();}
+ function deleteTasks(ds){const ids=new Set(ds.map(d=>d.id));if(!confirm(ids.size+' ajanda görevi silinsin mi? Kaynak ve çalışma geçmişi korunur.'))return;S.tasks=S.tasks.filter(t=>!ids.has(t.id));reset();}
+ function editTasks(ds){modal5('<div class="modalhead5"><h2>Toplu görev düzenle</h2><button onclick="close5()">×</button></div><form id="mx-bulk-edit"><label>Yeni tarih (boşsa değişmez)<input type="date" name="date"></label><label>Yeni saat (boşsa değişmez)<input type="time" name="time"></label><button class="primary">Uygula</button></form>');const form=document.querySelector('#mx-bulk-edit');form.onsubmit=e=>{e.preventDefault();const f=new FormData(form),date=f.get('date'),time=f.get('time');if(!date&&!time)return;const ids=new Set(ds.map(d=>d.id));for(const t of S.tasks){if(!ids.has(t.id))continue;if(date)t.date=date;if(time)t.time=time;}close5();reset();};}
+ function range(el){const d=descriptor(el),k=key(d),rows=available().filter(x=>{const a=descriptor(x);return a.kind===d.kind&&(d.kind!=='resource'||a.rid===d.rid)&&(d.kind!=='goal'||a.id===d.id);});const i=rows.findIndex(x=>key(descriptor(x))===anchor),j=rows.findIndex(x=>key(descriptor(x))===k);if(i>=0&&j>=0){for(const x of rows.slice(Math.min(i,j),Math.max(i,j)+1))set(x,true);}else set(el,true);anchor=k;}
  function complete(){
   const resources=[],plain=[],others=[];for(const d of chosen.values()){
    if(d.kind==='resource'){resources.push(d);continue;}
@@ -1666,12 +1673,12 @@ function installBulkSelectionMX(){
   const count=window.mxBulkPathComplete?.(resources)||0;for(const t of plain)t.done=true;const skipped=others.length;chosen.clear();enabled=false;gesture=null;save();render();toast((count+plain.length)+' çalışma birimi tamamlandı.'+(skipped?' '+skipped+' özel kayıt kendi ekranından tamamlanmalı.':''));
  }
  function hit(x,y){return document.elementFromPoint(x,y)?.closest(selector);}
- document.addEventListener('pointerdown',e=>{if(!enabled||e.button!==0)return;const el=e.target.closest?.(selector);if(!el||!descriptor(el))return;e.preventDefault();e.stopImmediatePropagation();const d=descriptor(el),value=!chosen.has(key(d));gesture={id:e.pointerId,x:e.clientX,y:e.clientY,value,seen:new Set([key(d)])};set(el,value);paint();},true);
+ document.addEventListener('pointerdown',e=>{if(e.button!==0)return;const el=e.target.closest?.(selector);if(!el||!descriptor(el))return;const d=descriptor(el);if(!enabled&&!e.shiftKey){anchor=key(d);return;}e.preventDefault();e.stopImmediatePropagation();enabled=true;const value=e.shiftKey||!chosen.has(key(d));if(e.shiftKey)range(el);else{anchor=key(d);set(el,value);}gesture={id:e.pointerId,x:e.clientX,y:e.clientY,value,seen:new Set([key(d)])};paint();},true);
  document.addEventListener('pointermove',e=>{if(!gesture||e.pointerId!==gesture.id)return;e.preventDefault();e.stopImmediatePropagation();const g=gesture,dx=e.clientX-g.x,dy=e.clientY-g.y,steps=Math.max(1,Math.min(80,Math.ceil(Math.hypot(dx,dy)/14)));for(let i=1;i<=steps;i++){const el=hit(g.x+dx*i/steps,g.y+dy*i/steps),d=descriptor(el);if(!d||g.seen.has(key(d)))continue;g.seen.add(key(d));set(el,g.value);}g.x=e.clientX;g.y=e.clientY;paint();},true);
  function finish(e){if(!gesture||e.pointerId!==gesture.id)return;e.preventDefault();e.stopImmediatePropagation();gesture=null;suppressUntil=Date.now()+400;}
  document.addEventListener('pointerup',finish,true);document.addEventListener('pointercancel',finish,true);
- document.addEventListener('click',e=>{const el=e.target.closest?.(selector);if(!enabled||!el)return;if(Date.now()<suppressUntil){e.preventDefault();e.stopImmediatePropagation();return;}if(e.detail===0){e.preventDefault();e.stopImmediatePropagation();const d=descriptor(el);if(d)set(el,!chosen.has(key(d)));paint();}},true);
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&enabled){gesture=null;chosen.clear();enabled=false;paint();}});
+ document.addEventListener('click',e=>{const el=e.target.closest?.(selector);if(!el||(!enabled&&!e.shiftKey))return;if(Date.now()<suppressUntil){e.preventDefault();e.stopImmediatePropagation();return;}if(e.detail===0){e.preventDefault();e.stopImmediatePropagation();const d=descriptor(el);if(d){if(e.shiftKey){enabled=true;range(el);}else{anchor=key(d);set(el,!chosen.has(key(d)));}}paint();}},true);
+ document.addEventListener('keydown',e=>{if(e.target.closest?.('input,textarea,select,[contenteditable=true]'))return;if(e.key==='Escape'&&enabled){gesture=null;chosen.clear();enabled=false;anchor=null;paint();}else if(enabled&&(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'){e.preventDefault();for(const el of available())set(el,true);paint();}});
  // Goal picker checkboxes also support painting across labels with a mouse or touch.
  let pick=null;
  document.addEventListener('pointerdown',e=>{const label=e.target.closest?.('.mx-range-choice');if(!label||e.button!==0)return;const cb=label.querySelector('input[type=checkbox]');if(!cb)return;e.preventDefault();e.stopImmediatePropagation();pick={id:e.pointerId,value:!cb.checked,seen:new Set()};pick.seen.add(cb);cb.checked=pick.value;cb.dispatchEvent(new Event('input',{bubbles:true}));},true);
