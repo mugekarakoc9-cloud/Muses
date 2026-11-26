@@ -507,7 +507,7 @@ function installFocusSessionsMX(){
    if(!valid.length)return toast("Çalışılabilir kart bulunamadı.");
    if(fs()&&!confirm("Mevcut oturumu kaydedip yeni kart grubuna geçilsin mi?"))return;
    if(fs())finish("new-session",false);
-   if(mode==="type"&&!window.mxVocabularySetupStarting){s4().write="Word / Phrase";s4().prompt="Türkçe Anlam";}
+   if(mode==="type"){s4().write="Word / Phrase";s4().prompt="Türkçe Anlam";}
    s4().mode=mode;go("flash");restart4(valid);begin(false);
  };
 

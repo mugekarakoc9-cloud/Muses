@@ -1171,7 +1171,7 @@ function installQuietWorkspaceMX(){
  function candidate(){
   if(view==='resources'){const e=document.querySelector('.mx-lesson-layout');if(e)return ['lesson',e];}
   if(view==='library'&&v9().readerId){const p=document.querySelector('.readerPage9'),t=document.querySelector('.readerTools9');if(p){let root=p.parentElement;while(root&&t&&!root.contains(t)&&root.id!=='app')root=root.parentElement;return ['reader',root||p];}}
-  if(view==='flash'&&tab4==='study'&&S.mxFocus?.flash){const e=document.querySelector('#fcstudio4');if(e)return ['flash',e];}
+  if(view==='flash'&&tab4==='study'){const e=document.querySelector('#fcstudio4');if(e)return ['flash',e];}
   return ['',null];
  }
  function leave(){
@@ -1316,110 +1316,3 @@ function installTaskStudioMX(){
 }
 const previousStudioInstallerTaskMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerTaskMX();installTaskStudioMX();};
-
-/* Large, distraction-free flashcards; reuse original actions and saved flags. */
-function installFlashStageMX(){
- if(window.mxFlashStageReady)return;window.mxFlashStageReady=true;
- const icons={left:'<path d="m15 18-6-6 6-6"/>',right:'<path d="m9 18 6-6-6-6"/>',flip:'<path d="M20 7H4l4-4M4 17h16l-4 4"/>',sound:'<path d="M3 9h4l5-4v14l-5-4H3zM16 9a4 4 0 0 1 0 6m3-9a8 8 0 0 1 0 12"/>',play:'<path d="m8 5 12 7-12 7z"/>',pause:'<path d="M9 5v14M15 5v14"/>',shuffle:'<path d="M3 7h3c5 0 7 10 12 10h3m-4-4 4 4-4 4M3 17h3c2 0 4-3 5-5m3-3c1-1 2-2 4-2h3m-4-4 4 4-4 4"/>',expand:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',flag:'<path d="M5 21V3m0 1h13l-3 5 3 5H5" fill="currentColor"/>'};
- const svg=k=>'<svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+icons[k]+'</svg>';
- function icon(b,k,label){b.classList.add('mx-fc-icon');b.title=label;b.setAttribute('aria-label',label);b.innerHTML=svg(k);return b;}
- function button(k,label,fn){const b=document.createElement('button');b.type='button';b.onclick=fn;return icon(b,k,label);}
- function layout(){
-  const studio=document.querySelector('#fcstudio4'),face=studio?.querySelector('.face4'),dock=face?.querySelector('.mx-dock');if(!face||!dock||s4().mode!=='flash')return;
-  studio.classList.add('mx-fc-stage');studio.classList.toggle('mx-fc-expanded',!!full4);
-  const controls=dock.querySelector('.controls4'),ratings=dock.querySelector('.ratings4');if(!controls)return;
-  const content=document.createElement('div');content.className='mx-fc-content';for(const el of [...face.children])if(el!==dock)content.append(el);face.prepend(content);
-  const bs=[...controls.querySelectorAll('button')];
-  for(const b of bs){const action=b.getAttribute('onclick')||'',label=b.textContent.trim(),s=action+' '+label;let k,l;
-   if(/move4\(\s*-1|^[‹«←]$/i.test(s)||/^[‹«←]$/.test(label)){k='left';l='Önceki kart';}
-   else if(/move4\(\s*1|^[›»→]$/i.test(s)||/^[›»→]$/.test(label)){k='right';l='Sonraki kart';}
-   else if(/flip4|çevir/i.test(s)){k='flip';l='Kartı çevir';}
-   else if(/autoToggle4|otomatik|duraklat/i.test(s)){k=auto4?'pause':'play';l=auto4?'Otomatik çevirme durdur':'Otomatik çevirme başlat';}
-   else if(/shuffle|karıştır/i.test(s)){k='shuffle';l='Karıştır';}
-   else if(/voice4|speak|ses/i.test(s)){k='sound';l='Seslendir / durdur';const old=b.onclick;b.onclick=e=>{if(window.speechSynthesis?.speaking){speechSynthesis.cancel();return;}old?.call(b,e);};}
-   if(k){icon(b,k,l);if(k==='left'||k==='right'){b.classList.add('mx-fc-'+k);face.append(b);}}
-  }
-  if(!controls.querySelector('[aria-label="Seslendir / durdur"]'))controls.append(button('sound','Seslendir / durdur',()=>{if(window.speechSynthesis?.speaking)speechSynthesis.cancel();else voice4();}));
-  controls.append(button('expand',full4?'Tam ekrandan çık':'Tam ekran',()=>fullscreen4()));
-  if(ratings){ratings.classList.add('mx-fc-ratings');[...ratings.querySelectorAll('button')].forEach((b,i)=>b.style.setProperty('--rating-color',['#d66a72','#e49b61','#d9bb68','#8ab99a','#4b9878'][i]||'var(--accent)'));}
-  const select=[...studio.querySelectorAll('select')].find(s=>[...s.options].some(o=>/bayrak yok|no flag/i.test(o.textContent)));
-  if(select){const flags=document.createElement('div');flags.className='mx-fc-flags';const opts=[...select.options],none=opts.find(o=>/bayrak yok|no flag/i.test(o.textContent)),colors=[['Sarı','#e9c34d',/sar[ıi]|yellow/i],['Yeşil','#54b987',/yeşil|yesil|green/i],['Turuncu','#e98b42',/turuncu|orange/i],['Kırmızı','#df626d',/k[ıi]rm[ıi]z[ıi]|red/i]];
-   const used=new Set();for(const [name,color,re] of colors){const o=opts.find(x=>x!==none&&!used.has(x)&&re.test(x.value+' '+x.textContent));if(!o)continue;used.add(o);const b=button('flag',name+' bayrak',()=>{select.value=select.value===o.value?(none?.value||''):o.value;select.dispatchEvent(new Event('change',{bubbles:true}));});b.style.color=color;b.setAttribute('aria-pressed',String(select.value===o.value));flags.append(b);}
-   if(flags.children.length===4){select.hidden=true;select.style.display='none';select.after(flags);}
-  }
- }
- const old=render;render=function(){old();layout();};
- document.addEventListener('fullscreenchange',()=>{const s=document.querySelector('#fcstudio4');if(s)s.classList.toggle('mx-fc-expanded',!!full4||!!document.fullscreenElement);});
-}
-const previousStudioInstallerFlashStageMX=installStudioP1;
-installStudioP1=function(){previousStudioInstallerFlashStageMX();installFlashStageMX();};
-
-/* Keyboard-first study: preserve native typing and prevent global letter shortcuts. */
-function installStudyKeyboardMX(){
- if(window.mxStudyKeyboardReady)return;window.mxStudyKeyboardReady=true;
- const active=()=>view==='flash'&&tab4==='study'&&['type','listen'].includes(s4().mode);
- function field(){if(!active()||document.querySelector('dialog[open]'))return null;const root=document.querySelector('#fcstudio4');return [...(root?.querySelectorAll('input:not([type]),input[type=text],textarea')||[])].find(e=>!e.disabled&&!e.readOnly&&e.getClientRects().length&&!e.closest('details:not([open])'))||null;}
- function focus(){const e=field();if(e&&document.activeElement!==e&&!document.activeElement?.matches('input,textarea,select,[contenteditable=true]'))e.focus({preventScroll:true});}
- const old=render;render=function(){old();focus();};
- window.addEventListener('keydown',e=>{
-  if(!active()||e.ctrlKey||e.metaKey||e.altKey||e.isComposing||document.querySelector('dialog[open]'))return;
-  const target=e.target,edit=target?.closest?.('input,textarea,select,[contenteditable=true]'),input=field();
-  if(e.key.length===1||['Backspace','Delete'].includes(e.key)){
-   if(edit){e.stopImmediatePropagation();return;}
-   e.stopImmediatePropagation();
-   if(input){input.focus({preventScroll:true});if(e.key.length===1){e.preventDefault();input.setRangeText(e.key,input.selectionStart??input.value.length,input.selectionEnd??input.value.length,'end');input.dispatchEvent(new Event('input',{bubbles:true}));}}
-   else e.preventDefault();
-  }
- },true);
-}
-const previousStudioInstallerStudyKeyboardMX=installStudioP1;
-installStudioP1=function(){previousStudioInstallerStudyKeyboardMX();installStudyKeyboardMX();};
-
-/* Explicit vocabulary entry screen, separate from the study workspace. */
-function installVocabularyEntryMX(){
- if(window.mxVocabularyEntryReady)return;window.mxVocabularyEntryReady=true;
- const H=x=>esc(String(x??'')),P=()=>S.mxVocabularySetup??={mode:'flash',source:'',direction:'tr-en',count:30,shuffle:true,selected:null};
- let setup=true,lastView='',search='';
- const original=flash;
- flash=function(){if(!setup&&S.mxFocus?.flash)return original();return '<section id="mx-vocabulary-entry" class="card"><h2>Vocabulary Studio</h2><p>Kelime seç · Çalış · Tekrar et</p><div data-mx-vocab-form></div></section>';};
- function draw(){
- const root=document.querySelector('[data-mx-vocab-form]');if(!root)return;const p=P(),words=S.words||[],sources=[...new Set(words.map(w=>String(w.Source||'').trim()).filter(Boolean))].sort();
- const filtered=words.filter(w=>!p.source||String(w.Source||'').trim()===p.source),keys=filtered.map(w=>key4(w)),chosen=new Set(Array.isArray(p.selected)?p.selected:keys);
- const modes=[['flash','Kartlar'],['type','Yazma'],['listen','Dinleme'],['match','Eşleştirme']];
- root.innerHTML='<div class="mx-vocab-modes">'+modes.map(([v,l])=>'<button type="button" data-mode="'+v+'" aria-pressed="'+(p.mode===v)+'">'+l+'</button>').join('')+'</div><label>Kaynak<select name="source"><option value="">Tüm kelimeler</option>'+sources.map(s=>'<option value="'+H(s)+'" '+(s===p.source?'selected':'')+'>'+H(s)+'</option>').join('')+'</select></label><label>Çalışma yönü<select name="direction"><option value="tr-en">Türkçe → İngilizce</option><option value="en-tr">İngilizce → Türkçe</option></select></label><label>Soru sayısı<select name="count">'+[10,20,30,50,0].map(n=>'<option value="'+n+'">'+(n||'Tümü')+'</option>').join('')+'</select></label><label><input type="checkbox" name="shuffle" '+(p.shuffle?'checked':'')+'> Oturum başında karıştır</label><details><summary>Kelime seçimi · <span data-selected></span></summary><input name="search" placeholder="Kelime ara" autocomplete="off"><div class="mx-vocab-selection" data-list></div><button type="button" data-all>Tümünü seç</button><button type="button" data-none>Seçimi temizle</button></details><p role="status"></p><button type="button" class="primary" data-start>Çalışmaya başla</button>'+(S.mxFocus?.flash?'<button type="button" data-resume>Kaldığın yerden devam et</button>':'');
- const q=n=>root.querySelector(n),persist=()=>{p.selected=[...chosen];save();};
- q('[name=direction]').value=p.direction;q('[name=count]').value=String(p.count);
- function list(){const box=q('[data-list]');box.replaceChildren();const needle=search.toLocaleLowerCase('tr');for(const w of filtered.filter(w=>(String(w['Word / Phrase']||'')+' '+String(w['Türkçe Anlam']||'')).toLocaleLowerCase('tr').includes(needle)).slice(0,300)){const label=document.createElement('label'),c=document.createElement('input');c.type='checkbox';const k=key4(w);c.checked=chosen.has(k);c.onchange=()=>{if(c.checked)chosen.add(k);else chosen.delete(k);persist();q('[data-selected]').textContent=chosen.size+' kelime';};label.append(c,document.createTextNode(' '+String(w['Word / Phrase']||'')+' — '+String(w['Türkçe Anlam']||'')));box.append(label);}q('[data-selected]').textContent=chosen.size+' kelime';}
- q('[name=search]').value=search;q('[name=search]').oninput=e=>{search=e.target.value;list();};list();
- q('[data-all]').onclick=()=>{keys.forEach(k=>chosen.add(k));persist();list();};q('[data-none]').onclick=()=>{chosen.clear();persist();list();};
- root.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{p.mode=b.dataset.mode;save();draw();});
- q('[name=source]').onchange=e=>{p.source=e.target.value;p.selected=null;search='';save();draw();};
- q('[name=direction]').onchange=e=>{p.direction=e.target.value;save();};q('[name=count]').onchange=e=>{p.count=Number(e.target.value);save();};q('[name=shuffle]').onchange=e=>{p.shuffle=e.target.checked;save();};
- q('[data-start]').onclick=()=>{let selected=keys.filter(k=>chosen.has(k));if(!selected.length){q('[role=status]').textContent='En az bir kelime seç.';return;}if(p.shuffle)selected=mix4(selected);if(p.count)selected=selected.slice(0,p.count);const cfg=s4(),tr=p.direction==='tr-en';cfg.write=tr?'Word / Phrase':'Türkçe Anlam';cfg.prompt=tr?'Türkçe Anlam':'Word / Phrase';cfg.front=[cfg.prompt];cfg.back=[cfg.write,'Example Sentence'];cfg.limit=selected.length;setup=false;window.mxVocabularySetupStarting=true;try{window.mxStartFlashKeys(selected,p.mode);}finally{window.mxVocabularySetupStarting=false;}};
- const resume=q('[data-resume]');if(resume)resume.onclick=()=>{setup=false;tab4='study';render();};
- }
- function library(){
- const root=document.querySelector('#mx-vocabulary-entry');if(!root||root.querySelector('#mx-word-library'))return;
- const store=S.mxWordLibrary??={folders:[],lists:[]},panel=document.createElement('section');panel.id='mx-word-library';root.prepend(panel);
- const words=()=>S.words||[],pos=w=>String(w.POS||w['Part of Speech']||'').trim(),level=w=>{const x=w.Levels||w.Level||w.CEFR||'';return Array.isArray(x)?x:String(x).split(/[,; /]+/);};
- let filter='',needle='';
- function drawLibrary(){
- panel.innerHTML='<h2>Kelime kütüphanesi</h2><input data-search placeholder="Kelime ara"><select data-pos><option value="">Tüm sözcük türleri</option></select><div data-groups></div><button data-folder>+ Klasör</button> <button data-list>+ Liste</button> <button data-import>+ Kelime ekle / içe aktar</button><div data-editor></div>';
- const q=s=>panel.querySelector(s),sel=q('[data-pos]');for(const p of [...new Set(words().map(pos).filter(Boolean))].sort()){const o=document.createElement('option');o.value=p;o.textContent=p;sel.append(o);}sel.value=filter;q('[data-search]').value=needle;
- function groups(){const box=q('[data-groups]');box.replaceChildren();const match=w=>(!filter||pos(w)===filter)&&(!needle||[w['Word / Phrase'],w['Türkçe Anlam']].join(' ').toLocaleLowerCase('tr').includes(needle.toLocaleLowerCase('tr')));
- function group(host,name,rows){const d=document.createElement('details'),s=document.createElement('summary');s.textContent=name+' · '+rows.length+' kelime';d.append(s);d.ontoggle=()=>{if(!d.open||d.children.length>1)return;for(const w of rows){const row=document.createElement('div');row.className='mx-library-word';const b=document.createElement('b'),m=document.createElement('span'),p=document.createElement('small');b.textContent=w['Word / Phrase'];m.textContent=w['Türkçe Anlam']||'';p.textContent=pos(w)||'Tür belirtilmemiş';row.append(b,m,p);d.append(row);}};host.append(d);}
- for(const l of ['A1','A2','B1','B2','C1','C2'])group(box,l,words().filter(w=>level(w).includes(l)&&match(w)));
- group(box,'Seviyesi belirtilmemiş',words().filter(w=>!level(w).some(l=>/^[ABC][12]$/.test(l))&&match(w)));
- for(const folder of [...store.folders,{id:'',name:'Klasörsüz listeler'}]){const d=document.createElement('details'),s=document.createElement('summary');s.textContent=folder.name;d.append(s);for(const l of store.lists.filter(l=>l.folder===folder.id))group(d,l.name,words().filter(w=>l.keys.includes(key4(w))&&match(w)));box.append(d);}
- }
- sel.onchange=()=>{filter=sel.value;groups();};q('[data-search]').oninput=e=>{needle=e.target.value;groups();};groups();
- q('[data-folder]').onclick=()=>{const name=prompt('Klasör adı');if(name?.trim()){store.folders.push({id:uid(),name:name.trim()});save();drawLibrary();}};
- q('[data-list]').onclick=()=>{const name=prompt('Liste adı');if(!name?.trim())return;const e=q('[data-editor]');e.innerHTML='<label>Klasör<select></select></label><button>Liste oluştur</button>';const s=e.querySelector('select');for(const f of [{id:'',name:'Klasörsüz'},...store.folders]){const o=document.createElement('option');o.value=f.id;o.textContent=f.name;s.append(o);}e.querySelector('button').onclick=()=>{store.lists.push({id:uid(),name:name.trim(),folder:s.value,keys:[]});save();drawLibrary();};};
- q('[data-import]').onclick=()=>{const e=q('[data-editor]');e.innerHTML='<label>Liste<select></select></label><label>Her satıra bir kelime ve anlamı<textarea rows="7" placeholder="achieve, başarmak, verb"></textarea></label><label>Ayırıcı<select data-sep><option value="auto">Otomatik (sekme / virgül)</option><option value="tab">Sekme</option><option value="comma">Virgül</option></select></label><button data-preview>Önizle</button><div data-preview-rows></div>';const s=e.querySelector('select');for(const l of [{id:'',name:'Ana kütüphane'},...store.lists]){const o=document.createElement('option');o.value=l.id;o.textContent=l.name;s.append(o);}e.querySelector('[data-preview]').onclick=()=>{const sep=e.querySelector('[data-sep]').value,rows=e.querySelector('textarea').value.split(/\r?\n/).filter(x=>x.trim()).map(line=>{const delim=sep==='tab'||(sep==='auto'&&line.includes('\t'))?'\t':',';const parts=line.split(delim).map(x=>x.trim());return {word:parts.shift()||'',meaning:parts.shift()||'',pos:parts.join(delim)};});const host=e.querySelector('[data-preview-rows]');host.replaceChildren();for(const r of rows){const div=document.createElement('div');for(const k of ['word','meaning','pos']){const i=document.createElement('input');i.value=r[k];i.placeholder=k;i.oninput=()=>r[k]=i.value;div.append(i);}host.append(div);}const b=document.createElement('button');b.textContent='Kelimeleri kaydet';b.onclick=()=>{const l=store.lists.find(l=>l.id===s.value);for(const r of rows){if(!r.word.trim()||!r.meaning.trim())continue;let w=words().find(w=>String(w['Word / Phrase']).trim().toLowerCase()===r.word.trim().toLowerCase()&&String(w['Türkçe Anlam']).trim()===r.meaning.trim());if(!w){w={'Word / Phrase':r.word.trim(),'Türkçe Anlam':r.meaning.trim(),POS:r.pos.trim(),Source:l?.name||'Manual import'};S.words.push(w);}if(l&&!l.keys.includes(key4(w)))l.keys.push(key4(w));}refresh4();save();render();};host.append(b);};};
- }
- drawLibrary();
- }
- const old=render;render=function(){if(view==='flash'&&lastView!=='flash')setup=true;lastView=view;old();draw();library();const studio=document.querySelector('#fcstudio4');if(studio&&S.mxFocus?.flash&&!studio.querySelector('[data-mx-back-setup]')){const b=document.createElement('button');b.type='button';b.dataset.mxBackSetup='1';b.textContent='‹ Kelime seçimi';b.onclick=()=>{setup=true;render();};studio.prepend(b);}};
-}
-const previousStudioInstallerVocabularyEntryMX=installStudioP1;
-installStudioP1=function(){previousStudioInstallerVocabularyEntryMX();installVocabularyEntryMX();};

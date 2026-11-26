@@ -178,37 +178,3 @@ body[data-mx-quiet] .mx-lesson-layout{grid-template-columns:minmax(0,1.3fr) minm
 .mx-source-picker-launch{width:100%;margin-bottom:9px}
 #mx-source-task select[name=leaf]{width:100%;min-height:140px}
 #mx-source-task select[name=leaf] option{padding:7px;white-space:normal}
-
-/* Quizlet-inspired stage, original card actions and SRS preserved. */
-#fcstudio4.mx-fc-stage{width:100%!important;max-width:none!important;box-sizing:border-box}
-#fcstudio4.mx-fc-expanded{position:fixed!important;inset:0!important;z-index:99990!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:clamp(10px,2vw,28px)!important;overflow:auto!important;background:var(--bg,#20232b)!important;box-sizing:border-box!important}
-#fcstudio4.mx-fc-stage .face4{position:relative!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:stretch!important;min-height:clamp(380px,65vh,780px)!important;max-width:none!important;width:100%!important;box-sizing:border-box!important;padding:clamp(18px,4vw,60px)!important;gap:16px!important;border-radius:24px!important}
-#fcstudio4.mx-fc-expanded .face4{min-height:calc(100dvh - 155px)!important}
-#fcstudio4 .mx-fc-content{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,2vh,24px);width:100%;min-height:0;padding:12px 24px;box-sizing:border-box}
-#fcstudio4.mx-fc-stage .mx-field{border:0!important;background:transparent!important;text-align:center!important;padding:4px 12px!important;font-size:clamp(1rem,2.2vw,1.65rem)!important;max-width:1000px}
-#fcstudio4.mx-fc-stage .mx-main,#fcstudio4.mx-fc-stage .mx-tr{font-size:clamp(1.65rem,4.5vw,3.8rem)!important;font-weight:650;line-height:1.22}
-#fcstudio4.mx-fc-stage .mx-field small{font-size:.7rem!important;opacity:.7}
-#fcstudio4.mx-fc-stage .mx-voice{float:none!important;display:inline-flex;margin:0 4px}
-#fcstudio4.mx-fc-stage .mx-dock{margin-top:auto!important;border:0!important;padding-top:4px!important}
-#fcstudio4.mx-fc-stage .mx-dock .controls4{gap:10px!important;align-items:center}
-#fcstudio4.mx-fc-stage .mx-fc-icon{display:inline-grid!important;place-items:center;flex:none!important;width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;border-radius:50%!important}
-#fcstudio4.mx-fc-stage .mx-fc-icon:hover,#fcstudio4.mx-fc-stage .mx-fc-icon:focus-visible{background:color-mix(in srgb,currentColor 12%,transparent)!important}
-#fcstudio4 .mx-fc-left,#fcstudio4 .mx-fc-right{position:absolute!important;top:46%;z-index:2;color:var(--mx-ink)!important}
-#fcstudio4 .mx-fc-left{left:8px}#fcstudio4 .mx-fc-right{right:8px}
-#fcstudio4 .mx-fc-ratings button{border:1px solid color-mix(in srgb,var(--rating-color) 65%,transparent)!important;border-top:3px solid var(--rating-color)!important;border-radius:10px!important;min-height:50px!important}
-#fcstudio4 .mx-fc-flags{display:inline-flex;gap:2px;vertical-align:middle}
-#fcstudio4 .mx-fc-flags .mx-fc-icon{width:34px!important;height:34px!important;min-height:34px!important;opacity:.65}
-#fcstudio4 .mx-fc-flags .mx-fc-icon[aria-pressed=true]{opacity:1;outline:2px solid currentColor;outline-offset:-2px}
-@media(max-width:600px){#fcstudio4.mx-fc-stage .face4{padding:14px 8px!important;min-height:65dvh!important}#fcstudio4 .mx-fc-content{padding:10px 28px}#fcstudio4.mx-fc-stage .mx-field{font-size:1.05rem!important}#fcstudio4.mx-fc-stage .mx-main,#fcstudio4.mx-fc-stage .mx-tr{font-size:1.9rem!important}#fcstudio4 .mx-fc-left{left:0}#fcstudio4 .mx-fc-right{right:0}#fcstudio4.mx-fc-stage .mx-dock .controls4{gap:3px!important}#fcstudio4 .mx-fc-ratings button{font-size:.68rem!important;min-width:0!important;padding:4px!important;flex:1 1 15%!important}}
-
-#mx-vocabulary-entry{max-width:780px;margin:12px auto;padding:clamp(16px,4vw,32px);box-sizing:border-box}
-#mx-vocabulary-entry label{display:block;margin:12px 0}
-#mx-vocabulary-entry select,#mx-vocabulary-entry input[name=search]{width:100%;box-sizing:border-box}
-.mx-vocab-modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:16px 0}
-.mx-vocab-modes button{min-height:64px;border-radius:14px!important}
-.mx-vocab-modes button[aria-pressed=true]{border:2px solid var(--accent)!important;color:var(--accent)!important;background:var(--soft)!important}
-.mx-vocab-selection{max-height:320px;overflow:auto;margin:8px 0}
-.mx-vocab-selection label{padding:8px;border-bottom:1px solid var(--line);margin:0!important}
-#mx-vocabulary-entry [data-start]{width:100%;margin-top:12px;min-height:48px}
-
-#mx-word-library details{margin:8px 0;padding:8px;border:1px solid var(--line);border-radius:10px}#mx-word-library summary{cursor:pointer;font-weight:600}.mx-library-word{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}.mx-library-word small{color:var(--accent)}#mx-word-library textarea{width:100%;box-sizing:border-box}#mx-word-library [data-preview-rows]>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}#mx-word-library [data-preview-rows] input{min-width:0;width:100%}
