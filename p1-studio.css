@@ -200,3 +200,13 @@ body[data-mx-quiet] .mx-lesson-layout{grid-template-columns:minmax(0,1.3fr) minm
 #fcstudio4 .mx-fc-flags .mx-fc-icon{width:34px!important;height:34px!important;min-height:34px!important;opacity:.65}
 #fcstudio4 .mx-fc-flags .mx-fc-icon[aria-pressed=true]{opacity:1;outline:2px solid currentColor;outline-offset:-2px}
 @media(max-width:600px){#fcstudio4.mx-fc-stage .face4{padding:14px 8px!important;min-height:65dvh!important}#fcstudio4 .mx-fc-content{padding:10px 28px}#fcstudio4.mx-fc-stage .mx-field{font-size:1.05rem!important}#fcstudio4.mx-fc-stage .mx-main,#fcstudio4.mx-fc-stage .mx-tr{font-size:1.9rem!important}#fcstudio4 .mx-fc-left{left:0}#fcstudio4 .mx-fc-right{right:0}#fcstudio4.mx-fc-stage .mx-dock .controls4{gap:3px!important}#fcstudio4 .mx-fc-ratings button{font-size:.68rem!important;min-width:0!important;padding:4px!important;flex:1 1 15%!important}}
+
+#mx-vocabulary-entry{max-width:780px;margin:12px auto;padding:clamp(16px,4vw,32px);box-sizing:border-box}
+#mx-vocabulary-entry label{display:block;margin:12px 0}
+#mx-vocabulary-entry select,#mx-vocabulary-entry input[name=search]{width:100%;box-sizing:border-box}
+.mx-vocab-modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:16px 0}
+.mx-vocab-modes button{min-height:64px;border-radius:14px!important}
+.mx-vocab-modes button[aria-pressed=true]{border:2px solid var(--accent)!important;color:var(--accent)!important;background:var(--soft)!important}
+.mx-vocab-selection{max-height:320px;overflow:auto;margin:8px 0}
+.mx-vocab-selection label{padding:8px;border-bottom:1px solid var(--line);margin:0!important}
+#mx-vocabulary-entry [data-start]{width:100%;margin-top:12px;min-height:48px}

@@ -1171,7 +1171,7 @@ function installQuietWorkspaceMX(){
  function candidate(){
   if(view==='resources'){const e=document.querySelector('.mx-lesson-layout');if(e)return ['lesson',e];}
   if(view==='library'&&v9().readerId){const p=document.querySelector('.readerPage9'),t=document.querySelector('.readerTools9');if(p){let root=p.parentElement;while(root&&t&&!root.contains(t)&&root.id!=='app')root=root.parentElement;return ['reader',root||p];}}
-  if(view==='flash'&&tab4==='study'){const e=document.querySelector('#fcstudio4');if(e)return ['flash',e];}
+  if(view==='flash'&&tab4==='study'&&S.mxFocus?.flash){const e=document.querySelector('#fcstudio4');if(e)return ['flash',e];}
   return ['',null];
  }
  function leave(){
@@ -1374,3 +1374,31 @@ function installStudyKeyboardMX(){
 }
 const previousStudioInstallerStudyKeyboardMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerStudyKeyboardMX();installStudyKeyboardMX();};
+
+/* Explicit vocabulary entry screen, separate from the study workspace. */
+function installVocabularyEntryMX(){
+ if(window.mxVocabularyEntryReady)return;window.mxVocabularyEntryReady=true;
+ const H=x=>esc(String(x??'')),P=()=>S.mxVocabularySetup??={mode:'flash',source:'',direction:'tr-en',count:30,shuffle:true,selected:null};
+ let setup=true,lastView='',search='';
+ const original=flash;
+ flash=function(){if(!setup&&S.mxFocus?.flash)return original();return '<section id="mx-vocabulary-entry" class="card"><h2>Vocabulary Studio</h2><p>Kelime seç · Çalış · Tekrar et</p><div data-mx-vocab-form></div></section>';};
+ function draw(){
+ const root=document.querySelector('[data-mx-vocab-form]');if(!root)return;const p=P(),words=S.words||[],sources=[...new Set(words.map(w=>String(w.Source||'').trim()).filter(Boolean))].sort();
+ const filtered=words.filter(w=>!p.source||String(w.Source||'').trim()===p.source),keys=filtered.map(w=>key4(w)),chosen=new Set(Array.isArray(p.selected)?p.selected:keys);
+ const modes=[['flash','Kartlar'],['type','Yazma'],['listen','Dinleme'],['match','Eşleştirme']];
+ root.innerHTML='<div class="mx-vocab-modes">'+modes.map(([v,l])=>'<button type="button" data-mode="'+v+'" aria-pressed="'+(p.mode===v)+'">'+l+'</button>').join('')+'</div><label>Kaynak<select name="source"><option value="">Tüm kelimeler</option>'+sources.map(s=>'<option value="'+H(s)+'" '+(s===p.source?'selected':'')+'>'+H(s)+'</option>').join('')+'</select></label><label>Çalışma yönü<select name="direction"><option value="tr-en">Türkçe → İngilizce</option><option value="en-tr">İngilizce → Türkçe</option></select></label><label>Soru sayısı<select name="count">'+[10,20,30,50,0].map(n=>'<option value="'+n+'">'+(n||'Tümü')+'</option>').join('')+'</select></label><label><input type="checkbox" name="shuffle" '+(p.shuffle?'checked':'')+'> Oturum başında karıştır</label><details><summary>Kelime seçimi · <span data-selected></span></summary><input name="search" placeholder="Kelime ara" autocomplete="off"><div class="mx-vocab-selection" data-list></div><button type="button" data-all>Tümünü seç</button><button type="button" data-none>Seçimi temizle</button></details><p role="status"></p><button type="button" class="primary" data-start>Çalışmaya başla</button>'+(S.mxFocus?.flash?'<button type="button" data-resume>Kaldığın yerden devam et</button>':'');
+ const q=n=>root.querySelector(n),persist=()=>{p.selected=[...chosen];save();};
+ q('[name=direction]').value=p.direction;q('[name=count]').value=String(p.count);
+ function list(){const box=q('[data-list]');box.replaceChildren();const needle=search.toLocaleLowerCase('tr');for(const w of filtered.filter(w=>(String(w['Word / Phrase']||'')+' '+String(w['Türkçe Anlam']||'')).toLocaleLowerCase('tr').includes(needle)).slice(0,300)){const label=document.createElement('label'),c=document.createElement('input');c.type='checkbox';const k=key4(w);c.checked=chosen.has(k);c.onchange=()=>{if(c.checked)chosen.add(k);else chosen.delete(k);persist();q('[data-selected]').textContent=chosen.size+' kelime';};label.append(c,document.createTextNode(' '+String(w['Word / Phrase']||'')+' — '+String(w['Türkçe Anlam']||'')));box.append(label);}q('[data-selected]').textContent=chosen.size+' kelime';}
+ q('[name=search]').value=search;q('[name=search]').oninput=e=>{search=e.target.value;list();};list();
+ q('[data-all]').onclick=()=>{keys.forEach(k=>chosen.add(k));persist();list();};q('[data-none]').onclick=()=>{chosen.clear();persist();list();};
+ root.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{p.mode=b.dataset.mode;save();draw();});
+ q('[name=source]').onchange=e=>{p.source=e.target.value;p.selected=null;search='';save();draw();};
+ q('[name=direction]').onchange=e=>{p.direction=e.target.value;save();};q('[name=count]').onchange=e=>{p.count=Number(e.target.value);save();};q('[name=shuffle]').onchange=e=>{p.shuffle=e.target.checked;save();};
+ q('[data-start]').onclick=()=>{let selected=keys.filter(k=>chosen.has(k));if(!selected.length){q('[role=status]').textContent='En az bir kelime seç.';return;}if(p.shuffle)selected=mix4(selected);if(p.count)selected=selected.slice(0,p.count);const cfg=s4(),tr=p.direction==='tr-en';cfg.write=tr?'Word / Phrase':'Türkçe Anlam';cfg.prompt=tr?'Türkçe Anlam':'Word / Phrase';cfg.front=[cfg.prompt];cfg.back=[cfg.write,'Example Sentence'];cfg.limit=selected.length;setup=false;window.mxVocabularySetupStarting=true;try{window.mxStartFlashKeys(selected,p.mode);}finally{window.mxVocabularySetupStarting=false;}};
+ const resume=q('[data-resume]');if(resume)resume.onclick=()=>{setup=false;tab4='study';render();};
+ }
+ const old=render;render=function(){if(view==='flash'&&lastView!=='flash')setup=true;lastView=view;old();draw();const studio=document.querySelector('#fcstudio4');if(studio&&S.mxFocus?.flash&&!studio.querySelector('[data-mx-back-setup]')){const b=document.createElement('button');b.type='button';b.dataset.mxBackSetup='1';b.textContent='‹ Kelime seçimi';b.onclick=()=>{setup=true;render();};studio.prepend(b);}};
+}
+const previousStudioInstallerVocabularyEntryMX=installStudioP1;
+installStudioP1=function(){previousStudioInstallerVocabularyEntryMX();installVocabularyEntryMX();};
