@@ -210,3 +210,5 @@ body[data-mx-quiet] .mx-lesson-layout{grid-template-columns:minmax(0,1.3fr) minm
 .mx-vocab-selection{max-height:320px;overflow:auto;margin:8px 0}
 .mx-vocab-selection label{padding:8px;border-bottom:1px solid var(--line);margin:0!important}
 #mx-vocabulary-entry [data-start]{width:100%;margin-top:12px;min-height:48px}
+
+#mx-word-library details{margin:8px 0;padding:8px;border:1px solid var(--line);border-radius:10px}#mx-word-library summary{cursor:pointer;font-weight:600}.mx-library-word{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}.mx-library-word small{color:var(--accent)}#mx-word-library textarea{width:100%;box-sizing:border-box}#mx-word-library [data-preview-rows]>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}#mx-word-library [data-preview-rows] input{min-width:0;width:100%}
