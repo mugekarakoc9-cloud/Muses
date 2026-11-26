@@ -1804,3 +1804,14 @@ function installRelease1611MX(){
  const oldFlip=flip4;flip4=function(){const result=oldFlip();mxUISound('flip');return result;};
 }
 const priorRelease1611MX=installStudioP1;installStudioP1=function(){priorRelease1611MX();installRelease1611MX();};
+
+/* Daily habit status comes from recorded quantities; calendar goals open their details. */
+function installDailyStatus1611MX(){
+ if(window.mxDailyStatusReady)return;window.mxDailyStatusReady=true;
+ const H=x=>esc(String(x??''));
+ function measured(h,d){const value=Number(actual5('habit',h[0],d));return Number.isFinite(value)?value:null;}
+ const oldHabit=habitCards;habitCards=function(){const html=oldHabit(),d=today();const rows=habits.filter(h=>Array.isArray(h)&&Number.isFinite(Number(h[1]))&&Number(h[1])>0);return '<details class="card" open><summary>Günlük miktar ve bağlı hedefler</summary>'+rows.map(h=>{const actual=measured(h,d),target=Number(h[1]),done=actual!==null&&actual>=target,goals=v5().challenges.filter(g=>g.mxHabitDaily&&g.target===h[0]&&g.start<=d&&g.end>=d);return '<div class="line"><div><b>'+H(h[0])+'</b><small style="display:block">'+H(actual??'—')+' / '+H(target)+' '+H(h[2])+'</small>'+goals.map(g=>{const info=challengeInfo5(g),ok=challengeDays5(g).includes(d)&&actual!==null&&actual>=Number(g.amount);return '<small style="display:block">'+(ok?'✓ ':'')+H(g.title)+' · '+H(info.count)+'/'+H(info.target)+' gün</small>';}).join('')+'</div><span role="status" aria-label="'+(done?'Günlük hedef tamamlandı':'Günlük hedef henüz tamamlanmadı')+'" style="display:inline-flex;justify-content:center;align-items:center;width:26px;height:26px;border-radius:6px;background:'+(done?'#684ba5':'transparent')+';border:1px solid #9677c5;color:#ffc3e8;font-weight:700">'+(done?'✓':'')+'</span></div>';}).join('')+'</details>'+html;};
+ window.mxCalendarGoalDetails=function(id,date){const g=v5().challenges.find(x=>String(x.id)===String(id));if(!g)return;const info=challengeInfo5(g);modal5('<div class="modalhead5"><h2>'+H(g.title)+'</h2><button onclick="close5()">×</button></div><p>'+H(date)+' · '+H(g.start)+' — '+H(g.end)+'</p><p>İlerleme: '+H(info.count)+' / '+H(info.target)+'</p><div class="flex"><button id="mx-goal-detail-edit">Düzenle</button><button id="mx-goal-detail-open">Çalışmayı aç</button></div>');document.querySelector('#mx-goal-detail-edit').onclick=()=>mxEditGoal(enc5(g.id));document.querySelector('#mx-goal-detail-open').onclick=()=>{close5();route5(g.module,g.target,date);};};
+ const oldAction=rowAction5;rowAction5=function(d,k){const id=dec5(k),row=challengeRows5(d).find(x=>String(x.id)===String(id)&&x.g);if(row&&v5().challenges.some(g=>String(g.id)===String(row.g)))return mxCalendarGoalDetails(row.g,d);return oldAction(d,k);};
+}
+const priorDaily1611MX=installStudioP1;installStudioP1=function(){priorDaily1611MX();installDailyStatus1611MX();};
