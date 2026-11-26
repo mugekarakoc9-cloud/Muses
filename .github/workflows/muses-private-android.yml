@@ -11,7 +11,7 @@ concurrency:
 jobs:
   apk:
     if: ${{ github.event.repository.private == true }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +30,7 @@ jobs:
           test -n "$MUSES_KEYSTORE_B64" && test -n "$MUSES_KEYSTORE_PASSWORD" || { echo "Private Android signing secrets missing"; exit 1; }
       - name: Prepare offline Android app
         run: bash scripts/prepare-android.sh
+      - uses: android-actions/setup-android@v3
       - name: Compile APK
         run: |
           sdkmanager "platforms;android-35" "build-tools;35.0.0"
