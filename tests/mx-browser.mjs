@@ -65,6 +65,14 @@ try{
  assert.equal(await page.evaluate(()=>q5Draft.date),expectedDate);
  assert.equal(await page.evaluate(()=>q5Draft.time),expectedHour.padStart(2,'0')+':00');
  await page.evaluate(()=>close5());
+
+ await page.evaluate(()=>{S.tasks.push({id:'mx-test-drag-task',title:'Test agenda drag',module:'general',date:selected,time:'10:00',done:false,priority:'Orta',note:'',amount:1});render();});
+ const dragCard=page.locator('[data-mx-hour-task]').filter({hasText:'Test agenda drag'});await dragCard.waitFor();
+ await page.evaluate(()=>{const s=document.querySelector('.mx-hour-scroll'),cell=s.querySelector('[data-mx-drop-hour="10"]');s.scrollTop=cell.offsetTop-s.querySelector('.mx-hour-grid').offsetTop-100;});
+ await dragCard.scrollIntoViewIfNeeded();const startBox=await dragCard.boundingBox(),targetBox=await page.locator('[data-mx-drop-hour="11"]').boundingBox();
+ await page.mouse.move(startBox.x+startBox.width/2,startBox.y+startBox.height/2);await page.mouse.down();await page.mouse.move(targetBox.x+targetBox.width/2,targetBox.y+targetBox.height/2,{steps:8});await page.mouse.up();
+ assert.equal(await page.evaluate(()=>S.tasks.find(t=>t.id==='mx-test-drag-task').time),'11:00','Mouse drag persists exact target hour');
+ await page.evaluate(()=>{S.tasks=S.tasks.filter(t=>t.id!=='mx-test-drag-task');save();render();});
  await page.evaluate(()=>mxHourlyMode('month'));assert(await page.locator('.cell5').count()>=28);await page.locator('.calendar5 button[onclick="mxHourlyMode(\'day\')"]').first().click();assert.equal(await page.locator('[data-mx-drop-date]').count(),25);await page.evaluate(()=>mxMimoGallery());assert.equal(await page.locator('[data-mimo-pose]').count(),11);await page.evaluate(()=>close5());
  const views=['home','resources','flash','library','english','goals','calendar','p90','atlas','habits','journal'];
  for(const view of views){await page.evaluate(v=>go(v),view);await page.waitForTimeout(100);assert(await page.locator('#app').innerText());assert.equal(errors.length,0,view+': '+errors.join('; '));}
