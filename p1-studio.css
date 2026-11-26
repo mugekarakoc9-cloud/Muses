@@ -336,3 +336,49 @@ body.mxv-focus-screen{overflow:hidden!important}
 #mxv-root.mxv-full-study .mxv-next{flex:none;margin:0}
 body.mxv-focus-screen :is(.mx-floating-cat,.mx-focus-dock,.mobileNav3){visibility:hidden!important;pointer-events:none!important}
 @media(max-width:360px){#mxv-root .mxv-card-top .mxv-flag{width:23px;min-width:23px;font-size:17px}#mxv-root .mxv-card-top>button{width:27px}}
+
+/* Progressive disclosure: select first, choose a study method on its own screen. */
+#mxv-root .mxv-step-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+#mxv-root .mxv-step-head button,#mxv-root .mxv-small-action{min-height:32px;padding:5px 10px;font-size:13px}
+#mxv-root.mxv-single-page{display:block!important;min-height:0}
+#mxv-root.mxv-single-page .mxv-sidebar{display:none}
+#mxv-root.mxv-single-page .mxv-main{max-width:720px;margin-inline:auto}
+#mxv-root .mxv-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:16px 0}
+#mxv-root button.mxv-mode{display:grid;grid-template-columns:32px minmax(0,1fr) 14px;align-items:center;text-align:left;gap:10px;min-height:64px;padding:10px;border-radius:12px;background:var(--mxv-surface);color:var(--mxv-text);border:1px solid var(--mxv-border);white-space:normal}
+#mxv-root .mxv-mode b,#mxv-root .mxv-mode small{display:block;line-height:1.35;overflow-wrap:anywhere}
+#mxv-root .mxv-mode b{font-size:15px}
+#mxv-root .mxv-mode small{font-size:12px;color:var(--mxv-muted)}
+#mxv-root .mxv-mode-icon{display:grid;place-items:center;width:30px;height:30px;color:var(--mxv-accent);background:var(--mxv-subtle);border-radius:9px;font-size:20px}
+#mxv-root .mxv-mode-all{grid-column:1/-1}
+#mxv-root .mxv-list-stats{margin:6px 0 12px;border:1px solid var(--mxv-border);border-radius:10px;padding:8px 10px}
+#mxv-root .mxv-list-stats summary{cursor:pointer;font-size:13px;color:var(--mxv-muted)}
+#mxv-root .mxv-list-stats .mxv-metrics{margin:8px 0}
+#mxv-root .mxv-list-stats .mxv-metrics button{padding:8px;min-height:0}
+#mxv-root .mxv-filter-tools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px;margin:8px 0}
+#mxv-root .mxv-filter-tools input{grid-column:1/-1}
+#mxv-root .mxv-filter-tools :is(input,select,button){width:100%;min-height:36px;padding:6px 9px;font-size:13px}
+#mxv-root .mxv-selection-bar{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:var(--mxv-surface);border:1px solid var(--mxv-border);border-radius:10px;padding:8px;margin:10px 0;box-shadow:0 3px 9px #00000012}
+#mxv-root .mxv-selection-bar strong{flex:1;font-size:13px;min-width:0}
+#mxv-root .mxv-selection-bar button{min-height:34px;font-size:13px;padding:5px 9px}
+#mxv-root button.primary{background:#6944a6;color:#fff;border-color:#6944a6}
+#mxv-root button.primary:disabled{opacity:.5}
+#mxv-root .mxv-more-actions{position:relative;flex:none}
+#mxv-root .mxv-more-actions summary{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--mxv-border);border-radius:8px;cursor:pointer;list-style:none}
+#mxv-root .mxv-more-actions[open]{display:flex;gap:5px;flex-wrap:wrap}
+#mxv-root .mxv-more-actions button{white-space:normal}
+#mxv-root .mxv-editor{max-width:760px;margin-inline:auto}
+#mxv-root .mxv-word{cursor:pointer}
+#mxv-root .mxv-word input[type=checkbox]{accent-color:#7445b5}
+@media(max-width:750px){
+ #mxv-root[data-mxv-page=library]{display:block}
+ #mxv-root[data-mxv-page=library] .mxv-sidebar{max-height:none;position:static;overflow:visible;padding:9px}
+ #mxv-root[data-mxv-page=library] .mxv-main{display:none}
+ #mxv-root[data-mxv-page=list] .mxv-sidebar,#mxv-root[data-mxv-page=settings] .mxv-sidebar{display:none}
+ #mxv-root .mxv-mode-grid{grid-template-columns:minmax(0,1fr);gap:7px}
+ #mxv-root .mxv-mode-all{grid-column:auto}
+ #mxv-root button.mxv-mode{min-height:59px;padding:8px}
+ #mxv-root .mxv-sidebar button{min-height:36px;padding:6px 9px;font-size:14px}
+ #mxv-root .mxv-word{font-size:14px;line-height:1.4}
+ #mxv-root .mxv-word small{font-size:11px}
+ #mxv-root .mxv-head h1{font-size:clamp(22px,6vw,30px)}
+}
