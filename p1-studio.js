@@ -1247,13 +1247,13 @@ function installLiveBuildMX(){
  return '<section class="mx-home-banner"><div class="mx-home-top"><div><h1>MUSES Life Studio</h1><small>Sürüm '+version+' · '+esc(dateLabel5(date))+'</small></div><button class="mx-update-icon" onclick="mxCheckUpdate()" title="Güncelle" aria-label="Sürümü kontrol et">↻</button></div><div class="mx-home-grid">'+tiles.map(([id,icon,name,detail])=>'<button onclick="go(\''+id+'\')"><span aria-hidden="true">'+icon+'</span><b>'+esc(name)+'</b><small>'+esc(detail)+'</small></button>').join('')+'</div></section>'+oldHome();};
  let checking=false,availableVersion=null;
  function notifyUpdate(message){let el=document.querySelector('#mx-update-notice');if(!el){el=document.createElement('div');el.id='mx-update-notice';el.className='mx-update-notice';el.setAttribute('role','status');document.body.append(el);}el.replaceChildren();const label=document.createElement('span');label.textContent=message;const close=document.createElement('button');close.type='button';close.textContent='×';close.setAttribute('aria-label','Bildirimi kapat');close.onclick=()=>el.remove();el.append(label,close);clearTimeout(el.mxTimer);el.mxTimer=setTimeout(()=>el.remove(),6500);}
- function safeToReload(){return view==='home'&&!document.querySelector('dialog[open],input:focus,textarea:focus,[contenteditable]:focus')&&!S.mxVocabularyV2?.session;}
+ function safeToReload(){return view==='home'&&!document.querySelector('dialog[open],input:focus,textarea:focus,[contenteditable]:focus,.mx-focus-dock[data-phase]:not([data-phase=idle])')&&!S.mxVocabularyV2?.session;}
  function refreshApp(next){try{save();sessionStorage.setItem('mx-update-result',next||version);}catch{}location.reload();}
  function remoteVersion(){return fetch(new URL('deployment-version.json?check='+Date.now(),document.baseURI),{cache:'no-store',credentials:'same-origin'}).then(async r=>{if(!r.ok)throw Error('Sürüm bilgisi alınamadı');const j=await r.json();if(!/^\d+\.\d+\.\d+$/.test(j.release))throw Error('Geçersiz sürüm');return j.release;});}
  window.mxCheckUpdate=async function(manual=true){if(checking)return;checking=true;let listener=null,timer=null;
-  try{const next=await remoteVersion();availableVersion=next===version?null:next;const sw=navigator.serviceWorker,reg=sw?await sw.getRegistration():null;let workerChanged=false;
+  try{const next=await remoteVersion();const newer=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<3;i++){if(x[i]!==y[i])return x[i]>y[i];}return false;};availableVersion=newer(next,version)?next:null;const sw=navigator.serviceWorker,reg=sw?await sw.getRegistration():null;let workerChanged=false;
    if(reg){const previous=sw.controller;const changed=new Promise(resolve=>{listener=()=>resolve(sw.controller!==previous);sw.addEventListener('controllerchange',listener,{once:true});timer=setTimeout(()=>resolve(false),9000);});await reg.update();if(sw.controller!==previous)workerChanged=true;else if(reg.installing||reg.waiting)workerChanged=await changed;}
-   if(availableVersion||workerChanged){if(manual||safeToReload()){notifyUpdate('Yeni sürüm yükleniyor…');refreshApp(next);return;}notifyUpdate('Yeni sürüm hazır · Ana sayfadan ↻ ile güncelle.');}
+   if(availableVersion||workerChanged){let attempted=false;try{attempted=sessionStorage.getItem('mx-update-attempt')===version+'>'+next;}catch{}if(manual||(safeToReload()&&(!attempted||workerChanged))){try{sessionStorage.setItem('mx-update-attempt',version+'>'+next);}catch{}notifyUpdate('Yeni sürüm yükleniyor…');refreshApp(next);return;}notifyUpdate('Yeni sürüm hazır · Ana sayfadan ↻ ile güncelle.');}
    else if(manual)notifyUpdate('Güncel sürüm · '+version);
   }catch{if(manual)notifyUpdate('Sürüm kontrolü yapılamadı · '+version);}
   finally{checking=false;clearTimeout(timer);if(listener)navigator.serviceWorker?.removeEventListener('controllerchange',listener);}
@@ -1674,3 +1674,11 @@ function installBulkSelectionMX(){
  const baseRender=render;render=function(){baseRender();paint();};paint();
 }
 const previousStudioBulkMX=installStudioP1;installStudioP1=function(){previousStudioBulkMX();installBulkSelectionMX();};
+
+/* Route transitions close the prior dialog; keep forms and same-screen edits intact. */
+function installCleanNavigationMX(){
+ if(window.mxCleanNavigationReady)return;window.mxCleanNavigationReady=true;
+ const oldGo=go;go=function(next,...args){const changed=next!==view;if(changed){if(document.querySelector('dialog[open]'))close5();document.body.classList.remove('mxv-focus-screen');}const result=oldGo(next,...args);if(changed){requestAnimationFrame(()=>{window.scrollTo(0,0);for(const node of document.querySelectorAll('#app,[role=main]'))if(node.scrollTop)node.scrollTop=0;});}return result;};
+ const oldModal=modal5;modal5=function(...args){const result=oldModal(...args);const dialog=document.querySelector('dialog[open]');if(dialog){dialog.scrollTop=0;dialog.classList.add('mx-route-dialog');}return result;};
+}
+const previousStudioCleanNavMX=installStudioP1;installStudioP1=function(){previousStudioCleanNavMX();installCleanNavigationMX();};
