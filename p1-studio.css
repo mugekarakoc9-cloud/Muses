@@ -257,3 +257,44 @@ body[data-theme="dark"] #mxv-root {
 #mxv-root .mxv-main{min-width:0;max-width:100%}
 #mxv-root :is(button,input,select,textarea):focus-visible{outline:2px solid var(--mxv-accent);outline-offset:2px}
 body[data-theme="dark"] .mx-task-check:not([aria-pressed="true"]){background:#302740!important;color:#e0c4ff!important;border-color:#b18be7!important}
+
+/* Touch review: preserve vertical scrolling, clip only the flying card at the study boundary. */
+#mxv-root.mxv-studying .mxv-main{overflow-x:clip;box-sizing:border-box;padding-inline:4px}
+#mxv-root .mxv-card{box-sizing:border-box;max-width:100%;min-width:0;transform:translate3d(var(--mx-swipe-x,0px),var(--mx-swipe-y,0px),0) rotate(var(--mx-swipe-angle,0deg));transition:transform .2s ease-out,border-color .15s,box-shadow .15s}
+#mxv-root .mxv-card.mxv-swipe-dragging{transition:none!important;will-change:transform}
+#mxv-root .mxv-card.mxv-swipe-exit{transition:transform .21s ease-in,opacity .21s ease-in;opacity:.3;pointer-events:none}
+#mxv-root .mxv-review-face{touch-action:pan-y pinch-zoom;user-select:none;-webkit-user-select:none;cursor:grab}
+#mxv-root .mxv-review-face img{-webkit-user-drag:none;user-select:none}
+#mxv-root .mxv-swipe-dragging .mxv-review-face{cursor:grabbing}
+#mxv-root .mxv-swipe-badge{display:none;position:absolute;z-index:5;top:56px;left:14px;right:auto;max-width:calc(100% - 28px);padding:8px 12px;border:2px solid currentColor;border-radius:10px;font-weight:800;font-size:clamp(14px,4vw,22px);pointer-events:none;opacity:var(--mx-swipe-strength,0)}
+#mxv-root .mxv-card[data-swipe=know]{--mx-swipe-color:#218653;--mx-swipe-bg:#e2f7e9}
+#mxv-root .mxv-card[data-swipe=unknown]{--mx-swipe-color:#b82745;--mx-swipe-bg:#ffe6ec}
+body[data-theme=dark] #mxv-root .mxv-card[data-swipe=know]{--mx-swipe-color:#82e3ac;--mx-swipe-bg:#1d4231}
+body[data-theme=dark] #mxv-root .mxv-card[data-swipe=unknown]{--mx-swipe-color:#ff9db1;--mx-swipe-bg:#552736}
+#mxv-root .mxv-card[data-swipe]{border-color:var(--mx-swipe-color)!important;box-shadow:inset 0 0 0 2px var(--mx-swipe-color),0 0 20px color-mix(in srgb,var(--mx-swipe-color) 25%,transparent);background:linear-gradient(145deg,var(--mx-swipe-bg),var(--mxv-surface,var(--paper)) 75%)!important}
+#mxv-root .mxv-card[data-swipe] .mxv-swipe-badge{display:block;color:var(--mx-swipe-color);background:var(--mx-swipe-bg)}
+#mxv-root .mxv-card[data-swipe=unknown] .mxv-swipe-badge{left:auto;right:14px}
+#mxv-root .mxv-main,#mxv-root .mxv-sidebar,#mxv-root .mxv-card-top,#mxv-root .mxv-toolbar,#mxv-root .mxv-study-top{min-width:0;max-width:100%;box-sizing:border-box}
+#mxv-root :is(button,select,input,textarea){max-width:100%;box-sizing:border-box;min-width:0}
+#mxv-root :is(.mxv-head,.mxv-card-top,.mxv-toolbar,.mxv-study-top,.mxv-period){overflow-wrap:anywhere}
+#mxv-root .mxv-detail-table{max-width:100%;overflow:auto}
+@media(max-width:750px){
+ #mxv-root{min-width:0;max-width:100%;gap:10px}
+ #mxv-root.mxv-studying .mxv-main{padding-inline:2px}
+ #mxv-root .mxv-card{min-height:42vh;padding:12px;gap:8px}
+ #mxv-root .mxv-card-top{position:static;gap:5px;justify-content:center}
+ #mxv-root .mxv-card-top button{min-height:40px;min-width:36px;padding:5px}
+ #mxv-root .mxv-face{min-height:26vh;padding:12px 2px;gap:6px;max-width:100%;box-sizing:border-box}
+ #mxv-root .mxv-term{font-size:clamp(28px,9vw,48px)!important;overflow-wrap:anywhere}
+ #mxv-root .mxv-face .mxv-field:not(.mxv-term):not(.mxv-pos){padding:9px;max-width:100%;font-size:16px}
+ #mxv-root .mxv-image{max-width:100%;max-height:clamp(90px,23vh,190px)}
+ #mxv-root .mxv-ratings{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px}
+ #mxv-root .mxv-ratings button{min-height:48px;min-width:0;padding:4px 2px;font-size:clamp(10px,2.7vw,13px);overflow-wrap:anywhere}
+ #mxv-root :is(.mxv-settings,.mxv-face-settings){grid-template-columns:minmax(0,1fr)}
+ #mxv-root .mxv-word{grid-template-columns:24px minmax(0,1fr) minmax(0,1fr);gap:6px;padding:8px 3px;overflow-wrap:anywhere}
+ #mxv-root .mxv-list-table button{grid-template-columns:repeat(2,minmax(0,1fr));white-space:normal;overflow-wrap:anywhere}
+ #mxv-root:fullscreen{padding:8px max(8px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+ #mxv-root .mxv-card form{display:grid;grid-template-columns:minmax(0,1fr);width:100%}
+ #mxv-root .mxv-card form input{width:100%;font-size:20px}
+}
+@media(prefers-reduced-motion:reduce){#mxv-root .mxv-card{transition:none!important}}
