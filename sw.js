@@ -1,4 +1,4 @@
-const CACHE = 'muses-life-v01610-reader-habit-bulk';
+const CACHE = 'muses-life-v01611-reader-bulk-habits';
 const FILES = ['./', './index.html', './p1-planning.js', './p1-studio.js', './p1-studio.css', './p1-activity.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 const core = new Set(FILES.map(path => new URL(path, self.registration.scope).href));
 const isMimo = url => /^assets\/mimo\/(idle|happy|love|knead|walk|still|greet|sad|play|sleep|gift)\.json$/.test(url.href.slice(self.registration.scope.length));
