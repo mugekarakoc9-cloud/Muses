@@ -20,6 +20,12 @@ try{
  assert.equal(await page.locator('img.mx-real-cat').count()>0,true);
  await page.evaluate(()=>go('home'));
  await page.waitForSelector('.mx-floating-cat',{state:'visible'});const cat=page.locator('.mx-floating-cat');await cat.hover();const cb=await cat.boundingBox();await page.mouse.move(cb.x+cb.width/2,cb.y+cb.height/2);await page.mouse.down();await page.mouse.move(cb.x+cb.width/2-75,cb.y+cb.height/2-100,{steps:10});await page.mouse.up();assert.equal(await cat.getAttribute('data-mx-pinned'),'yes');await page.evaluate(()=>mxResumeCatWalk());
+ await cat.click();const catPanel=page.locator('#mx-cat-panel');await catPanel.waitFor({state:'visible'});assert.equal(await cat.getAttribute('aria-expanded'),'true');assert.equal(await cat.getAttribute('data-pose'),'love');
+ await catPanel.getByRole('button',{name:'Oyna',exact:true}).click();assert.equal(await cat.getAttribute('data-pose'),'play');
+ await catPanel.getByRole('button',{name:'Uygulama'}).click();await catPanel.getByRole('button',{name:'Ajanda',exact:true}).click();assert.equal(await page.evaluate(()=>view),'calendar');assert.equal(await catPanel.count(),0);
+ await page.evaluate(()=>go('home'));await cat.click();await catPanel.waitFor({state:'visible'});await page.keyboard.press('Escape');assert.equal(await catPanel.count(),0);assert.equal(await cat.getAttribute('aria-expanded'),'false');
+ await page.setViewportSize({width:390,height:844});await cat.click();await catPanel.waitFor({state:'visible'});const panelBox=await catPanel.boundingBox();assert(panelBox.x>=0&&panelBox.y>=0&&panelBox.x+panelBox.width<=391&&panelBox.y+panelBox.height<=845,'Mimo panel fits mobile viewport');await page.keyboard.press('Escape');await page.setViewportSize({width:1440,height:900});
+
  await page.evaluate(()=>{go('library');mxImportLibrary();});await page.locator('#mx-lib-form [name=file]').setInputFiles({name:'test.txt',mimeType:'text/plain',buffer:Buffer.from('Türkçe karakterler: ğüşiöç. English text.')});await page.locator('#mx-lib-form button.primary').click();await page.waitForSelector('.mx-quiet-bar');assert.match(await page.locator('.readerPage9').innerText(),/Türkçe/);await page.locator('.mx-quiet-bar button').first().click();await page.evaluate(()=>go('home'));
 
  await page.locator('.mx-focus-grip').waitFor();
