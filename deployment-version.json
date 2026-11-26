@@ -1,5 +1,5 @@
 {
-  "release": "0.16.5",
+  "release": "0.16.6",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Mobile flashcard drag and directional feedback"
+  "purpose": "Fullscreen study, independent review, quiz and matching, English File hierarchy"
 }
