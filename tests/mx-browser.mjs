@@ -38,7 +38,7 @@ try{
  await page.evaluate(()=>go('english'));assert(await page.locator('.mx-palace').count(),'New journey should be the default');await page.evaluate(()=>go('home'));
 
  await page.waitForFunction(()=>[...document.querySelectorAll('img.mx-real-cat')].some(img=>img.complete&&img.naturalWidth>0),{},{timeout:20000});
- assert.match(await page.locator('#app').innerText(),/0\.16\.7/);
+ assert.match(await page.locator('#app').innerText(),/0\.16\.8/);
  await page.evaluate(()=>openPaletteP1());
  await page.locator('#paletteKindP1').waitFor();
  const kinds=await page.locator('#paletteKindP1 option').allTextContents();
@@ -79,15 +79,12 @@ try{
  await sourceTask.locator('[name=source]').selectOption(fono);
  await sourceTask.locator('[name=search]').fill('47');
  assert(await sourceTask.locator('[name=leaf] option').count()>0,'Fono 47 must be selectable');
- const leafId=await sourceTask.locator('[name=leaf] option').first().getAttribute('value');
- await sourceTask.locator('[name=leaf]').selectOption(leafId);
- assert.equal(await sourceTask.locator('[name=leaf]').inputValue(),leafId);
+ assert(await sourceTask.locator('.mx-source-checks input').count()>0);
  await sourceTask.locator('[name=search]').fill('');
- assert.equal(await sourceTask.locator('[name=leaf]').evaluate(el=>el.multiple),true);
- const choices=await sourceTask.locator('[name=leaf] option').evaluateAll(opts=>opts.slice(0,2).map(o=>o.value));
- assert.equal(choices.length,2);
- await sourceTask.locator('[name=leaf]').selectOption(choices);
- assert.equal(await sourceTask.locator('[name=leaf]').evaluate(el=>el.selectedOptions.length),2);
+ const choices=sourceTask.locator('.mx-source-checks input[type=checkbox]:enabled');
+ assert(await choices.count()>=2);
+ await choices.nth(0).check();await choices.nth(1).check();
+ assert(await sourceTask.locator('.mx-source-checks input:checked').count()>=2);
  await page.evaluate(()=>close5());
  await page.evaluate(()=>go('flash'));
  await page.waitForSelector('#mxv-root .mxv-sidebar');
@@ -100,6 +97,11 @@ try{
  assert.equal(themes.light.bg,'rgb(255, 255, 255)');
  assert.equal(themes.dark.bg,'rgb(38, 42, 56)');
  assert.notEqual(themes.light.fg,themes.dark.fg);
+ await page.locator('#mxv-root [data-act="map"]').click();
+ await page.locator('#mxv-root [data-map-key]').first().click();
+ assert.equal(await page.locator('#mxv-root').getAttribute('data-mxv-page'),'map');
+ assert(await page.locator('#mxv-root .mxv-map-info').innerText());
+ await page.locator('#mxv-root [data-act="listLibrary"]').click();
  await page.evaluate(()=>{
    S.words??=[];
    S.words.push(...['alpha','beta','gamma','delta'].map((word,i)=>({'Word / Phrase':'mx-test-'+word,'Türkçe Anlam':'Test anlam '+i,POS:'noun',Source:'English File Test '+(i<2?'1':'2')})));
