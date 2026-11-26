@@ -1353,3 +1353,24 @@ function installFlashStageMX(){
 }
 const previousStudioInstallerFlashStageMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerFlashStageMX();installFlashStageMX();};
+
+/* Keyboard-first study: preserve native typing and prevent global letter shortcuts. */
+function installStudyKeyboardMX(){
+ if(window.mxStudyKeyboardReady)return;window.mxStudyKeyboardReady=true;
+ const active=()=>view==='flash'&&tab4==='study'&&['type','listen'].includes(s4().mode);
+ function field(){if(!active()||document.querySelector('dialog[open]'))return null;const root=document.querySelector('#fcstudio4');return [...(root?.querySelectorAll('input:not([type]),input[type=text],textarea')||[])].find(e=>!e.disabled&&!e.readOnly&&e.getClientRects().length&&!e.closest('details:not([open])'))||null;}
+ function focus(){const e=field();if(e&&document.activeElement!==e&&!document.activeElement?.matches('input,textarea,select,[contenteditable=true]'))e.focus({preventScroll:true});}
+ const old=render;render=function(){old();focus();};
+ window.addEventListener('keydown',e=>{
+  if(!active()||e.ctrlKey||e.metaKey||e.altKey||e.isComposing||document.querySelector('dialog[open]'))return;
+  const target=e.target,edit=target?.closest?.('input,textarea,select,[contenteditable=true]'),input=field();
+  if(e.key.length===1||['Backspace','Delete'].includes(e.key)){
+   if(edit){e.stopImmediatePropagation();return;}
+   e.stopImmediatePropagation();
+   if(input){input.focus({preventScroll:true});if(e.key.length===1){e.preventDefault();input.setRangeText(e.key,input.selectionStart??input.value.length,input.selectionEnd??input.value.length,'end');input.dispatchEvent(new Event('input',{bubbles:true}));}}
+   else e.preventDefault();
+  }
+ },true);
+}
+const previousStudioInstallerStudyKeyboardMX=installStudioP1;
+installStudioP1=function(){previousStudioInstallerStudyKeyboardMX();installStudyKeyboardMX();};
