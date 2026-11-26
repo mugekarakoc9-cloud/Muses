@@ -100,6 +100,42 @@ try{
  assert.equal(themes.light.bg,'rgb(255, 255, 255)');
  assert.equal(themes.dark.bg,'rgb(38, 42, 56)');
  assert.notEqual(themes.light.fg,themes.dark.fg);
+ await page.evaluate(()=>{
+   S.words??=[];
+   S.words.push(...['alpha','beta','gamma','delta'].map((word,i)=>({'Word / Phrase':'mx-test-'+word,'Türkçe Anlam':'Test anlam '+i,POS:'noun',Source:'English File Test '+(i<2?'1':'2')})));
+   S.mxVocabularyV2.session=null;S.mxVocabularyV2.cfg.limit=1;S.mxVocabularyV2.cfg.voice=false;
+   S.mxVocabularyV2.cfg.prompt='Türkçe Anlam';S.mxVocabularyV2.cfg.answer='Word / Phrase';render();
+ });
+ await page.locator('#mxv-root [data-act="allGroups"]').click();
+ assert(await page.locator('#mxv-root [data-group-check]').evaluateAll(els=>els.every(el=>el.checked)));
+ await page.locator('#mxv-root [data-group="src:English File"]').first().click();
+ await page.locator('#mxv-root [data-act="startFlash"]').click();
+ await page.locator('#mxv-root [data-act="full"]').click();
+ await page.setViewportSize({width:360,height:640});
+ await page.locator('#mxv-root.mxv-full-study').waitFor();
+ const cardBox=await page.locator('#mxv-root .mxv-card').boundingBox();
+ assert(cardBox.y>=0&&cardBox.y+cardBox.height<=641,'Card stays within phone viewport');
+ assert.equal(await page.locator('#mxv-root .mxv-flag').count(),4);
+ await page.locator('#mxv-root [data-act="flip"]').click();
+ await page.locator('#mxv-root [data-act="rate2"]').click();
+ await page.locator('#mxv-root .mxv-recap').waitFor();
+ assert.equal(await page.locator('#mxv-root [data-act="dashboard"]').last().isVisible(),true);
+ await page.locator('#mxv-root .mxv-recap [data-act="dashboard"]').first().click();
+ assert.equal(await page.evaluate(()=>S.mxVocabularyV2.session),null,'Review does not force writing');
+ await page.locator('#mxv-root [data-group="src:English File"]').first().click();
+ await page.locator('#mxv-root [data-act="startQuiz"]').click();
+ await page.locator('#mxv-root [data-quiz]').first().waitFor();
+ const correct=await page.evaluate(()=>{const s=S.mxVocabularyV2.session,k=s.keys[s.index];return s.quiz.options.indexOf([...S.words,...(typeof all4==='undefined'?[]:all4)].find(w=>key4(w)===k)?.['Word / Phrase']);});
+ if(correct>=0){await page.locator('#mxv-root [data-quiz="'+correct+'"]').click();assert.equal(await page.evaluate(()=>S.mxVocabularyV2.session.result.ok),true);await page.locator('#mxv-root [data-act="next"]').click();}
+ else{await page.evaluate(()=>{S.mxVocabularyV2.session=null;});await page.locator('#mxv-root [data-act="pause"]').click();}
+ await page.locator('#mxv-root [data-group="src:English File"]').first().click();
+ await page.locator('#mxv-root [data-act="startMatch"]').click();
+ const match=page.locator('#mxv-root .mxv-match-grid');await match.waitFor();
+ const key=await match.locator('[data-match-col="0"]').first().getAttribute('data-match-key');
+ await match.locator('[data-match-col="0"]').first().click();
+ await match.locator('[data-match-col="1"]').first().click();
+ await page.locator('#mxv-root [data-act="matchNext"]').click();
+ await page.setViewportSize({width:1440,height:900});
  await page.evaluate(()=>go('calendar'));
  await page.evaluate(()=>mxHourlyMode('month'));assert(await page.locator('.cell5').count()>=28);await page.locator('.calendar5 button[onclick="mxHourlyMode(\'day\')"]').first().click();assert.equal(await page.locator('[data-mx-drop-date]').count(),25);await page.evaluate(()=>mxMimoGallery());assert.equal(await page.locator('[data-mimo-pose]').count(),11);await page.evaluate(()=>close5());
  const views=['home','resources','flash','library','english','goals','calendar','p90','atlas','habits','journal'];
