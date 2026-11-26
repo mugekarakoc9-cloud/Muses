@@ -1232,7 +1232,7 @@ installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractio
 /* Live build indicator and manual update: no local record migration. */
 function installLiveBuildMX(){
  if(window.mxLiveBuildInstalled)return;window.mxLiveBuildInstalled=true;
- const version='0.16.8';
+ const version='0.16.9';
  const oldHome=home;
  const css=document.createElement('style');css.textContent=`
  .mx-home-banner{padding:clamp(16px,3vw,28px);border-radius:22px;background:linear-gradient(128deg,#e6dcef,#e3eddf);color:#3c3450;border:1px solid #b8abc83b}
@@ -1700,3 +1700,44 @@ window.mxRecurringTaskForm=function(){modal5('<div class="modalhead5"><h2>Tekrar
 window.mxRecurringManage=function(){modal5('<div class="modalhead5"><h2>Tekrarlanan görevler</h2><button onclick="close5()">×</button></div>'+rules().map(r=>'<div class="card"><b>'+H(r.title)+'</b><p>'+H(r.repeat==='daily'?'Her gün':r.repeat==='yearly'?'Her yıl':'Seçili hafta günleri')+' · '+H(r.amount+' '+r.unit)+'</p><button data-rule="'+H(r.id)+'">'+(r.paused?'Tekrar başlat':'Gelecek tekrarları durdur')+'</button></div>').join('')+'<button onclick="mxRecurringTaskForm()">＋ Yeni tekrar</button>');document.querySelectorAll('[data-rule]').forEach(b=>b.onclick=()=>{const r=rules().find(x=>String(x.id)===b.dataset.rule);if(!r)return;r.paused=!r.paused;if(r.paused){S.tasks=S.tasks.filter(t=>t.mxRecurringId!==r.id||t.done||t.date<today());for(const d of Object.keys(r.issued))if(d>=today()&&!S.tasks.some(t=>t.mxRecurringId===r.id&&t.date===d))delete r.issued[d];}else generate();save();window.mxRecurringManage();});};
 const oldCal=calendar;calendar=function(){return '<div class="mx-recur-tools"><button onclick="mxRecurringTaskForm()">＋ Tekrarlayan görev</button><button onclick="mxRecurringManage()">↻ Tekrarlar</button></div>'+oldCal();};const oldRender=render;render=function(){generate();oldRender();};}
 const beforeRecurringMX=installStudioP1;installStudioP1=function(){beforeRecurringMX();installRecurringTasksMX();};
+
+/* Goal actions and safe in-place editing. Goal identity and actual logs never change. */
+function mxGoalEditDatesMX(start,end,days){if(!start||!end||start>end||(Date.parse(end)-Date.parse(start))/86400000>3659||!days.length)return [];return range5(start,end).filter(d=>days.includes(new Date(d+'T12:00:00').getDay()));}
+function installGoalActionsMX(){
+ if(window.mxGoalActionsReady)return;window.mxGoalActionsReady=true;
+ const H=x=>esc(String(x??'')),find=k=>v5().challenges.find(x=>String(x.id)===String(dec5(k)));
+ const baseCard=challengeCard5;
+ challengeCard5=function(g){const html=baseCard(g),key=enc5(g.id);return html.replace(/<button class="icon5" onclick="challengeDelete5\('[^']*'\)" aria-label="Hedefi kaldır">⋯<\/button>/,()=>'<details class="mx-goal-menu"><summary aria-label="Hedef işlemleri" title="Hedef işlemleri">⋯</summary><div class="mx-goal-menu-items"><button type="button" onclick="mxEditGoal(\''+key+'\')">✎ Düzenle</button><button type="button" onclick="mxMimoRewardRule(\''+key+'\')">🎁 Ödül belirle</button><button type="button" onclick="mxGoalOpenPath(\''+key+'\')">↗ Yol haritası</button><button type="button" class="mx-goal-danger" onclick="mxDeleteGoalAction(\''+key+'\')">⌫ Hedefi sil</button></div></details>');};
+ window.mxGoalOpenPath=k=>{const g=find(k);if(!g)return;v9().pathGoal=g.id;v9().pathScale='year';selected=g.start;save();go('english');};
+ window.mxDeleteGoalAction=k=>{document.querySelectorAll('.mx-goal-menu[open]').forEach(el=>el.open=false);challengeDelete5(k);};
+ document.addEventListener('click',e=>{for(const el of document.querySelectorAll('.mx-goal-menu[open]'))if(!el.contains(e.target))el.open=false;});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')for(const el of document.querySelectorAll('.mx-goal-menu[open]'))el.open=false;});
+ window.mxEditGoal=function(k){
+  const g=find(k);if(!g)return;document.querySelectorAll('.mx-goal-menu[open]').forEach(el=>el.open=false);
+  const days=g.mxWeekdays?.length?g.mxWeekdays:g.rhythm==='weekdays'?[1,2,3,4,5]:[0,1,2,3,4,5,6],scoped=g.module==='resource'&&g.kind==='total',plan=schedule9(g),info=challengeInfo5(g);
+  const unit=g.mxDisplayUnit||unit5(g.module,g.target),displayAmount=g.mxDisplayAmount??g.amount,factor=Number(displayAmount)>0?Number(g.amount)/Number(displayAmount):1;
+  modal5('<div class="modalhead5"><h2>Hedefi düzenle</h2><button type="button" onclick="close5()" aria-label="Kapat">×</button></div><form id="mx-goal-edit"><label>Hedef adı<input name="title" required maxlength="160" value="'+H(g.title)+'"></label><div class="mx-edit-grid"><label>Başlangıç<input type="date" name="start" required value="'+H(g.start)+'"></label><label>Bitiş<input type="date" name="end" required value="'+H(g.end)+'"></label><label>'+ (g.kind==='total'?'Toplam miktar':g.kind==='limit'?'Günlük üst sınır':'Günlük miktar')+' ('+H(unit)+')<input type="number" name="amount" min="'+(g.kind==='limit'?0:0.001)+'" step="any" required value="'+H(displayAmount)+'" '+(scoped?'readonly':'')+'></label><label>Saat<input type="time" name="time" value="'+H(g.time||'')+'"></label></div><fieldset class="mx-edit-days"><legend>Çalışma günleri</legend>'+['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'].map((d,i)=>'<label><input type="checkbox" name="weekday" value="'+i+'" '+(days.includes(i)?'checked':'')+'>'+d+'</label>').join('')+'</fieldset><details><summary>Hatırlatma</summary><label>Bildirim<select name="alarm">'+opt5([['','Yok'],['0','Saatinde'],['5','5 dk önce'],['15','15 dk önce'],['30','30 dk önce']],g.alarm||'')+'</select></label></details>'+(scoped?'<small>Bağlı kaynak ve alt bölümler korunur. Tarihler değişirse bitmemiş, tek hedefe bağlı ajanda görevleri yeni çalışma günlerine taşınır.</small>':'<small>Gerçekleşen kayıtlar korunur. Geçmiş günlerin değerlendirmesi değiştirdiğin tarih ve miktara göre yeniden hesaplanır.</small>')+'<p role="status" data-goal-preview></p><button class="primary">Değişiklikleri kaydet</button></form>');
+  const f=document.querySelector('#mx-goal-edit'),status=f.querySelector('[data-goal-preview]');
+  function data(){const z=new FormData(f),start=String(z.get('start')),end=String(z.get('end')),days=z.getAll('weekday').map(Number),dates=mxGoalEditDatesMX(start,end,days),amount=Number(z.get('amount'))*factor;return {start,end,days,dates,amount,display:Number(z.get('amount')),title:String(z.get('title')).trim(),time:String(z.get('time')),alarm:String(z.get('alarm'))};}
+  function preview(){const x=data();status.textContent=x.dates.length?x.dates.length+' çalışma günü · mevcut ilerleme: '+info.count+'/'+info.target:'Geçerli tarih aralığı ve en az bir gün seç.';}
+  f.addEventListener('input',preview);preview();
+  f.onsubmit=e=>{e.preventDefault();const x=data(),now=today();if(!x.title||!x.dates.length||!Number.isFinite(x.amount)||x.amount<(g.kind==='limit'?0:0.001)||x.alarm&&!x.time){status.textContent='Tarih, miktar, gün ve hatırlatma saatini kontrol et.';return;}
+   if(v5().challenges.some(other=>other!==g&&other.module===g.module&&other.target===g.target&&other.start<=x.end&&other.end>=x.start)){status.textContent='Aynı kaynakta çakışan hedef var.';return;}
+   if(scoped&&g.mxRangePlanner&&x.start>g.start){const doneDates=scope6(g.target).items.filter(leafDone).map(n=>s4().chapterDates?.[n.id]).filter(Boolean);if(doneDates.some(d=>d<x.start)){status.textContent='Başlangıç, bu hedefte tamamlanmış bölümleri dışarıda bırakamaz.';return;}}
+   const changedPlan=x.start!==g.start||x.end!==g.end||x.amount!==Number(g.amount)||x.time!==(g.time||'')||[...days].sort().join(',')!==[...x.days].sort().join(',');
+   let nextPlan=null,moves=[];
+   if(changedPlan&&scoped&&g.mxRangePlanner){
+    const nodes=new Map(scope6(g.target).items.map(n=>[n.id,n])),oldSlots=Object.entries(plan?.dates||{}),pending=[],seen=new Set(),kept={};
+    for(const [date,slot] of oldSlots)for(const id of slot.ids||[]){if(seen.has(id)||!nodes.has(id))continue;seen.add(id);const n=nodes.get(id),t=S.tasks.find(t=>t.mxGoalIds?.includes(g.id)&&String(t.target).endsWith('~'+id));if(leafDone(n)||t?.done){const d=t?.date||date;const row=kept[d]??={amount:0,ids:[],pages:0};row.ids.push(id);row.amount++;row.pages+=Number(t?.mxPlannedPages)||0;}else{if(t?.mxGoalIds?.length>1){status.textContent='Bazı görevler başka bir hedefle ortak. Bu hedefin tarihlerini ayrı düzenlemek için ortak görev bağlantısını önce ayır.';return;}pending.push({id,n,t,weight:Number(t?.mxPlannedPages)||1});}}
+    for(const [id,n] of nodes)if(!seen.has(id)&&!leafDone(n))pending.push({id,n,weight:1});
+    const future=x.dates.filter(d=>d>=now);if(pending.length&&!future.length){status.textContent='Kalan bölümler için bugün veya daha sonraki çalışma günleri seç.';return;}
+    const allocated=mxWeightedPlanMX(pending,future);for(const day of allocated){const row=kept[day.date]??={amount:0,ids:[],pages:0};for(const p of day.items){row.amount++;row.ids.push(p.id);row.pages+=p.weight;if(p.t)moves.push({task:p.t,date:day.date});else{const root=scope6(g.target).r;const target=root.id+'~'+p.id,existing=S.tasks.find(t=>t.module==='resource'&&t.target===target&&t.date===day.date);moves.push(existing?{task:existing,date:day.date,attach:true}:{create:{id:uid(),title:root.title+' · '+p.n.title,module:'resource',target,date:day.date,time:x.time,amount:1,priority:'Orta',done:false,mxGoalIds:[g.id],mxPlannedPages:p.weight}});}}}
+    nextPlan={...(plan||{}),dates:kept,itemMode:true,unallocated:[],created:plan?.created||now};
+   }
+   Object.assign(g,{title:x.title,start:x.start,end:x.end,amount:scoped?g.amount:x.amount,time:x.time,alarm:x.alarm,rhythm:'all',mxWeekdays:x.days});if(g.mxDisplayUnit)g.mxDisplayAmount=x.display;
+   if(changedPlan){if(nextPlan){for(const move of moves){if(move.create)S.tasks.push(move.create);else{move.task.date=move.date;move.task.time=x.time;if(move.attach)move.task.mxGoalIds=[...new Set([...(move.task.mxGoalIds||[]),g.id])];}}v9().plans[g.id]=nextPlan;}else delete v9().plans[g.id];}
+   save();close5();render();toast('Hedef güncellendi. Çalışma geçmişi korundu.');
+  };
+ };
+}
+const beforeGoalActionsMX=installStudioP1;installStudioP1=function(){beforeGoalActionsMX();installGoalActionsMX();};
