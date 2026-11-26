@@ -298,3 +298,41 @@ body[data-theme=dark] #mxv-root .mxv-card[data-swipe=unknown]{--mx-swipe-color:#
  #mxv-root .mxv-card form input{width:100%;font-size:20px}
 }
 @media(prefers-reduced-motion:reduce){#mxv-root .mxv-card{transition:none!important}}
+
+/* Compact study controls and viewport-bounded focus mode. */
+#mxv-root .mxv-card-top{position:relative;inset:auto;display:flex;justify-content:flex-start;flex-wrap:nowrap;gap:5px;width:100%;min-height:28px;flex:none}
+#mxv-root .mxv-card-top>button{width:32px;min-width:0;min-height:30px;padding:3px;font-size:16px;border-radius:8px}
+#mxv-root .mxv-flags{display:flex;gap:2px;align-items:center;justify-content:flex-end;margin-left:auto;flex:none}
+#mxv-root .mxv-card-top .mxv-flag{display:grid;place-items:center;width:26px;min-width:26px;min-height:29px;height:29px;padding:0;color:var(--flag-color);font-size:19px;line-height:1;background:transparent;border:1px solid transparent;border-radius:5px}
+#mxv-root .mxv-flag.active{border-color:var(--flag-color);outline:1px solid var(--flag-color);outline-offset:0;background:color-mix(in srgb,var(--flag-color) 17%,transparent)}
+#mxv-root .mxv-card-top button:focus-visible{outline:2px solid var(--mxv-accent)}
+#mxv-root .mxv-quiz{display:grid;gap:7px;width:100%;min-width:0}
+#mxv-root .mxv-quiz button,#mxv-root .mxv-match button{min-height:44px;padding:8px;white-space:normal;overflow-wrap:anywhere;text-align:left}
+#mxv-root .mxv-match-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#mxv-root .mxv-match-grid>div{display:grid;align-content:start;gap:8px;min-width:0}
+#mxv-root .mxv-match button.matched{color:var(--mxv-success);border-color:var(--mxv-success);opacity:.5}
+#mxv-root .mxv-match button.wrong{color:var(--mxv-error);border-color:var(--mxv-error)}
+body.mxv-focus-screen{overflow:hidden!important}
+#mxv-root.mxv-full-study{position:fixed!important;inset:0!important;z-index:2147483000!important;width:100%!important;max-width:none!important;height:100vh;height:100dvh;min-height:0!important;max-height:100dvh;display:flex!important;flex-direction:column!important;align-items:stretch!important;box-sizing:border-box;padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:var(--mxv-surface);overflow:hidden;gap:0}
+#mxv-root.mxv-full-study .mxv-main{flex:1;min-height:0;max-height:100%;width:100%;max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:6px;overflow:hidden;padding:0}
+#mxv-root.mxv-full-study .mxv-study-top{flex:none;gap:4px;flex-wrap:wrap}
+#mxv-root.mxv-full-study .mxv-study-top button{min-height:30px;padding:4px 7px;font-size:12px}
+#mxv-root.mxv-full-study .mxv-progress{flex:none;margin:0;height:5px}
+#mxv-root.mxv-full-study .mxv-card{flex:1 1 0;min-height:0!important;max-height:100%;padding:8px 10px!important;gap:5px;overflow:hidden;justify-content:flex-start}
+#mxv-root.mxv-full-study .mxv-card-top{flex:none}
+#mxv-root.mxv-full-study .mxv-face{flex:1 1 auto;min-height:0!important;max-height:100%;width:100%;padding:4px!important;gap:4px!important;overflow-y:auto;overscroll-behavior:contain;justify-content:safe center}
+#mxv-root.mxv-full-study .mxv-face>*{flex-shrink:0}
+#mxv-root.mxv-full-study .mxv-face .mxv-term{font-size:calc(clamp(25px,6vmin,52px)*var(--mxv-fit,1))!important;line-height:1.1;margin:4px 0}
+#mxv-root.mxv-full-study .mxv-face .mxv-pos{font-size:calc(13px*var(--mxv-fit,1))!important}
+#mxv-root.mxv-full-study .mxv-face .mxv-field:not(.mxv-term):not(.mxv-pos){font-size:calc(clamp(14px,3.5vmin,18px)*var(--mxv-fit,1));line-height:1.35;padding:calc(7px*var(--mxv-fit,1));margin:3px 0}
+#mxv-root.mxv-full-study .mxv-face .mxv-image{max-height:calc(min(16dvh,150px)*var(--mxv-fit,1));object-fit:contain}
+#mxv-root.mxv-full-study .mxv-ratings{flex:none;margin:0;gap:3px}
+#mxv-root.mxv-full-study .mxv-ratings button{min-height:38px;padding:3px 2px;font-size:clamp(10px,2.6vw,13px)}
+#mxv-root.mxv-full-study .mxv-main>p.mxv-muted{flex:none;margin:0;font-size:10px}
+#mxv-root.mxv-full-study .mxv-cardmenu:not([hidden]){position:absolute;z-index:10;top:42px;right:8px;background:var(--mxv-surface);border:1px solid var(--mxv-border);padding:8px;border-radius:10px;max-width:90%}
+#mxv-root.mxv-full-study .mxv-result,#mxv-root.mxv-full-study .mxv-quiz,#mxv-root.mxv-full-study .mxv-match{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+#mxv-root.mxv-full-study .mxv-result{flex:1 1 auto}
+#mxv-root.mxv-full-study .mxv-card form{flex:none}
+#mxv-root.mxv-full-study .mxv-next{flex:none;margin:0}
+body.mxv-focus-screen :is(.mx-floating-cat,.mx-focus-dock,.mobileNav3){visibility:hidden!important;pointer-events:none!important}
+@media(max-width:360px){#mxv-root .mxv-card-top .mxv-flag{width:23px;min-width:23px;font-size:17px}#mxv-root .mxv-card-top>button{width:27px}}
