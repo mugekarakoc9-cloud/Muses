@@ -671,7 +671,23 @@ function installPalaceMX(){
    const local=document.querySelector('[data-mx-lesson] video:not([src])');if(local){const k=D(local.closest('[data-mx-lesson]').dataset.mxLesson),m=P().media[k];if(m?.kind==='local')get6('media',m.key).then(blob=>{if(!local.isConnected)return;if(!(blob instanceof Blob)){local.nextElementSibling.textContent='Yerel video bulunamadı.';return;}if(blobURL)URL.revokeObjectURL(blobURL);blobURL=URL.createObjectURL(blob);localVideo=local;local.src=blobURL;}).catch(()=>{if(local.isConnected)local.nextElementSibling.textContent='Dosya açılamadı.';});}
  }
  const oldSettings= settings;settings=function(){return '<section class="card"><h3>Animasyon ve çalışma deneyimi</h3><button onclick="mxPathSettings()">Yol ve Mimo ayarları</button> <button onclick="mxFocusSoundSettings()">Bildirim sesleri</button></section>'+oldSettings();};
- const oldRender=render;render=function(){oldRender();paintCat();requestAnimationFrame(wire);};
+function applyEnglishFileProgressMX(){
+ const state=P();if(state.mxEnglishFileThrough3_20261126)return;
+ const candidates=resourceRows().filter(r=>/english\s*file/i.test(String(r.title||'')));
+ const r=candidates.find(r=>/pre.intermediate|intermediate/i.test(r.title))||(candidates.length===1?candidates[0]:null);if(!r)return;
+ const rows=sourceTree(r);if(!Array.isArray(rows)||!rows.length)return;
+ const priorTitles=/\b(?:how we eat|happy families|spend or save|life.changing|who got there first|challenging stereotypes|surprise meetings|images of london)\b/i;
+ function stage(n,parentStage){const t=String(n.title||'').trim(),m=t.match(/^(?:(?:file|unit|ünite|bölüm)\s*)?([1-9]\d*)\s*([ab])?(?=\s|[.:–—-]|$)/i);if(/^mx-ef-page-\d+$/.test(n.id)){const p=Number(n.id.replace('mx-ef-page-',''));return p>=8&&p<=37?1:0;}if(/^(?:practical english|pe)\s*[12]\b/i.test(t)||/^revise\s*(?:and|&)\s*check\s*1\s*(?:&|and|[-–])\s*2\b/i.test(t)||priorTitles.test(t))return 1;if(/^(?:practical english|pe)\s*[3-9]\b|^revise\s*(?:and|&)\s*check\s*[3-9]\b|modern manners|yes,?\s*we can/i.test(t))return 0;if(m&&(m[2]||/^(?:file|unit|ünite|bölüm)\b/i.test(t)))return Number(m[1])<=3?1:0;return parentStage;}
+ const done=[],four=[];function walk(n,inherited){const s=stage(n,inherited);if(/^(?:(?:unit|file)\s*)?4\s*a\b|modern manners/i.test(String(n.title||'')))four.push(n);if(n.children?.length){for(const child of n.children)walk(child,s);}else if(s===1&&n.id)done.push(n);}
+ for(const n of rows)walk(n,null);if(!done.length)return;
+ let changed=0;for(const n of done){if(leafDone(n))continue;v2().chapterDone[n.id]=true;state.evidence[r.id+'~'+n.id]={method:'Önceki çalışma tamamlandı (kullanıcı beyanı)',note:'1–3. üniteler tamamlandı; geçmiş çalışma tarihi bilinmiyor.',date:today(),reported:true,historicalDateUnknown:true};changed++;}
+ v6().resourceStarted[r.id]=true;
+ state.mxEnglishFileThrough3_20261126={resource:r.id,matched:done.length,changed,reportedOn:today()};
+ const current=String(sourceSelected||'').split('~')[0];
+ if(current===r.id&&four.length){const next=four[0];state.nodes[r.id]=next.id;state.activeStops??={};const first=leaves([next]).find(n=>!leafDone(n));if(first)state.activeStops[r.id]=first.id;state.pageKey='';}
+ save();
+}
+ const oldRender=render;render=function(){try{applyEnglishFileProgressMX();}catch(err){console.warn('English File progress migration:',err);}oldRender();paintCat();requestAnimationFrame(wire);};
  window.addEventListener('resize',()=>requestAnimationFrame(wire));document.addEventListener('fullscreenchange',paintCat);
 }
 const previousStudioInstallerMXPalace=installStudioP1;
