@@ -879,3 +879,51 @@ body #nav .subnav9{gap:2px!important}
 body #nav .subnav9 button{font-size:12px!important;min-height:30px!important;padding:5px 8px!important;border:0!important;box-shadow:none!important;text-align:start}
 @media(max-width:920px){body #mobileNav3{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:2px!important;max-width:100vw!important;box-sizing:border-box;overflow:hidden}body #mobileNav3>button{width:100%!important;max-width:none!important;min-width:0!important;justify-self:stretch;min-height:40px!important;padding:4px!important;border:0!important;box-shadow:none!important}}
 @media(max-width:800px){body.menuopen5 .side #nav{max-height:65dvh;overflow:auto;grid-template-columns:repeat(2,minmax(0,1fr))!important}body .side #phoneMenu5{border:0!important;background:transparent!important;box-shadow:none!important}}
+
+/* R33: compact, theme-aware Pole, activity and pet controls */
+body #app .mx-pole-head33{display:flex;align-items:center;gap:5px;margin:0 0 8px;min-width:0}
+body #app .mx-pole-head33 h2{font-size:20px;margin:0 auto 0 0}
+body #app .mx-pole-icon33,body #app .mx-pole-filter33>summary{display:inline-grid!important;place-items:center;min-width:36px!important;width:36px!important;min-height:36px!important;height:36px!important;padding:5px!important;border:0!important;border-radius:8px!important;box-shadow:none!important;background:transparent!important;color:var(--ink)!important}
+body #app .mx-pole-icon33[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 22%,var(--paper))!important;color:var(--accent)!important}
+body #app .mx-pole-metrics33{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:8px 0;margin-bottom:8px}
+.mx-pole-stat33{display:grid;justify-items:center;gap:5px;min-width:0;text-align:center}
+.mx-pole-donut33{display:grid;place-items:center;width:min(56px,100%);aspect-ratio:1;border-radius:50%;background:conic-gradient(var(--accent) var(--pct),var(--line) 0);position:relative;color:var(--ink)}
+.mx-pole-donut33:before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--paper)}
+.mx-pole-donut33 b{position:relative;font-size:14px;line-height:1;font-variant-numeric:tabular-nums}
+.mx-pole-stat33 small{font-size:10px;line-height:1.15;color:var(--muted)}
+body #app .filters3:has(.mx-pole-search33){padding:5px!important;border:0!important;box-shadow:none!important;background:transparent!important;overflow:visible!important}
+.mx-pole-search33{display:flex;align-items:center;gap:5px;min-width:0}
+body #app .mx-pole-search33>input{flex:1;min-width:0;width:100%;font-size:13px!important;padding:7px 9px!important;min-height:36px!important}
+.mx-pole-filter33{position:relative;flex:none}.mx-pole-filter33>summary{list-style:none;cursor:pointer}.mx-pole-filter33>summary::-webkit-details-marker{display:none}
+.mx-pole-filter33>div{position:absolute;z-index:75;right:0;top:100%;width:min(220px,75vw);display:grid;gap:5px;padding:8px;border-radius:10px;background:var(--paper);color:var(--ink);border:1px solid var(--line);box-shadow:0 8px 24px #0002}
+body #app .mx-pole-filter33 select{font-size:12px!important;min-height:34px!important;width:100%;padding:6px!important}
+body #app .atlas-tile{position:relative;min-width:0}
+body #app .atlas-tile .mx-pole-pick33{position:absolute;top:6px;left:6px;background:var(--paper)!important;color:var(--ink)!important;z-index:2}
+body #app .atlas-tile .mx-pole-pick33[aria-pressed=true]{background:var(--accent)!important;color:var(--paper)!important}
+body #app .atlas-tile .side-pair span{background:color-mix(in srgb,var(--muted) 10%,var(--paper))!important;color:var(--ink)!important}
+body #app .atlas-tile .side-pair b{color:var(--ink)!important}
+body #app .atlas-tile .tile-text{padding:8px!important}
+body #app .atlas-tile h3{font-size:13px!important;overflow-wrap:anywhere}
+body #app .atlas-tile .favorite3{width:34px!important;height:34px!important;min-height:34px!important;padding:3px!important;background:var(--paper)!important;color:var(--ink)!important}
+body #app .mx-am31{gap:5px!important;padding:10px!important}
+body #app .mx-am31 .mx-am-head31 h3{font-size:14px!important}
+body #app .mx-am31 .mx-am-grid31{gap:3px!important}
+body #app .mx-am31 .mx-am-cell31{aspect-ratio:auto!important;height:clamp(22px,6vw,32px)!important;gap:1px!important;border-radius:3px!important;padding:1px!important}
+body #app .mx-am31 .mx-am-cell31 span{font-size:9px!important}
+body #app .mx-am31 .mx-am-cell31 b{font-size:9px!important}
+body #app .mx-am31 .mx-am-weeklabel31{font-size:9px!important;line-height:1.1}
+body #app .mx-am31 .mx-am-week31{gap:2px}
+.mx-cal-nav33{display:flex;align-items:center;gap:2px;margin-left:auto}
+body #app .mx-cal-nav33 button{width:26px!important;min-width:26px!important;height:26px!important;min-height:26px!important;padding:2px!important;background:transparent!important;border:0!important;box-shadow:none!important;color:var(--ink)!important}
+.mx-pole-form33{display:grid;gap:8px}.mx-pole-form33 label{display:grid;gap:3px;font-size:12px}.mx-pole-dates33{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.mx-pole-form33 :is(input,select){width:100%;min-width:0;box-sizing:border-box}
+.mx-pole-days33{display:flex;flex-wrap:wrap;gap:6px}.mx-pole-days33 label{display:flex;align-items:center;gap:2px}
+#mx-pole-selected33{display:flex;gap:3px;flex-wrap:wrap}
+#mx-pole-selected33 button,#mx-pole-options33 button{font-size:12px!important;padding:6px 8px!important;min-height:32px!important}
+#mx-pole-options33{max-height:28dvh;overflow:auto;display:grid;gap:3px}
+#mx-pole-options33 button{text-align:left}
+#mx-pole-options33 button[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 22%,var(--paper))!important;color:var(--ink)!important}
+.mx-floating-cat,.mx-next-cat{touch-action:none}
+.mx-floating-cat img,.mx-next-cat img{scale:var(--mx-pet-scale33,1);transform-origin:bottom center}
+@media(prefers-reduced-motion:no-preference){.mx-day-ring{animation:mxRingBreathe33 4s ease-in-out infinite}.mx-am-cell31.complete:active{scale:1.05;transition:scale .15s}}
+@keyframes mxRingBreathe33{0%,100%{scale:1}50%{scale:1.025}}

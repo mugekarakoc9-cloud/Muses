@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Single navigation, removed standalone media section, preserved P90X and Pole embedded media",
-  "revision": 32
+  "purpose": "Compact Pole, agenda-linked combinations, activity calendar and Mimo controls",
+  "revision": 33
 }
