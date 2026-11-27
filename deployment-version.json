@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Compact borderless SVG action icons, search and add split, tooltips, narrow collapsible sidebar, version display",
-  "revision": 27
+  "purpose": "Compact journey toolbar with arrows and plus; view scales and settings in overflow menu",
+  "revision": 28
 }
