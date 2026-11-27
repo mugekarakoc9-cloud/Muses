@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Visible installed version, accessible light/dark flashcard colors, and independent lifetime flashcard archive",
+  "purpose": "Visible installed version, accessible light/dark flashcard colors, and independent lifetime flashcard archive; incremental archive writes",
   "revision": 12
 }
