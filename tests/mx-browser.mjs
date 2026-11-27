@@ -237,7 +237,7 @@ try{
  await page.locator('#mxv-root [data-act="matchNext"]').click();await page.locator('#mxv-root [data-act="finishPractice"]').click();
  await page.setViewportSize({width:1440,height:900});
  await page.evaluate(()=>go('calendar'));
- await page.evaluate(()=>mxHourlyMode('month'));assert(await page.locator('.cell5').count()>=28);await page.locator('.calendar5 button[onclick="mxHourlyMode(\'day\')"]').first().click();assert.equal(await page.locator('[data-mx-drop-date]').count(),25);await page.evaluate(()=>mxMimoGallery());assert.equal(await page.locator('[data-mimo-pose]').count(),11);await page.evaluate(()=>close5());
+ await page.evaluate(()=>mxHourlyMode('month'));assert(await page.locator('.cell5').count()>=28);await page.locator('.calendar5 button[onclick="mxHourlyMode(\'day\')"]').first().click();assert.equal(await page.locator('[data-mx-drop-date]').count(),25);await page.evaluate(()=>mxMimoGallery());assert.equal(await page.locator('[data-mimo-pose]').count(),12);await page.evaluate(()=>close5());
  await page.evaluate(()=>{v5().challenges.push({id:'mx-test-edit-goal',title:'Goal menu test',module:'habit',target:'Su',kind:'daily',amount:2,start:today(),end:add(today(),9),rhythm:'all',time:'',alarm:''});go('goals');});
  const editCard=page.locator('.challengecard5').filter({hasText:'Goal menu test'}).first();
  await editCard.locator('.mx-goal-menu summary').click();
