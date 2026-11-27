@@ -85,7 +85,9 @@ try{
  const fono=await page.evaluate(()=>resourceRows().find(r=>r.title.includes('Fono')).id);
  await sourceTask.locator('[name=source]').selectOption(fono);
  await sourceTask.locator('[name=search]').fill('47');
- assert(await sourceTask.locator('[name=leaf] option').count()>0,'Fono 47 must be selectable');
+ assert.equal(await sourceTask.locator('[name=leaf] option').count(),0,'Completed Fono 47 must stay hidden');
+ await sourceTask.locator('[name=search]').fill('46');
+ assert(await sourceTask.locator('[name=leaf] option').count()>0,'Unfinished Fono 46 must be selectable');
  assert(await sourceTask.locator('.mx-source-checks input').count()>0);
  await sourceTask.locator('[name=search]').fill('');
  const choices=sourceTask.locator('.mx-source-checks input[type=checkbox]:enabled');
@@ -172,7 +174,18 @@ try{
  const views=['home','resources','flash','library','english','goals','calendar','p90','atlas','habits','journal'];
  for(const view of views){await page.evaluate(v=>go(v),view);await page.waitForTimeout(100);assert(await page.locator('#app').innerText());assert.equal(errors.length,0,view+': '+errors.join('; '));}
  await page.evaluate(()=>{go('p90');playDVD6(1);});await page.locator('#mx-training-workspace').waitFor();
- const field=page.locator('#mx-training-workspace [data-field="right"]').first();await field.fill('7');await field.blur();
+ const training=page.locator('#mx-training-workspace');
+ await page.setViewportSize({width:390,height:844});
+ const set=training.locator('.mx-training-set').first();
+ assert(await set.locator('[data-field="reps"]').isVisible());
+ assert(await set.locator('[data-field="kg"]').isVisible());
+ assert(!(await set.locator('[data-field="right"]').isVisible()));
+ await set.locator('[data-field="reps"]').fill('12');await set.locator('[data-field="reps"]').blur();
+ assert.equal(await page.evaluate(()=>Number(p90entry(pday).moves['1-0'].reps)),12);
+ assert(await set.evaluate(el=>el.scrollWidth<=el.clientWidth+2),'Compact P90X row must not overflow');
+ await set.locator('summary').click();
+ const field=set.locator('[data-field="right"]');await field.fill('7');await field.blur();
+ await page.setViewportSize({width:1440,height:900});
  assert.equal(await page.evaluate(()=>Number(p90entry(pday).moves['1-0'].right)),7);
  await page.evaluate(()=>close5());
  await page.setViewportSize({width:390,height:844});

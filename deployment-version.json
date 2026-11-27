@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Nested resource paths, independent path scroll and parent/journey return; preserves R12 appearance and archive",
-  "revision": 13
+  "purpose": "Compact responsive P90X set workspace; preserves records, media and nested paths",
+  "revision": 14
 }
