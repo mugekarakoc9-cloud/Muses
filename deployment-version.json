@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Study history persistence, shared units, interactive statistics and safe update checks",
-  "revision": 9
+  "purpose": "Theme contrast, safe study persistence, min/max habit goals and custom units",
+  "revision": 10
 }
