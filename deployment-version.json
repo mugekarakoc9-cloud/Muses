@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "P90X Drive media progress, playback despite cache quota failures, verified movement save, revision 22",
-  "revision": 22
+  "purpose": "Restore always-visible P90X dark media surface and Drive shared preview alongside verified owner media and movement recording",
+  "revision": 23
 }

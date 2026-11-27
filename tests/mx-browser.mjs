@@ -75,11 +75,19 @@ try{
  await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.mxTrainingWorkspace,{},{timeout:30000});
  await page.evaluate(()=>mxTrainingSettings(3));
  assert.equal(await page.locator('#mx-training-link input[name=url]').inputValue(),canonicalDrive);
- // An unconnected Drive URL never opens the browser download or preview page.
+ // Shared Drive links restore the visible embedded media surface without OAuth.
+ // Google preview is mocked, but the fixture video must actually decode and play.
+ const previewURL='https://drive.google.com/file/d/fixture_drive_video_03/preview?resourcekey=0-testkey';
+ await page.route('https://drive.google.com/file/d/fixture_drive_video_03/preview*',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><video controls muted playsinline src="data:video/webm;base64,'+fixture.toString('base64')+'"></video>'}));
  await page.locator('#mx-training-link-open').click();
- await page.waitForSelector('#mx-training-workspace [data-player] button');
- assert.equal(await page.locator('#mx-training-workspace [data-player] iframe').count(),0);
- assert.match(await page.locator('[data-media-status]').innerText(),/Google Drive yetkisi gerekli/);
+ const stage=page.locator('#mx-training-workspace [data-player]');
+ const preview=stage.locator('iframe');await preview.waitFor();
+ assert.equal(await preview.getAttribute('src'),previewURL);
+ assert((await stage.boundingBox()).height>90);
+ const embeddedVideo=page.frameLocator('#mx-training-workspace [data-player] iframe').locator('video');
+ await embeddedVideo.waitFor();await embeddedVideo.evaluate(async v=>{await v.play();});
+ await embeddedVideo.evaluate(v=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Preview fixture did not advance')),12000);const check=()=>{if(v.videoWidth>0&&v.currentTime>0.2&&!v.error){clearTimeout(timer);v.removeEventListener('timeupdate',check);resolve();}};v.addEventListener('timeupdate',check);check();}));
+ console.log('PASS: R23 visible Drive preview surface plays a real fixture; actual Google preview not verified');
  // Movement entry is usable and saved even when the DVD has no authorized media.
  const noMediaSet=page.locator('#mx-training-workspace .mx-training-set').first();
  await noMediaSet.locator('[data-field="reps"]').fill('9');
@@ -87,6 +95,7 @@ try{
  await page.waitForFunction(()=>document.querySelector('[data-record-status]')?.textContent==='Kaydedildi ✓');
  assert.equal(await page.evaluate(()=>Number(v2().p90[v2().p90Run+'-'+pday].moves['3-0'].reps)),9);
  await page.evaluate(()=>{close5();pday=1;go('home');});
+ await page.unroute('https://drive.google.com/file/d/fixture_drive_video_03/preview*');
  // Test actual nested resource navigation before unrelated calendar assertions.
  const nested=await page.evaluate(()=>{for(const r of resourceRows()){const tree=sourceTree(r);const group=tree.find(x=>x.children?.length);if(group)return {rid:r.id,id:group.id,children:group.children.map(x=>x.id)};}return null;});
  assert(nested,'A nested resource must exist');await page.evaluate(r=>mxPalaceOpen(enc5(r)),nested.rid);

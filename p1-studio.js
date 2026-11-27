@@ -1306,7 +1306,7 @@ function installTrainingWorkspaceMX(){
    const id=u.pathname.match(/^\/file\/d\/([\w-]{10,200})(?:\/(?:view|preview|edit))?\/?$/)?.[1]||(/^\/(?:open|uc)\/?$/.test(u.pathname)?u.searchParams.get('id'):'');
    if(!/^[\w-]{10,200}$/.test(id||''))return null;
    const key=u.searchParams.get('resourcekey');const suffix=key&&/^[\w-]{1,300}$/.test(key)?'?resourcekey='+encodeURIComponent(key):'';
-   return {kind:'drive',provider:'Google Drive',id,resourceKey:suffix?key:undefined,url:'https://drive.google.com/file/d/'+id+'/view'+suffix};
+   return {kind:'drive',provider:'Google Drive',id,resourceKey:suffix?key:undefined,src:'https://drive.google.com/file/d/'+id+'/preview'+suffix,url:'https://drive.google.com/file/d/'+id+'/view'+suffix};
   }
   return pathVideoMX(value);
  }
@@ -1389,7 +1389,7 @@ function installTrainingWorkspaceMX(){
  playDVD6=async function(d){
   if(!DVD[d])return;clearMedia();
   const n=pday,run=v2().p90Run,key=String(run)+'-'+n+'-'+d;
-  modal5(`<div class="modalhead5"><div><small>P90X · TUR ${run} · GÜN ${n}</small><h2>DVD ${d} · ${H(DVD[d])}</h2></div><button onclick="close5()">×</button></div><div class="mx-training-workspace" id="mx-training-workspace"><section class="mx-training-player card"><div data-player><p>Medya yükleniyor…</p></div><div class="mx-palace-tools"><span data-training-clock role="status">Pomodoro hazır</span><button data-training-start>Başlat</button><button data-training-stop disabled>Kaydet ve bitir</button><button onclick="mxTrainingSettings(${d})">Medya ayarları</button></div><p data-media-status role="status"></p><p data-training-status role="status"></p></section><section class="mx-training-rows" aria-label="Antrenman kayıtları"><div class="mx-palace-tools"><button type="button" data-training-save class="primary">Hareketleri kaydet</button><small data-record-status role="status"></small></div><details class="card" data-training-progress><summary>Gelişim grafiği</summary><label>Hareket<select data-history-move>${values(d,n).map(x=>'<option value="'+H(x.key)+'">'+H((x.index+1)+'. '+x.name)+'</option>').join('')}</select></label><label>Ölçüm<select data-history-metric>${fields.map(([k,t])=>'<option value="'+H(k)+'">'+H(t)+'</option>').join('')}</select></label><div data-history-chart></div></details>${rows(d,n,run)}</section></div>`);
+  modal5(`<div class="modalhead5"><div><small>P90X · TUR ${run} · GÜN ${n}</small><h2>DVD ${d} · ${H(DVD[d])}</h2></div><button onclick="close5()">×</button></div><div class="mx-training-workspace" id="mx-training-workspace"><section class="mx-training-player card"><div data-player class="mx-p90-media-stage" style="width:100%;aspect-ratio:16/9;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#17171e;color:#f5f5f5;border-radius:12px"><span aria-live="polite">Medya yükleniyor…</span></div><div data-media-actions class="mx-palace-tools"></div><div class="mx-palace-tools"><span data-training-clock role="status">Pomodoro hazır</span><button data-training-start>Başlat</button><button data-training-stop disabled>Kaydet ve bitir</button><button onclick="mxTrainingSettings(${d})">Medya ayarları</button></div><p data-media-status role="status"></p><p data-training-status role="status"></p></section><section class="mx-training-rows" aria-label="Antrenman kayıtları"><div class="mx-palace-tools"><button type="button" data-training-save class="primary">Hareketleri kaydet</button><small data-record-status role="status"></small></div><details class="card" data-training-progress><summary>Gelişim grafiği</summary><label>Hareket<select data-history-move>${values(d,n).map(x=>'<option value="'+H(x.key)+'">'+H((x.index+1)+'. '+x.name)+'</option>').join('')}</select></label><label>Ölçüm<select data-history-metric>${fields.map(([k,t])=>'<option value="'+H(k)+'">'+H(t)+'</option>').join('')}</select></label><div data-history-chart></div></details>${rows(d,n,run)}</section></div>`);
   const host=document.querySelector('#mx-training-workspace');workspace={host,key,d,n,run,video:null,mediaAbort:new AbortController()};
   const state=workspace,player=host.querySelector('[data-player]'),status=host.querySelector('[data-training-status]'),mediaStatus=host.querySelector('[data-media-status]'),recordStatus=host.querySelector('[data-record-status]');
   let recordSequence=0;
@@ -1401,9 +1401,17 @@ function installTrainingWorkspaceMX(){
   const panel=host.querySelector('[data-training-progress]');panel.addEventListener('change',()=>progress(host,d));progress(host,d);
   const persistTraining=e=>{const el=e.target.closest('[data-field]'),row=el?.closest('[data-occurrence]');if(!row)return;const k=el.dataset.field;if(e.type==='input'&&k==='done')return;if(el.validity?.badInput)return;const entry=stableEntry(run,n),a=(entry.moves??={})[row.dataset.occurrence]??={};if(k==='done')a[k]=el.checked;else if(k==='note')a[k]=el.value.slice(0,1000);else if(el.value==='')delete a[k];else {const v=Number(el.value);if(!Number.isFinite(v)||v<0||k==='rpe'&&v>10){el.value=a[k]??'';return toast('Geçerli miktar gir.');}a[k]=v;}a.date=today();save();recordStatus.textContent='Kaydediliyor…';if(e.type==='change')void flushMoves();if(panel.open)progress(host,d);};host.querySelector('.mx-training-rows').addEventListener('input',persistTraining);host.querySelector('.mx-training-rows').addEventListener('change',persistTraining);panel.addEventListener('toggle',()=>{if(panel.open)progress(host,d);});
   host.querySelector('.mx-training-rows').addEventListener('click',e=>{const stamp=e.target.closest('[data-stamp]'),seek=e.target.closest('[data-seek]');if(stamp){if(!state.video)return toast('Zaman eşleştirme yerel/doğrudan videoda kullanılabilir.');const v=Math.floor(state.video.currentTime);(db().chapters[d]??={})[stamp.dataset.stamp]=v;save();const btn=stamp.nextElementSibling;btn.disabled=false;btn.textContent=Math.floor(v/60)+':'+String(v%60).padStart(2,'0')+' · Git';}if(seek&&state.video){const t=db().chapters[d]?.[seek.dataset.seek];if(Number.isFinite(t))state.video.currentTime=t;}});
-  let blob;try{blob=await get6('media','p90-'+d);}catch{}
+  const actions=host.querySelector('[data-media-actions]');
   const m=trainingMedia(v6().videoLinks[d]||p90SourceMX(d));
+  function mediaAction(label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=fn;actions.append(b);return b;}
+  function showPreview(){
+   if(workspace!==state||!host.isConnected||player.querySelector('iframe'))return;
+   const frame=document.createElement('iframe');frame.src=m.src;frame.title=DVD[d];frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';frame.loading='eager';frame.style.cssText='width:100%;height:100%;border:0;display:block';player.replaceChildren(frame);
+  }
+  let blob;try{blob=await get6('media','p90-'+d);}catch{}
+  if(workspace!==state||!host.isConnected)return;
   const origin=mediaOrigins()[d];if(typeof origin==='string'&&origin.startsWith('replace:')&&m)blob=null;
+  if(!(blob instanceof Blob)&&m?.kind==='drive'&&!driveConnected())showPreview();
   if(!(blob instanceof Blob)&&!driveConnected()&&driveProfile.enabled&&driveProfile.owner&&nativeDrive()){try{await connectDrive(false);}catch{}}
   if(workspace!==state||!host.isConnected)return;
   if(!(blob instanceof Blob)&&driveConnected()&&(m?.kind==='drive'||(!m&&driveIndex.has(d)))){
@@ -1412,20 +1420,20 @@ function installTrainingWorkspaceMX(){
   }
   if(workspace!==state||!host.isConnected)return;
   if(blob instanceof Blob||m?.kind==='video'){
-   const v=document.createElement('video');v.controls=true;v.playsInline=true;v.preload='metadata';if(blob instanceof Blob){localURL=URL.createObjectURL(blob);v.src=localURL;}else v.src=m.src;state.video=v;player.replaceChildren(v);
-   v.onloadedmetadata=()=>{const t=db().positions[key];if(Number.isFinite(t)&&t<v.duration)v.currentTime=t;};v.addEventListener('loadeddata',()=>{if(workspace===state&&!mediaStatus.textContent.includes('çevrimdışı'))mediaStatus.textContent='';},{once:true});let last=0;v.ontimeupdate=()=>{if(Date.now()-last>10000){last=Date.now();remember();}};v.onpause=remember;v.onerror=()=>{mediaStatus.textContent='Video açılamadı.';};
+   const v=document.createElement('video');v.controls=true;v.playsInline=true;v.preload='metadata';v.style.cssText='width:100%;height:100%;object-fit:contain;display:block';if(blob instanceof Blob){localURL=URL.createObjectURL(blob);v.src=localURL;}else v.src=m.src;state.video=v;player.replaceChildren(v);
+   v.onloadedmetadata=()=>{const t=db().positions[key];if(Number.isFinite(t)&&t<v.duration)v.currentTime=t;};v.addEventListener('loadeddata',()=>{if(workspace===state&&!mediaStatus.textContent.includes('çevrimdışı'))mediaStatus.textContent='';},{once:true});let last=0;v.ontimeupdate=()=>{if(Date.now()-last>10000){last=Date.now();remember();}};v.onpause=remember;v.onerror=()=>{mediaStatus.textContent='Video açılamadı.';if(m?.kind==='drive'&&workspace===state){state.video=null;showPreview();mediaAction('Google Drive ile bağlan',()=>mxDriveSettings(d));}};
   }else if(m?.kind==='drive'){
-   // Never navigate the webview to Drive's preview/download page.
-   const button=document.createElement('button');button.type='button';button.className='primary';
-   button.textContent=driveConnected()?'Tekrar dene':'Google Drive ile bağlan';
-   button.onclick=()=>driveConnected()?playDVD6(d):mxDriveSettings(d);
-   const local=document.createElement('button');local.type='button';local.textContent='Video seç';local.onclick=()=>mxTrainingSettings(d);
-   player.replaceChildren(button,local);
-   if(!mediaStatus.textContent)mediaStatus.textContent=driveConnected()?'Video alınamadı.':'Google Drive yetkisi gerekli.';
+   // Restore the embedded media surface without requiring OAuth first.
+   // Google controls whether a shared preview can play. Owner-authorized media
+   // still takes precedence when available, without external navigation.
+   showPreview();
+   mediaAction(driveConnected()?'Tekrar dene':'Google Drive ile bağlan',()=>driveConnected()?playDVD6(d):mxDriveSettings(d));
+   mediaAction('Video seç',()=>mxTrainingSettings(d));
+   if(!driveConnected())mediaStatus.textContent='';
   }else if(m?.kind==='embed'){
-   const frame=document.createElement('iframe');frame.src=m.src;frame.title=DVD[d];frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';frame.loading='eager';player.replaceChildren(frame);
+   showPreview();
   }
-  else player.innerHTML='<div class="flex"><button onclick="mxDriveSettings('+d+')">Google Drive</button><button onclick="mxTrainingSettings('+d+')">Video ekle</button></div>';
+  else {player.textContent='Video';mediaAction('Google Drive',()=>mxDriveSettings(d));mediaAction('Video ekle',()=>mxTrainingSettings(d));}
  };
  document.querySelector('#dialog5')?.addEventListener('close',e=>{if(!e.currentTarget.open)clearMedia();});window.addEventListener('pagehide',remember);
  // The day schedule owns DVD navigation; retain the legacy set details as a secondary disclosure.
@@ -1505,7 +1513,7 @@ installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractio
 /* Live build indicator and manual update: no local record migration. */
 function installLiveBuildMX(){
  if(window.mxLiveBuildInstalled)return;window.mxLiveBuildInstalled=true;
- const version='0.16.11',revision=22,buildLabel=version+' R'+revision;
+ const version='0.16.11',revision=23,buildLabel=version+' R'+revision;
  const oldHome=home;
  const css=document.createElement('style');css.textContent=`
  .mx-home-banner{padding:clamp(16px,3vw,28px);border-radius:22px;background:linear-gradient(128deg,#e6dcef,#e3eddf);color:#3c3450;border:1px solid #b8abc83b}
@@ -2227,7 +2235,7 @@ function installModern1611MX() {
     const rows=agendaRows5(today()).filter(r=>r.kind!=='actual'&&!String(r.id).startsWith('time9:')),unique=[...new Map(rows.map(r=>[r.id,r])).values()],done=unique.filter(r=>r.done).length,total=unique.length,pct=total?Math.round(done/total*100):0;
     const routes=[['calendar','Ajanda','Gününü düzenle','calendar'],['resources','Öğren','Kaldığın yerden','book'],['p90','Hareket','Antrenman ve pole','move'],['habits','Yaşam','Rutinlerini takip et','leaf']];
     const icons={calendar:'<rect x="4" y="6" width="24" height="22" rx="5"/><path d="M10 3v6m12-6v6M4 13h24m-18 6h3m6 0h3m-12 5h3"/>',book:'<path d="M16 8c-5-4-10-3-12-2v20c5-2 9-1 12 1 3-2 7-3 12-1V6c-2-1-7-2-12 2Zm0 0v19"/>',move:'<path d="m8 24 16-16M4 17l11 11M17 4l11 11M3 23l6 6M23 3l6 6"/>',leaf:'<path d="M26 5C11 2 2 12 7 23c10 5 20-3 19-18ZM7 25l14-14m-8 8v-7m0 7h7"/>'};
-    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R22</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
+    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R23</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
     return h.slice(0,start)+banner+h.slice(end+10);
   };
   // Native assets are bundled: reloading localhost cannot install a new APK.
@@ -2243,7 +2251,7 @@ function installModern1611MX() {
         if(!response.ok)throw Error('source manifest unavailable');
         const remote=await response.json();
         if(!/^\d+\.\d+\.\d+$/.test(remote.release)||!Number.isSafeInteger(remote.revision)||remote.revision<0)throw Error('invalid metadata');
-        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??22;
+        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??23;
         const rv=remote.release.split('.').map(Number),iv=installedRelease.split('.').map(Number);
         const cmp=rv[0]-iv[0]||rv[1]-iv[1]||rv[2]-iv[2];
         const newer=cmp>0||(cmp===0&&remote.revision>installedRevision);
@@ -2303,7 +2311,7 @@ async function mxFlushStudyState(){
 }
 function installStudySafetyR10(){
  if(window.mxStudySafetyR10)return;window.mxStudySafetyR10=true;
- document.title='MUSES Life Studio · 0.16.11 R22';
+ document.title='MUSES Life Studio · 0.16.11 R23';
  window.mxVerifyStudySave=async()=>{const ok=await mxFlushStudyState();toast(ok?'Kayıt bu cihazda doğrulandı.':'Kayıt doğrulanamadı. JSON yedeğini hemen al.');return ok;};
  const previous=settings;settings=function(){return '<section class="card mx-storage-status"><h3>Kayıt güvenliği</h3><p>'+esc(dbStatus6)+' · Bu cihazın kayıtlarıdır, cihazlar arası eşitleme değildir.</p><button onclick="mxVerifyStudySave()">Kaydı doğrula</button> <button onclick="backup()">JSON yedeği al</button></section>'+previous();};
 }
