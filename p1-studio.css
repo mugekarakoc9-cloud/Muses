@@ -744,3 +744,30 @@ body #app .mx-journey-pop28 button:hover,body #app .mx-journey-view28>summary:ho
 .mx-journey-view28 .mx-path-chevron28,.mx-journey-scales28 button span:last-child{margin-left:auto}
 .mx-journey-scales28{padding-left:23px}.mx-journey-scales28 button{min-height:36px!important}
 @media(max-width:420px){.mx-journey-date28 small{font-size:11px}.mx-journey-toolbar28{gap:0!important}}
+
+/* R29: continuous borderless learning road; smaller labels and state-specific nodes. */
+body #app .mx-palace .mx-road-view{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;min-height:180px;max-height:72dvh!important;scrollbar-width:thin}
+body #app .mx-palace .mx-road{min-width:0;max-width:720px;padding:64px 10px 50px!important}
+body #app .mx-palace .mx-stop{grid-template-columns:minmax(0,1fr) 100px minmax(0,1fr)!important;gap:9px!important;min-height:132px!important}
+body #app .mx-palace .mx-stop-label{border:0!important;box-shadow:none!important;background:transparent!important;padding:3px 5px!important;font-size:12px!important;line-height:1.38!important;overflow-wrap:break-word;word-break:normal}
+body #app .mx-palace .mx-stop-label button{border:0!important;box-shadow:none!important;background:transparent!important;min-height:0!important;padding:2px 0!important;font-size:12px!important;line-height:1.38!important}
+body #app .mx-palace .mx-stop-label b{font-size:12px!important;font-weight:600;line-height:1.4}
+body #app .mx-palace .mx-stop-label small{font-size:10px!important;margin-top:3px}
+.mx-path-status29:empty{display:none!important}
+body #app .mx-palace .mx-stop-label .mx-subpath-open{display:inline-flex!important;align-items:center;gap:4px;font-size:10px!important;color:var(--accent)!important;min-height:28px!important}
+.mx-subpath-open svg{width:13px;height:13px}
+body #app .mx-palace .mx-stop .mx-node{width:50px!important;height:50px!important;min-height:50px!important;border-radius:50%!important;box-shadow:0 3px 8px #14101d26!important;border:2px solid color-mix(in srgb,var(--mx-color) 65%,white)!important;transform:translateX(var(--mx-shift,0px))!important}
+body #app .mx-palace .mx-stop .mx-node svg{width:22px;height:22px;flex-shrink:0}
+body #app .mx-palace .mx-stop[data-state=locked] .mx-node{background:var(--paper)!important;border:2px solid var(--line)!important;color:var(--muted)!important;opacity:1;box-shadow:none!important;outline:0}
+body #app .mx-palace .mx-stop[data-state=locked] .mx-stop-label{opacity:.76}
+body #app .mx-palace .mx-stop[data-state=open] .mx-node{background:color-mix(in srgb,var(--mx-color) 75%,#4f3f6b)!important;color:white!important;outline:0}
+body #app .mx-palace .mx-stop[data-current=yes][data-state=open] .mx-node{outline:3px solid #b29add88;outline-offset:4px}
+body #app .mx-palace .mx-stop[data-state=done] .mx-node{background:#6846a5!important;color:#ffc2ec!important;border-color:#9b77d5!important;outline:0}
+body #app .mx-palace .mx-stop[data-state=skipped] .mx-node{background:#b18c51!important;color:#fff!important;outline:0}
+.mx-road-edge29{stroke:#c5bdd0}.mx-road-surface29{stroke:#e7e1ed}.mx-road-dash29{stroke:#aaa1b9}.mx-road-done29{stroke:#baa2df}
+body[data-theme=dark] .mx-road-edge29{stroke:#4c445a}body[data-theme=dark] .mx-road-surface29{stroke:#383442}body[data-theme=dark] .mx-road-dash29{stroke:#81798d}body[data-theme=dark] .mx-road-done29{stroke:#69568a}
+body #app .mx-palace .mx-next-tag{display:none}
+body #app .mx-palace .mx-path-walker{width:62px;height:62px}
+body #app .mx-palace .mx-palace-tools:has(button[onclick="mxPathCurrent()"]){background:transparent!important;box-shadow:none!important;border:0!important;gap:5px!important}
+body #app .mx-palace .mx-palace-tools button[onclick="mxPathCurrent()"]{font-size:11px!important;padding:4px 6px!important;border:0!important;background:transparent!important}
+@media(max-width:720px){body #app .mx-palace .mx-stop{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)!important;min-height:112px!important;gap:4px!important}body #app .mx-palace .mx-stop .mx-node{transform:translateX(calc(var(--mx-shift,0px)*.55))!important;width:44px!important;height:44px!important;min-height:44px!important}body #app .mx-palace .mx-stop-label b{font-size:11px!important}body #app .mx-palace .mx-stop-label{padding:2px 0!important}body #app .mx-palace .mx-path-walker{width:52px;height:52px}}
