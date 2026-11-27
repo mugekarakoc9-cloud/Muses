@@ -654,3 +654,44 @@ body[data-theme] :is(#app,#dialog5,.mx-bulk-tools) :is(button,a,input,textarea,s
 #mxv-root .mxv-drag-handle{flex:none;display:inline-grid;place-items:center;width:25px;height:30px;color:var(--mxv-muted);cursor:grab;touch-action:none;user-select:none}
 #mxv-root .mxv-touch-dragging{outline:1px dashed var(--mxv-accent);opacity:.75}
 @media(pointer:coarse){#mxv-root .mxv-drag-handle{width:34px;height:38px}}
+
+/* R12: semantic contrast and compact surfaces; all controls remain available. */
+body[data-theme=light]{--mx-neutral-surface:#fff;--mx-neutral-text:#292639;--mx-neutral-muted:#625b72;--mx-neutral-border:#d8d1e2;--mx-neutral-soft:#f3eef8;--mx-neutral-focus:#68439e;--mx-d1-bg:#fce3eb;--mx-d1-fg:#8b2046;--mx-d2-bg:#ffeadb;--mx-d2-fg:#8a3d0b;--mx-d3-bg:#fff1c6;--mx-d3-fg:#75510b;--mx-d4-bg:#e2f3df;--mx-d4-fg:#245c30;--mx-d5-bg:#d6f3ed;--mx-d5-fg:#175e55;--mx-f1:#947000;--mx-f2:#28743b;--mx-f3:#b54b0c;--mx-f4:#b52d49}
+body[data-theme=dark]{--mx-neutral-surface:#252432;--mx-neutral-text:#f4effa;--mx-neutral-muted:#c7bfd4;--mx-neutral-border:#514b61;--mx-neutral-soft:#342e45;--mx-neutral-focus:#c5a7f4;--mx-d1-bg:#512739;--mx-d1-fg:#ffb7cd;--mx-d2-bg:#50301e;--mx-d2-fg:#ffc69d;--mx-d3-bg:#493c20;--mx-d3-fg:#ffe098;--mx-d4-bg:#24402b;--mx-d4-fg:#bcebab;--mx-d5-bg:#173e3a;--mx-d5-fg:#99e7d9;--mx-f1:#ffe078;--mx-f2:#a0e6a7;--mx-f3:#ffb078;--mx-f4:#ffa0b4}
+body[data-theme] #mxv-root :is(.mxv-ratings .g4,[data-mx-difficulty="1"]){--grade-bg:var(--mx-d1-bg);--grade-fg:var(--mx-d1-fg)}
+body[data-theme] #mxv-root :is(.mxv-ratings .g3,[data-mx-difficulty="2"]){--grade-bg:var(--mx-d2-bg);--grade-fg:var(--mx-d2-fg)}
+body[data-theme] #mxv-root :is(.mxv-ratings .g2,[data-mx-difficulty="3"]){--grade-bg:var(--mx-d3-bg);--grade-fg:var(--mx-d3-fg)}
+body[data-theme] #mxv-root :is(.mxv-ratings .g1,[data-mx-difficulty="4"]){--grade-bg:var(--mx-d4-bg);--grade-fg:var(--mx-d4-fg)}
+body[data-theme] #mxv-root :is(.mxv-ratings .g0,[data-mx-difficulty="5"]){--grade-bg:var(--mx-d5-bg);--grade-fg:var(--mx-d5-fg)}
+body[data-theme] #mxv-root .mxv-ratings button.grade,body[data-theme] #mxv-root [data-mx-difficulty]{background:var(--grade-bg)!important;color:var(--grade-fg)!important;border:1px solid var(--grade-fg)!important;border-radius:9px;padding:5px 7px;font-weight:700}
+body[data-theme] #mxv-root .mxv-card-top .mxv-flag[data-act=flag1]{--mx-flag:var(--mx-f1)}
+body[data-theme] #mxv-root .mxv-card-top .mxv-flag[data-act=flag2]{--mx-flag:var(--mx-f2)}
+body[data-theme] #mxv-root .mxv-card-top .mxv-flag[data-act=flag3]{--mx-flag:var(--mx-f3)}
+body[data-theme] #mxv-root .mxv-card-top .mxv-flag[data-act=flag4]{--mx-flag:var(--mx-f4)}
+body[data-theme] #mxv-root .mxv-card-top button.mxv-flag{font-size:0!important;color:var(--mx-flag)!important;background:var(--mx-neutral-surface)!important;border:1px solid var(--mx-neutral-border)!important;outline:none;min-height:32px}
+body[data-theme] #mxv-root .mxv-card-top button.mxv-flag::before{content:"";display:block;width:19px;height:19px;background:var(--mx-flag);clip-path:polygon(10% 0,20% 0,20% 8%,92% 8%,72% 35%,92% 62%,20% 62%,20% 100%,10% 100%);}
+body[data-theme] #mxv-root .mxv-card-top button.mxv-flag[aria-pressed=true]{border-color:var(--mx-flag)!important;box-shadow:0 0 0 2px var(--mx-flag);background:color-mix(in srgb,var(--mx-flag) 18%,var(--mx-neutral-surface))!important}
+body[data-theme] #mxv-root .mxv-card-top button.mxv-flag:focus-visible{outline:2px solid var(--mx-neutral-focus)!important;outline-offset:3px}
+body[data-theme] #mxv-root :is(.mxv-detail-table,.mxv-mode,.mxv-list-table button,.mxv-face-settings section,.mxv-recap details,.mxv-cardmenu){background:var(--mxv-surface);color:var(--mxv-text);border-color:var(--mxv-border)}
+body[data-theme] #mxv-root :is(.mxv-detail-table th,.mxv-mode b,.mxv-list-table b,.mxv-cardmenu summary){color:var(--mxv-text)}
+body[data-theme] #mxv-root :is(.mxv-mode small,.mxv-list-table span,.mxv-muted){color:var(--mxv-muted)}
+body[data-theme] #mxv-root .mxv-sidebar button.active,body[data-theme] #mxv-root .mxv-period button.active{background:#6944a6!important;color:white!important}
+body[data-theme] :is(#app,#dialog5) :is(.mx-release-card,.mx-lifetime-settings,.mx-lifetime-panel,.mx-lifetime-row){background:var(--mx-neutral-surface);color:var(--mx-neutral-text);border-color:var(--mx-neutral-border)}
+.mx-release-card{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px!important}
+.mx-release-card strong,.mx-release-card small{display:block}.mx-release-card small{color:var(--mx-neutral-muted);margin-top:2px}.mx-release-value{color:var(--mx-neutral-focus);font-variant-numeric:tabular-nums}
+.mx-lifetime-row{display:grid;gap:3px;padding:10px 0;border-bottom:1px solid var(--mx-neutral-border);overflow-wrap:anywhere}.mx-lifetime-row small{color:var(--mx-neutral-muted)}
+body[data-theme] :is(#app,#dialog5) :is(.mx-release-card,.mx-lifetime-settings,.mx-lifetime-panel) button{min-height:38px}
+body[data-theme] #app :is(.mx-hour-head,.mx-hour-label,.mx-hour-task,.mx-palace-tools,.mx-life-head,.mx-modern-hero) :is(b,strong,span){color:inherit}
+body[data-theme] #app .mx-hour-task{color:var(--ink)!important}
+body[data-theme] #app .mx-hour-task.is-done{opacity:1;color:var(--muted)!important}
+body[data-theme] #app .mx-hour-task small{color:var(--muted)!important}
+body[data-theme] #app :is(.mxv-head h1,.mxv-main>h1){font-size:clamp(21px,3vw,28px);margin:6px 0}
+body[data-theme] #app :is(.mxv-metrics article,.mxv-metrics button,.mxv-chart,.mxv-editor){padding:12px;border-radius:12px}
+body[data-theme] #app .mxv-metrics strong{font-size:clamp(20px,3vw,25px);margin-top:4px}
+body[data-theme] #app .mxv-sidebar>button{min-height:34px;padding:6px 9px;margin:2px 0}
+body[data-theme] #app .mxv-side-head{gap:5px}.mxv-side-head [data-mx-lifetime-open]{font-size:.78rem;min-height:32px;padding:4px 8px}
+body[data-theme] #app .mx-modern-hero h1{font-size:clamp(25px,4vw,40px)}
+body[data-theme] #app .mx-launch-grid button small{font-size:.73rem;color:var(--muted)}
+body[data-theme] #app .mx-launch-grid button{min-height:64px}
+body[data-theme] #app :is(.mxv-toolbar,.mx-palace-tools,.mx-life-period,.mx-bulk-tools) button:not(.primary){min-height:34px;padding:6px 10px}
+@media(max-width:480px){.mx-release-card{gap:7px}.mx-release-value{font-size:.95rem}.mxv-ratings button.grade{min-height:44px!important;padding:4px 2px!important}.mx-lifetime-panel{padding:10px!important}}

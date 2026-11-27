@@ -18,7 +18,7 @@ jobs:
       - run: python3 tests/linux-launcher.py
       - run: npm install --no-save --package-lock=false playwright@1.51.1 jsdom@26.1.0
       - run: npx playwright install --with-deps chromium
-      - run: node tests/modern-reader.mjs && node tests/modern-bulk.mjs
+      - run: node tests/modern-reader.mjs && node tests/modern-bulk.mjs && node tests/r12-appearance.mjs
       - run: node tests/mx-browser.mjs
       - name: Package private Linux application
         if: ${{ github.event.repository.private == true }}

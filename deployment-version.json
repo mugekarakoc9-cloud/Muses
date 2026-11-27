@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Native signed APK update controls and private release pipeline; previous features retained",
-  "revision": 11
+  "purpose": "Visible installed version, accessible light/dark flashcard colors, and independent lifetime flashcard archive",
+  "revision": 12
 }

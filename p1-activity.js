@@ -564,3 +564,74 @@ function installFocusSessionsMX(){
 }
 const previousActivityInstallerMX=installActivityP1;
 installActivityP1=function(){previousActivityInstallerMX();installFocusSessionsMX();};
+
+/* R12: presentation only + additive, independent flashcard archive.
+   No mutation of existing SRS grades, flags, tasks, sessions or storage schema. */
+const MX_UI_RELEASE='0.16.11',MX_UI_REVISION=12;
+function mxLifetimeEntries(state){
+ const groups=[['action',state?.mxVocabularyV2?.actions],['session',state?.mxFocus?.flashHistory],['review',state?.reviews]];
+ return groups.flatMap(([kind,rows])=>Array.isArray(rows)?rows.filter(x=>x&&typeof x==='object').map(row=>({kind,id:kind+':'+String(row.id??JSON.stringify(row)),date:String(row.date??''),row})):[]);
+}
+function installLifetimeAppearanceMX(){
+ if(window.mxLifetimeAppearanceReady)return;window.mxLifetimeAppearanceReady=true;
+ const version=MX_UI_RELEASE+' R'+MX_UI_REVISION;
+ const installed=()=>window.MUSES_NATIVE_BUILD?.buildCode?version+' · '+window.MUSES_NATIVE_BUILD.buildCode:version;
+ const H=x=>esc(String(x??''));
+ let database=null,queue=Promise.resolve(),archiveStatus='Arşiv hazırlanıyor',count=0,lastState=null,lastLengths='',lastArrays=[];
+ function status(message){archiveStatus=message;const el=document.querySelector('#mx-lifetime-status');if(el)el.textContent=message;}
+ function openArchive(){
+  if(database)return database;
+  database=new Promise((resolve,reject)=>{const request=indexedDB.open('muses-flashcard-lifetime-v1',1);
+   request.onupgradeneeded=()=>{const store=request.result.createObjectStore('entries',{keyPath:'id'});store.createIndex('date','date');};
+   request.onsuccess=()=>{const db=request.result;db.onversionchange=()=>{db.close();database=null;};resolve(db);};request.onerror=()=>reject(request.error);
+   request.onblocked=()=>reject(Error('Arşiv başka sekmede açık'));
+  }).catch(e=>{database=null;throw e;});return database;
+ }
+ function transaction(db,mode,fn){return new Promise((resolve,reject)=>{const tx=db.transaction('entries',mode);let result;tx.oncomplete=()=>resolve(result?.result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Arşiv işlemi iptal edildi'));try{result=fn(tx.objectStore('entries'));}catch(e){tx.abort();reject(e);}});}
+ function archive(force=false){
+  const arrays=[S?.mxVocabularyV2?.actions,S?.mxFocus?.flashHistory,S?.reviews];
+  const lengths=arrays.map(x=>x?.length||0).join(':');
+  if(!force&&S===lastState&&lengths===lastLengths&&arrays.every((a,i)=>a===lastArrays[i]))return queue;
+  const all=mxLifetimeEntries(S);const entries=typeof structuredClone==='function'?structuredClone(all):JSON.parse(JSON.stringify(all));
+  lastState=S;lastLengths=lengths;lastArrays=arrays;
+  queue=queue.catch(()=>{}).then(async()=>{const db=await openArchive();
+   // add rather than put: an older imported snapshot can never overwrite a stored event.
+   for(let i=0;i<entries.length;i+=1000){const chunk=entries.slice(i,i+1000);await transaction(db,'readwrite',store=>{for(const entry of chunk){const request=store.add(entry);request.onerror=e=>{if(request.error?.name==='ConstraintError'){e.preventDefault();e.stopPropagation();}};}});}
+   count=await transaction(db,'readonly',store=>store.count());status(count.toLocaleString('tr-TR')+' arşiv kaydı · Süre sınırı yok');
+  }).catch(()=>{lastState=null;status('Arşiv kaydı doğrulanamadı. JSON yedeği al.');});return queue;
+ }
+ async function query(date=''){
+  await archive(true);const db=await openArchive();return transaction(db,'readonly',store=>date?store.index('date').getAll(date):store.getAll());
+ }
+ function saveArchiveFile(rows){const payload={format:'muses-flashcard-lifetime-v1',exportedAt:new Date().toISOString(),entries:rows};const url=URL.createObjectURL(new Blob([JSON.stringify(payload)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='MUSES-flashcard-gecmisi-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+ window.mxLifetimeExport=async()=>{try{saveArchiveFile(await query());}catch{toast('Arşiv dışa aktarılamadı.');}};
+ window.mxLifetimePersist=async()=>{try{const granted=await navigator.storage?.persist?.();toast(granted?'Kalıcı cihaz depolaması etkin.':'Cihaz kalıcılık izni vermedi. Yedeklerini sakla.');}catch{toast('Depolama izni alınamadı.');}};
+ window.mxLifetimeHistory=()=>{
+  modal5('<div class="modalhead5"><h2>Flashcard arşivi</h2><button onclick="close5()" aria-label="Kapat">×</button></div><div class="card mx-lifetime-panel"><label>Tarih <input type="date" id="mx-lifetime-date" value="'+H(today())+'"></label><button id="mx-lifetime-show">Göster</button> <button onclick="mxLifetimeExport()">Tüm geçmişi indir</button><p id="mx-lifetime-status" role="status">'+H(archiveStatus)+'</p><div id="mx-lifetime-results"></div></div>');
+  const date=document.querySelector('#mx-lifetime-date'),out=document.querySelector('#mx-lifetime-results');let request=0;
+  const show=async()=>{const seq=++request;try{const rows=await query(date.value);if(seq!==request||!out.isConnected)return;const relevant=rows.filter(x=>x.kind!=='session');out.innerHTML='<small>'+rows.length+' kayıt</small>'+relevant.map(({row:r})=>'<article class="mx-lifetime-row"><b>'+H(r.word||r.key||'')+'</b><small>'+H(r.type||r.mode||'Tekrar')+' · '+H(r.grade>=1&&r.grade<=5?6-r.grade:r.level??'')+'</small>'+(r.answer!==undefined?'<span>'+H(r.answer)+' → '+H(r.expected??'')+'</span>':'')+'</article>').join('')+rows.filter(x=>x.kind==='session').map(({row:r})=>'<details><summary>'+H(r.answered)+' / '+H(r.planned)+' · Oturum</summary>'+ (r.answers||[]).map(a=>'<p>'+H(a.word||a.key)+' · '+H(a.answer??'')+' → '+H(a.expected??'')+'</p>').join('')+'</details>').join('');}catch{if(out.isConnected)out.textContent='Arşiv okunamadı.';}};
+  document.querySelector('#mx-lifetime-show').onclick=show;date.onchange=show;show();
+ };
+ // Keep a second independent copy whenever existing application save() runs.
+ try{const previousSave=save;save=function(...args){const result=previousSave.apply(this,args);archive();return result;};}catch{}
+ window.addEventListener('pagehide',()=>archive());document.addEventListener('visibilitychange',()=>{if(document.hidden)archive();});
+ setInterval(()=>archive(),15000);archive();
+ const previousSettings=settings;
+ settings=function(){return '<section class="card mx-release-card"><div><strong>MUSES</strong><small>Kurulu sürüm</small></div><b class="mx-release-value">'+H(installed())+'</b><button onclick="mxCheckUpdate()">Güncellemeler ↻</button></section><section class="card mx-lifetime-settings"><h3>Flashcard arşivi</h3><p id="mx-lifetime-status" role="status">'+H(archiveStatus)+'</p><div class="flex"><button onclick="mxLifetimeHistory()">Günlük geçmiş</button><button onclick="mxLifetimeExport()">Tüm geçmişi indir</button><button onclick="mxLifetimePersist()">Kalıcı depolama</button></div></section>'+previousSettings();};
+ function grade(el){const text=el.textContent.trim(),match=text.match(/^([1-5])\s*·\s*(?:Çok zor|Zor|Orta|Kolay|Çok kolay)/);if(match)el.dataset.mxDifficulty=match[1];}
+ function polish(){
+  document.title='MUSES · '+version;
+  const eyebrow=document.querySelector('.mx-modern-hero .mx-eyebrow');if(eyebrow&&eyebrow.textContent!=='MUSES · '+version)eyebrow.textContent='MUSES · '+version;
+  const root=document.querySelector('#mxv-root');if(!root)return;
+  for(const el of root.querySelectorAll('.mxv-word>small:last-child,.mxv-recap summary,.mxv-detail-table td:last-child'))grade(el);
+  for(const el of root.querySelectorAll('.mxv-card-top .mxv-flag')){const n=el.dataset.act?.slice(4);if(n)el.dataset.mxFlag=n;}
+  const head=root.querySelector('.mxv-side-head');if(head&&!head.querySelector('[data-mx-lifetime-open]')){const button=document.createElement('button');button.type='button';button.dataset.mxLifetimeOpen='1';button.textContent='Geçmiş';button.title='Günlük flashcard arşivi';button.onclick=window.mxLifetimeHistory;head.append(button);}
+  for(const el of root.querySelectorAll('.mxv-head h1,.mxv-main>h1,.mxv-side-head strong')){const map={'Vocabulary Learning Dashboard':'Flashcard','Nasıl çalışmak istersin?':'Çalışma modu','Kelime kütüphanem':'Listeler'};if(map[el.textContent])el.textContent=map[el.textContent];}
+ }
+ const priorRender=render;render=function(...args){const result=priorRender.apply(this,args);polish();return result;};
+ // Flashcard paint() changes the subtree without calling render().
+ const app=document.querySelector('#app');if(app)new MutationObserver(polish).observe(app,{childList:true,subtree:true});
+ polish();
+}
+const mxR12PriorActivity=installActivityP1;
+installActivityP1=function(){mxR12PriorActivity();setTimeout(()=>{try{installLifetimeAppearanceMX();}catch(e){console.warn('MUSES R12 archive/appearance initialization failed',e);}},0);};
