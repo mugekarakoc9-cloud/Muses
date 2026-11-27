@@ -621,3 +621,31 @@ body[data-theme=dark] .mx-modern-hero{background:linear-gradient(115deg,#32283f,
 .mx-life-overview .mx-life-chart button:focus-visible{outline:2px solid var(--accent);outline-offset:0}
 @media(max-width:600px){#mxv-root .mxv-sidebar .mxv-side-row button{min-height:36px}.mx-journey-path .mx-palace-tile{width:86%}}
 @media(prefers-reduced-motion:reduce){.mx-journey-path .mx-palace-tile{transition:none}}
+
+
+/* R10: resolve legacy surface/foreground conflicts without losing semantic colors. */
+body[data-theme=light]{--bg:#f6f4fa;--panel5:#ffffff;--subtle5:#f1edf7;--soft:#eee8f6;--ring5:#7653aa;--sage:#26785c;--mx-on-accent:#ffffff;--mx-field:#fff;--mx-secondary:#f2edf8}
+body[data-theme=dark]{--bg:#181722;--panel5:#242331;--subtle5:#302d40;--soft:#39334f;--ring5:#bda1ea;--sage:#93d8ba;--mx-on-accent:#21172f;--mx-field:#242331;--mx-secondary:#343047}
+body[data-theme] :is(#app,#dialog5,.mx-bulk-tools,.lens10) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),textarea,select){background:var(--mx-field);color:var(--ink);border-color:var(--line);caret-color:var(--ink)}
+body[data-theme] :is(#app,#dialog5,.lens10) :is(input,textarea)::placeholder{color:var(--muted);opacity:1}
+body[data-theme] :is(#app,#dialog5,.lens10) select option{color:var(--ink);background:var(--paper)}
+body[data-theme] :is(#app,#dialog5) :is(.card,.event5,.dayCell5,.mx-hour-grid,.mx-hour-scroll,.readerPage9,.readerTools9,.mx-storage-status,.mx-bulk-tools,.mx-goal-hub,.mx-palace-tools){color:var(--ink);border-color:var(--line)}
+body[data-theme=dark] :is(#app,#dialog5) :is(.card,.dayCell5,.readerPage9,.readerTools9,.mx-bulk-tools,.mx-goal-hub,.mx-palace-tools){background-color:var(--paper)}
+body[data-theme] :is(#app,#dialog5,.mx-bulk-tools) button.primary{background:#6944a6!important;color:#fff!important;border-color:#6944a6!important}
+body[data-theme=dark] #app :is(.card,.event5,.dayCell5,.readerPage9,.mx-palace-tile) :is(.muted,.eyebrow,small){color:var(--muted)}
+body[data-theme=dark] #app .mx-quick-entry{background:#383047!important;color:#f4edff!important;border-color:#78658e!important}
+body[data-theme=dark] #app .mx-quick-entry kbd{background:#242331;color:#d9c8f3}
+body[data-theme=dark] #app .mx-launch-grid>button:nth-child(2n) svg{stroke:var(--sage)}
+body[data-theme] #app .mx-note-book{color:var(--ink)!important;background:var(--paper)!important;border-color:var(--line)}
+body[data-theme] #app .mx-note-book :is(b,span){color:var(--ink)!important}
+body[data-theme] #app .mx-note-book small{color:var(--muted)!important}
+body[data-theme] #mxv-root .mxv-sidebar{background:var(--mxv-surface);color:var(--mxv-text);border-color:var(--mxv-border)}
+body[data-theme] #mxv-root .mxv-sidebar summary{background:var(--mxv-surface);color:var(--mxv-text)}
+body[data-theme] #mxv-root .mxv-sidebar button.active{background:#6944a6;color:#fff!important}
+body[data-theme] #mxv-root .mxv-ratings button{color:var(--mxv-text);border-color:var(--mxv-border)}
+body[data-theme] #app .readerWord10.mx-reader-fill{color:var(--mx-mark-ink,#171322)!important}
+body[data-theme=dark] #app .readerPage9 :is(p,li){color:var(--ink)}
+body[data-theme] #app .mx-task-check[aria-pressed=true]{background:#65399c!important;border-color:#65399c!important;color:#ffb8e3!important}
+body[data-theme] :is(#app,#dialog5,.mx-bulk-tools) :is(button,a,input,textarea,select):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mx-life-chart button i{min-height:0}
+@media(max-width:480px){.mx-life-metrics{gap:6px}.mx-life-metrics strong{font-size:21px}.mx-life-metrics button{min-width:0;overflow-wrap:anywhere}.mx-storage-status button{min-height:38px}}
