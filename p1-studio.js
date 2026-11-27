@@ -2121,7 +2121,33 @@ function installDailyStatus1611MX(){
  if(window.mxDailyStatusReady)return;window.mxDailyStatusReady=true;
  const H=x=>esc(String(x??''));
  function measured(h,d){const value=Number(actual5('habit',h[0],d));return Number.isFinite(value)&&hasValue5('habit',h[0],d)?value:null;}
- const oldHabit=habitCards;habitCards=function(){const html=oldHabit(),d=selected||today();const rows=habits.filter(h=>Array.isArray(h)&&Number.isFinite(Number(h[1]))&&(Number(h[1])>0||mxHabitDirection(h[0])==='max'));return '<details class="card" open><summary>Günlük miktar ve bağlı hedefler</summary>'+rows.map(h=>{const actual=measured(h,d),target=Number(h[1]),done=actual!==null&&mxHabitGoalMet(h[0],d,target,mxHabitDirection(h[0])),goals=v5().challenges.filter(g=>g.mxHabitDaily&&g.target===h[0]&&g.start<=d&&g.end>=d);return '<div class="line"><div><b>'+H(h[0])+'</b><small style="display:block">'+H(actual??'—')+' / '+(mxHabitDirection(h[0])==='max'?'en fazla ':'en az ')+H(target)+' '+H(h[2])+'</small>'+goals.map(g=>{const info=challengeInfo5(g),ok=challengeDays5(g).includes(d)&&actual!==null&&mxHabitGoalMet(g.target,d,Number(g.amount),g.kind==='limit'?'max':g.mxHabitDirection||'min');return '<small style="display:block">'+(ok?'✓ ':'')+H(g.title)+' · '+H(info.count)+'/'+H(info.target)+' gün</small>';}).join('')+'</div><span role="status" aria-label="'+(done?'Günlük hedef tamamlandı':'Günlük hedef henüz tamamlanmadı')+'" style="display:inline-flex;justify-content:center;align-items:center;width:26px;height:26px;border-radius:6px;background:'+(done?'#684ba5':'transparent')+';border:1px solid #9677c5;color:#ffc3e8;font-weight:700">'+(done?'✓':'')+'</span></div>';}).join('')+'</details>'+html;};
+ const oldHabit=habitCards;
+ const hval=(name,date)=>{const h=habits.find(x=>x[0]===name);return h?measured(h,date):null;};
+ const marks=()=>S.mxHabitDayConfirm??={};
+ window.mxHabitSelectDay24=function(date){if(/^\d{4}-\d\d-\d\d$/.test(date)){selected=date;render();}};
+ window.mxHabitCheck24=function(key,date){
+  const name=dec5(key),h=habits.find(x=>x[0]===name);if(!h||date>today())return;
+  const value=hval(name,date),limit=Number(h[1]),max=mxHabitDirection(name)==='max';
+  if(!max||value===null||value>limit){const panel=document.getElementById('mx-habit-entry24');if(panel){panel.open=true;panel.scrollIntoView({block:'start',behavior:'smooth'});}return;}
+  if(date<today()||v5().closed[date])return;
+  const day=marks()[date]??={};
+  if(Object.hasOwn(day,name)&&day[name]===value)delete day[name];else day[name]=value;
+  persist();
+ };
+ habitCards=function(){
+  const html=oldHabit(),d=selected||today(),rows=habits.filter(h=>Array.isArray(h)&&Number.isFinite(Number(h[1]))&&(Number(h[1])>0||mxHabitDirection(h[0])==='max'));
+  const group=n=>/diş|uyan|sabah|kahvalt|esne|kelime|stretch|brush|early to rise/i.test(n)?'Sabah':/akşam|uyku|yat|cilt|plan|dinner|bed/i.test(n)?'Akşam':'Günlük';
+  const icon=n=>/kahve|coffee/i.test(n)?'☕':/sigara/i.test(n)?'🚬':/su|water/i.test(n)?'💧':/diş|brush/i.test(n)?'🦷':/kitap|read/i.test(n)?'📚':/p90|pole|spor|esne|stretch/i.test(n)?'🏃':/kelime|ingilizce|english/i.test(n)?'📖':/piyano/i.test(n)?'🎹':'✦';
+  const start=add(d,-((new Date(d+'T12:00:00').getDay()+6)%7));
+  const week=Array.from({length:7},(_,i)=>{const day=add(start,i);return '<button type="button" class="mxh24-day '+(day===d?'active':'')+'" aria-pressed="'+(day===d)+'" onclick="mxHabitSelectDay24(\''+day+'\')"><small>'+['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'][i]+'</small><b>'+Number(day.slice(-2))+'</b></button>';}).join('');
+  const cards=['Sabah','Günlük','Akşam'].map(g=>{const list=rows.filter(h=>group(h[0])===g);if(!list.length)return '';return '<details class="card mxh24-group" open><summary>'+g+' <small>'+list.length+'</small></summary>'+list.map(h=>{
+    const name=h[0],actual=measured(h,d),target=Number(h[1]),max=mxHabitDirection(name)==='max',done=actual!==null&&mxHabitGoalMet(name,d,target,max?'max':'min'),over=max&&actual!==null&&actual>target;
+    const goals=v5().challenges.filter(g=>g.mxHabitDaily&&g.target===name&&g.start<=d&&g.end>=d);
+    const state=over?'Sınır aşıldı':done?'Tamamlandı':actual===null?'Kayıt yok':max?'Günlük kaydı onayla':'Devam ediyor';
+    return '<div class="mxh24-row"><span class="mxh24-icon">'+icon(name)+'</span><div class="mxh24-info"><b>'+H(name)+'</b><small>'+H(actual??'—')+' / '+(max?'en fazla ':'')+H(target)+' '+H(h[2])+' · '+state+'</small>'+goals.map(g=>{const info=challengeInfo5(g);return '<small>'+H(g.title)+' · '+H(info.count)+'/'+H(info.target)+' gün</small>';}).join('')+'</div><button type="button" class="mxh24-check '+(done?'done':over?'over':'')+'" aria-label="'+(max?'Günlük kaydı onayla veya geri al':'Miktar kaydını aç')+'" aria-pressed="'+done+'" onclick="mxHabitCheck24(\''+enc5(name)+'\',\''+d+'\')">'+(done?'✓':over?'!':'○')+'</button></div>';
+   }).join('')+'</details>';}).join('');
+  return '<style>.mxh24{display:grid;gap:12px}.mxh24-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.mxh24-day{padding:8px 2px;min-width:0;display:grid;place-items:center;gap:5px;border:0;background:transparent;color:inherit;border-radius:20px}.mxh24-day.active{background:#684ba5;color:#fff}.mxh24-day small{font-size:11px}.mxh24-group{border-radius:20px;padding:12px 14px}.mxh24-group summary{font-weight:700;cursor:pointer;padding:6px 0}.mxh24-group summary small{float:right;opacity:.7}.mxh24-row{display:flex;align-items:center;gap:12px;min-height:72px;border-top:1px solid rgba(127,127,127,.15)}.mxh24-icon{flex:0 0 42px;height:42px;border-radius:50%;background:#b5a0e1;color:#231738;display:grid;place-items:center;font-size:22px}.mxh24-info{flex:1;min-width:0;overflow-wrap:anywhere}.mxh24-info small{display:block;font-size:12px;opacity:.8}.mxh24-check{flex:0 0 36px;height:36px;border:1px solid #9677c5;border-radius:10px;background:transparent;color:inherit;font-weight:700}.mxh24-check.done{background:#684ba5;color:#ffc3e8}.mxh24-check.over{color:#dc5d70;border-color:#dc5d70}.mxh24-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.mxh24-head button{padding:6px 10px}</style><div class="mxh24"><div class="mxh24-head"><button onclick="mxHabitSelectDay24(\''+add(d,-7)+'\')">‹</button><b>'+H(d)+'</b><button onclick="mxHabitSelectDay24(\''+add(d,7)+'\')">›</button><button onclick="mxHabitSelectDay24(\''+today()+'\')">Bugün</button></div><div class="mxh24-week">'+week+'</div>'+cards+'<details id="mx-habit-entry24" class="card"><summary>Miktar gir / alışkanlıkları düzenle</summary>'+html+'</details></div>';
+ };
  window.mxCalendarGoalDetails=function(id,date){const g=v5().challenges.find(x=>String(x.id)===String(id));if(!g)return;const info=challengeInfo5(g);modal5('<div class="modalhead5"><h2>'+H(g.title)+'</h2><button onclick="close5()">×</button></div><p>'+H(date)+' · '+H(g.start)+' — '+H(g.end)+'</p><p>İlerleme: '+H(info.count)+' / '+H(info.target)+'</p><div class="flex"><button id="mx-goal-detail-edit">Düzenle</button><button id="mx-goal-detail-open">Çalışmayı aç</button></div>');document.querySelector('#mx-goal-detail-edit').onclick=()=>mxEditGoal(enc5(g.id));document.querySelector('#mx-goal-detail-open').onclick=()=>{close5();route5(g.module,g.target,date);};};
  const oldAction=rowAction5;rowAction5=function(d,k){const id=dec5(k),row=challengeRows5(d).find(x=>String(x.id)===String(id)&&x.g);if(row&&v5().challenges.some(g=>String(g.id)===String(row.g)))return mxCalendarGoalDetails(row.g,d);return oldAction(d,k);};
 }
@@ -2320,6 +2346,6 @@ const priorStudySafetyR10=installStudioP1;installStudioP1=function(){priorStudyS
 function mxHabitDirection(name){return S.mxGoalControls?.habitUnits?.[name]?.direction||(/sigara|kahve/i.test(name)?'max':'min');}
 function mxHabitGoalMet(name,date,target,direction){
  const value=Number(actual5('habit',name,date));if(date>today()||!Number.isFinite(value)||!Number.isFinite(target))return false;
- if(direction==='max')return !!hasValue5('habit',name,date)&&(date<today()||!!v5().closed[date])&&value<=target;
+ if(direction==='max')return !!hasValue5('habit',name,date)&&(date<today()||!!v5().closed[date]||(Object.hasOwn(S.mxHabitDayConfirm?.[date]||{},name)&&S.mxHabitDayConfirm[date][name]===value))&&value<=target;
  return value>=target;
 }
