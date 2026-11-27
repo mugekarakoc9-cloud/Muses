@@ -1255,12 +1255,12 @@ function installLiveBuildMX(){
  let checking=false,availableVersion=null;
  function notifyUpdate(message){let el=document.querySelector('#mx-update-notice');if(!el){el=document.createElement('div');el.id='mx-update-notice';el.className='mx-update-notice';el.setAttribute('role','status');document.body.append(el);}el.replaceChildren();const label=document.createElement('span');label.textContent=message;const close=document.createElement('button');close.type='button';close.textContent='×';close.setAttribute('aria-label','Bildirimi kapat');close.onclick=()=>el.remove();el.append(label,close);clearTimeout(el.mxTimer);el.mxTimer=setTimeout(()=>el.remove(),6500);}
  function safeToReload(){return view==='home'&&!document.querySelector('dialog[open],input:focus,textarea:focus,[contenteditable]:focus,.mx-focus-dock[data-phase]:not([data-phase=idle])')&&!S.mxVocabularyV2?.session;}
- function refreshApp(next){try{save();sessionStorage.setItem('mx-update-result',next||version);}catch{}location.reload();}
+ function refreshApp(next){try{save();sessionStorage.setItem('mx-update-result',next||version);}catch{notifyUpdate('Kayıt güvenli biçimde tamamlanamadı; güncelleme ertelendi.');return;}location.reload();}
  function remoteVersion(){return fetch(new URL('deployment-version.json?check='+Date.now(),document.baseURI),{cache:'no-store',credentials:'same-origin'}).then(async r=>{if(!r.ok)throw Error('Sürüm bilgisi alınamadı');const j=await r.json();if(!/^\d+\.\d+\.\d+$/.test(j.release))throw Error('Geçersiz sürüm');return j.release;});}
  window.mxCheckUpdate=async function(manual=true){if(checking)return;checking=true;let listener=null,timer=null;
   try{const next=await remoteVersion();const newer=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<3;i++){if(x[i]!==y[i])return x[i]>y[i];}return false;};availableVersion=newer(next,version)?next:null;const sw=navigator.serviceWorker,reg=sw?await sw.getRegistration():null;let workerChanged=false;
    if(reg){const previous=sw.controller;const changed=new Promise(resolve=>{listener=()=>resolve(sw.controller!==previous);sw.addEventListener('controllerchange',listener,{once:true});timer=setTimeout(()=>resolve(false),9000);});await reg.update();if(sw.controller!==previous)workerChanged=true;else if(reg.installing||reg.waiting)workerChanged=await changed;}
-   if(availableVersion||workerChanged){let attempted=false;try{attempted=sessionStorage.getItem('mx-update-attempt')===version+'>'+next;}catch{}if(manual||(safeToReload()&&(!attempted||workerChanged))){try{sessionStorage.setItem('mx-update-attempt',version+'>'+next);}catch{}notifyUpdate('Yeni sürüm yükleniyor…');refreshApp(next);return;}notifyUpdate('Yeni sürüm hazır · Ana sayfadan ↻ ile güncelle.');}
+   if(availableVersion||workerChanged){let attempted=false;try{attempted=sessionStorage.getItem('mx-update-attempt')===version+'>'+next;}catch{}if(safeToReload()&&(manual||!attempted||workerChanged)){try{sessionStorage.setItem('mx-update-attempt',version+'>'+next);}catch{}notifyUpdate('Yeni sürüm yükleniyor…');refreshApp(next);return;}notifyUpdate('Yeni sürüm hazır · Ana sayfadan ↻ ile güncelle.');}
    else if(manual)notifyUpdate('Güncel sürüm · '+version);
   }catch{if(manual)notifyUpdate('Sürüm kontrolü yapılamadı · '+version);}
   finally{checking=false;clearTimeout(timer);if(listener)navigator.serviceWorker?.removeEventListener('controllerchange',listener);}
@@ -1959,12 +1959,32 @@ function installModern1611MX() {
     const rows=agendaRows5(today()).filter(r=>r.kind!=='actual'&&!String(r.id).startsWith('time9:')),unique=[...new Map(rows.map(r=>[r.id,r])).values()],done=unique.filter(r=>r.done).length,total=unique.length,pct=total?Math.round(done/total*100):0;
     const routes=[['calendar','Ajanda','Gününü düzenle','calendar'],['resources','Öğren','Kaldığın yerden','book'],['p90','Hareket','Antrenman ve pole','move'],['habits','Yaşam','Rutinlerini takip et','leaf']];
     const icons={calendar:'<rect x="4" y="6" width="24" height="22" rx="5"/><path d="M10 3v6m12-6v6M4 13h24m-18 6h3m6 0h3m-12 5h3"/>',book:'<path d="M16 8c-5-4-10-3-12-2v20c5-2 9-1 12 1 3-2 7-3 12-1V6c-2-1-7-2-12 2Zm0 0v19"/>',move:'<path d="m8 24 16-16M4 17l11 11M17 4l11 11M3 23l6 6M23 3l6 6"/>',leaf:'<path d="M26 5C11 2 2 12 7 23c10 5 20-3 19-18ZM7 25l14-14m-8 8v-7m0 7h7"/>'};
-    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
+    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R9</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
     return h.slice(0,start)+banner+h.slice(end+10);
   };
   // Native assets are bundled: reloading localhost cannot install a new APK.
   if(window.Capacitor?.isNativePlatform?.()){
-    window.mxCheckUpdate=async function(manual=true){if(manual)toast('Bu APK: 0.16.11. Yeni APK aynı imzayla kurulduğunda kayıtların korunur. Otomatik APK dağıtım adresi henüz bağlı değil.');};
+    let nativeChecking=false,lastNotice='';
+    const sourceManifest='https://raw.githubusercontent.com/mugekarakoc9-cloud/Muses/fix/reader-import-goal-controls/deployment-version.json';
+    const actionsURL='https://github.com/mugekarakoc9-cloud/Muses/actions/workflows/muses-private-android.yml';
+    window.mxCheckUpdate=async function(manual=true){
+      if(nativeChecking)return;nativeChecking=true;
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+      try{
+        const response=await fetch(sourceManifest+'?check='+Date.now(),{cache:'no-store',credentials:'omit',signal:controller.signal});
+        if(!response.ok)throw Error('source manifest unavailable');
+        const remote=await response.json();
+        if(!/^\d+\.\d+\.\d+$/.test(remote.release)||!Number.isSafeInteger(remote.revision)||remote.revision<0)throw Error('invalid metadata');
+        const installedRelease='0.16.11',installedRevision=9;
+        const rv=remote.release.split('.').map(Number),iv=installedRelease.split('.').map(Number);
+        const cmp=rv[0]-iv[0]||rv[1]-iv[1]||rv[2]-iv[2];
+        const newer=cmp>0||(cmp===0&&remote.revision>installedRevision);
+        if(newer){const id=remote.release+' R'+remote.revision;if(manual||id!==lastNotice){lastNotice=id;toast('Yeni kaynak sürümü '+id+' · İmzalı APK derlemesini GitHub Actions üzerinden kontrol et.');}
+          if(manual&&confirm('Yeni kaynak sürümü '+id+'. İmzalı APK hazır mı kontrol etmek için GitHub Actions açılsın mı?')){save();window.open(actionsURL,'_blank','noopener');}
+        }else if(manual)toast('APK kaynak sürümü '+installedRelease+' R'+installedRevision+' · Yeni kaynak sürümü yok.');
+      }catch{if(manual&&confirm('Kaynak sürümü denetlenemedi. GitHub Actions üzerinden imzalı APK kontrol edilsin mi?')){save();window.open(actionsURL,'_blank','noopener');}}
+      finally{clearTimeout(timer);nativeChecking=false;}
+    };
   }
 }
 const priorModern1611MX=installStudioP1;installStudioP1=function(){priorModern1611MX();installModern1611MX();};
