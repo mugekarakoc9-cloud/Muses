@@ -1,5 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Reader editing and preferences, catalog phrase highlights, interface sounds, bulk task planning and habit progress"
+  "purpose": "Study history persistence, shared units, interactive statistics and safe update checks",
+  "revision": 9
 }
