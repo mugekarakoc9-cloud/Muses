@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Grouped weekly habit screen and explicit daily maximum confirmation; retain R23 P90X media",
-  "revision": 24
+  "purpose": "Habit tap counters, individual menus and four date scales with preserved R24 confirmation and existing entry controls",
+  "revision": 25
 }
