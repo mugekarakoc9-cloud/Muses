@@ -22,6 +22,7 @@ fs.writeFileSync('capacitor.config.json',JSON.stringify(c,null,2));
 JS
 if [ ! -d android ]; then npx cap add android; fi
 npx cap sync android
+python3 ../scripts/install-android-drive.py
 node - <<'JS'
 const fs=require('fs'),c=JSON.parse(fs.readFileSync('capacitor.config.json')),v=JSON.parse(fs.readFileSync('../deployment-version.json')).release;
 const code=Number(process.env.MUSES_BUILD_CODE);if(!Number.isSafeInteger(code)||code<1||code>2100000000)throw Error('Invalid build code');

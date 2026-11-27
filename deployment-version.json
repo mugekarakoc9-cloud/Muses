@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Verified local video archive and private DVD manifest provisioning",
-  "revision": 17
+  "purpose": "Owner-bound Google Drive read-only connection and private DVD download",
+  "revision": 18
 }

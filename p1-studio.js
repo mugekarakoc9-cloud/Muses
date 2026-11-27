@@ -1175,6 +1175,96 @@ function installTrainingWorkspaceMX(){
  }
  function importDriveList(data){if(data.format!=='muses-p90-drive-v1'||!Array.isArray(data.dvds))throw Error('Geçersiz bağlantı listesi.');const links=new Map();for(const item of data.dvds){const id=Number(item.dvd),m=trainingMedia(item.url);if(!Number.isInteger(id)||!DVD[id]||m?.provider!=='Google Drive'||links.has(id))throw Error('Geçersiz DVD.');links.set(id,m.url);}for(const [id,url] of links)v6().videoLinks[id]=url;save();return links.size;}
  window.mxImportP90DriveManifest=importDriveList;
+ // OAuth credentials remain in memory. The persistent device profile holds only
+ // the approved Google user ID and selected folder; no access/refresh token.
+ const driveProfileKey='muses.drive.owner.v1',driveScope='https://www.googleapis.com/auth/drive.readonly';
+ let driveProfile={};try{driveProfile=JSON.parse(localStorage.getItem(driveProfileKey)||'{}')||{};}catch{}
+ let driveSession=null,drivePending=null,driveIndex=new Map(),driveGeneration=0;
+ function saveDriveProfile(){localStorage.setItem(driveProfileKey,JSON.stringify(driveProfile));}
+ function nativeDrive(){return window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.MusesDriveAuth;}
+ function driveIdentityMatches(expected,actual){return typeof actual==='string'&&actual.length>0&&(!expected||expected===actual);}
+ function driveConnected(){return !!driveSession&&Date.now()<driveSession.expires;}
+ function clearDriveSession(){driveGeneration++;driveSession=null;driveIndex.clear();}
+ async function driveApi(path,params={},token=driveSession?.token,signal){
+  if(!token)throw Error('Google hesabı bağlı değil.');
+  const url=new URL('https://www.googleapis.com/drive/v3/'+path);for(const [k,v] of Object.entries(params))url.searchParams.set(k,String(v));
+  const response=await fetch(url,{headers:{Authorization:'Bearer '+token},cache:'no-store',signal});
+  if(response.status===401){if(token===driveSession?.token)clearDriveSession();throw Error('Google oturumu sona erdi.');}
+  if(!response.ok)throw Error(response.status===403?'Drive erişim izni yok.':'Drive bağlantısı kurulamadı.');
+  return response;
+ }
+ async function loadGoogleIdentity(){
+  if(window.google?.accounts?.oauth2)return;
+  await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=resolve;s.onerror=()=>reject(Error('Google giriş hizmeti açılamadı.'));document.head.append(s);});
+ }
+ async function requestDriveToken(interactive,clientId){
+  if(window.Capacitor?.isNativePlatform?.()){
+   const plugin=nativeDrive();if(!plugin)throw Error('Android Google bağlantısı bu APK’da yok.');
+   const result=await plugin.authorize({interactive});return {access_token:result.accessToken,expires_in:3300};
+  }
+  if(!interactive)throw Error('Google oturumu gerekli.');
+  if(!/^[0-9]+-[a-z0-9_-]+\.apps\.googleusercontent\.com$/i.test(clientId||''))throw Error('Google OAuth istemci kimliği gerekli.');
+  await loadGoogleIdentity();
+  return new Promise((resolve,reject)=>{const client=google.accounts.oauth2.initTokenClient({client_id:clientId,scope:driveScope,include_granted_scopes:false,callback:r=>r.error||!r.access_token?reject(Error('Google izni verilmedi.')):resolve(r),error_callback:()=>reject(Error('Google girişi tamamlanmadı.'))});client.requestAccessToken({prompt:driveProfile.owner?'':'select_account'});});
+ }
+ async function listDriveFolder(folder,token=driveSession?.token){
+  if(!/^[\w-]{10,200}$/.test(folder))throw Error('Geçersiz Drive klasörü.');
+  const data=await (await driveApi('files/'+encodeURIComponent(folder),{fields:'id,name,mimeType,ownedByMe'},token)).json();
+  if(data.mimeType!=='application/vnd.google-apps.folder'||data.ownedByMe!==true)throw Error('Yalnız bağlı hesabın kendi klasörü kullanılabilir.');
+  let page='',all=[];do{const params={q:"'"+folder+"' in parents and trashed = false",fields:'nextPageToken,files(id,name,mimeType,size,ownedByMe,capabilities(canDownload))',pageSize:1000};if(page)params.pageToken=page;const r=await(await driveApi('files',params,token)).json();all.push(...(r.files||[]));page=r.nextPageToken||'';}while(page);
+  const grouped=new Map();for(const f of all){if(f.ownedByMe!==true||f.capabilities?.canDownload===false||!/^video\//.test(f.mimeType||'')||!/\.(mp4|webm|mov|m4v|mkv)$/i.test(f.name||'')||!Number(f.size))continue;const id=dvdFileNumber(f);if(!DVD[id])continue;if(!grouped.has(id))grouped.set(id,[]);grouped.get(id).push(f);}
+  return new Map([...grouped].filter(([,list])=>list.length===1).map(([id,list])=>[id,list[0]]));
+ }
+ async function discoverDriveFolder(token){
+  const r=await(await driveApi('files',{q:"name = 'p90x classic' and mimeType = 'application/vnd.google-apps.folder' and 'me' in owners and trashed = false",fields:'files(id),nextPageToken',pageSize:100},token)).json();
+  return r.files?.length===1&&!r.nextPageToken?r.files[0].id:'';
+ }
+ async function connectDrive(interactive,clientId=driveProfile.clientId,folder=driveProfile.folder){
+  if(drivePending)return drivePending;
+  const generation=++driveGeneration;
+  drivePending=(async()=>{try{
+   const result=await requestDriveToken(interactive,clientId);if(generation!==driveGeneration)throw Error('Bağlantı iptal edildi.');
+   const token=result.access_token;
+   const identity=await(await driveApi('about',{fields:'user(permissionId,emailAddress)'},token)).json();
+   const actual=identity.user?.permissionId;
+   if(!driveIdentityMatches(driveProfile.owner,actual))throw Error('Bu Google hesabı MUSES sahibi değil.');
+   if(!driveProfile.owner&&!interactive)throw Error('İlk bağlantı onaylanmalı.');
+   if(!driveProfile.owner){if(!confirm('Bu Google hesabı MUSES sahibi olarak bağlansın mı?'))throw Error('Bağlantı iptal edildi.');}
+   if(generation!==driveGeneration)throw Error('Bağlantı iptal edildi.');
+   driveProfile={owner:actual,clientId:clientId||'',folder:folder||'',enabled:true};saveDriveProfile();
+   driveSession={token,expires:Date.now()+Math.max(1,Math.min(3300,Number(result.expires_in)||3300))*1000};
+   if(!driveProfile.folder){driveProfile.folder=await discoverDriveFolder(token);saveDriveProfile();}
+   if(driveProfile.folder){const index=await listDriveFolder(driveProfile.folder,token);if(generation!==driveGeneration)throw Error('Bağlantı iptal edildi.');driveIndex=index;}
+   return driveIndex.size;
+  }catch(e){if(generation===driveGeneration)clearDriveSession();throw e;}finally{drivePending=null;}})();return drivePending;
+ }
+ function folderId(raw){const s=String(raw||'').trim();if(/^[\w-]{10,200}$/.test(s))return s;return s.match(/^https:\/\/drive\.google\.com\/drive\/(?:u\/\d+\/)?folders\/([\w-]{10,200})(?:[/?#].*)?$/)?.[1]||'';}
+ window.mxDriveSettings=function(){
+  modal5('<div class="modalhead5"><h2>Google Drive</h2><button onclick="close5()">×</button></div><section class="card"><b data-drive-status role="status">'+(driveConnected()?'Bağlı · '+driveIndex.size+' DVD':driveProfile.owner?'Sahip hesabı kayıtlı':'Bağlı değil')+'</b><label>P90X klasörü<input data-drive-folder value="'+H(driveProfile.folder||'')+'" placeholder="Drive klasör bağlantısı"></label>'+(!window.Capacitor?.isNativePlatform?.()?'<label>Google OAuth istemci kimliği<input data-drive-client value="'+H(driveProfile.clientId||'')+'"></label>':'')+'<div class="flex"><button class="primary" data-drive-connect>Google ile bağlan</button><button data-drive-sync '+(driveConnected()?'':'disabled')+'>Eşitle</button><button data-drive-disconnect '+(driveProfile.owner?'':'disabled')+'>Bağlantıyı kes</button></div><small>Yalnız okuma · Sahip hesabı</small></section>');
+  const root=document.querySelector('#dialog5'),status=root.querySelector('[data-drive-status]'),connect=root.querySelector('[data-drive-connect]'),sync=root.querySelector('[data-drive-sync]');
+  function config(){const raw=root.querySelector('[data-drive-folder]').value.trim(),id=folderId(raw);if(raw&&!id)throw Error('Geçersiz klasör bağlantısı.');return {id,client:root.querySelector('[data-drive-client]')?.value.trim()||''};}
+  connect.onclick=async()=>{connect.disabled=sync.disabled=true;try{const {id,client}=config();status.textContent='Google bağlantısı kuruluyor…';const count=await connectDrive(true,client,id);status.textContent=driveProfile.folder?'Bağlı · '+count+' DVD':'Bağlı · Klasör seç';root.querySelector('[data-drive-folder]').value=driveProfile.folder;sync.disabled=false;root.querySelector('[data-drive-disconnect]').disabled=false;}catch(e){status.textContent=e.message;}finally{connect.disabled=false;}};
+  sync.onclick=async()=>{sync.disabled=true;try{const {id}=config();if(!id)throw Error('Klasör seç.');const generation=driveGeneration,index=await listDriveFolder(id);if(generation!==driveGeneration)throw Error('Bağlantı iptal edildi.');driveProfile.folder=id;saveDriveProfile();driveIndex=index;status.textContent='Bağlı · '+index.size+' DVD';}catch(e){status.textContent=e.message;}finally{sync.disabled=!driveConnected();}};
+  root.querySelector('[data-drive-disconnect]').onclick=()=>{clearDriveSession();driveProfile.enabled=false;saveDriveProfile();status.textContent='Bağlantı kesildi';sync.disabled=true;};
+ };
+ const oldDriveSettings=settings;settings=function(){return '<section class="card"><h3>Google Drive</h3><button onclick="mxDriveSettings()">Google Drive · '+(driveConnected()?'Bağlı':'Bağlan')+'</button></section>'+oldDriveSettings();};
+ // Native authorization may renew silently, but only for the previously approved owner.
+ if(driveProfile.enabled&&driveProfile.owner&&nativeDrive())connectDrive(false).catch(()=>{});
+ async function downloadDriveDVD(d,status){
+  if(!driveConnected())throw Error('Google hesabı bağlı değil.');
+  const file=driveIndex.get(d);if(!file)throw Error('DVD Drive’da bulunamadı.');
+  const generation=driveGeneration,session=driveSession;
+  status.textContent='DVD '+d+' indiriliyor · '+Math.round(Number(file.size)/1048576)+' MB';
+  const response=await driveApi('files/'+encodeURIComponent(file.id),{alt:'media'},session.token);
+  const blob=await response.blob();
+  if(generation!==driveGeneration||session!==driveSession)throw Error('Bağlantı iptal edildi.');
+  if(blob.size!==Number(file.size))throw Error('Video eksik indirildi.');
+  const local=new File([blob],file.name,{type:file.mimeType});await verifyVideoFile(local);
+  if(generation!==driveGeneration||session!==driveSession)throw Error('Bağlantı iptal edildi.');
+  await put6('media','p90-'+d,local);const stored=await get6('media','p90-'+d);
+  if(!(stored instanceof Blob)||stored.size!==local.size)throw Error('Video kaydedilemedi.');
+  v6().mediaNames[d]=file.name;save();status.textContent='Video kaydedildi.';return stored;
+ }
  if(window.MUSES_PRIVATE_P90_DRIVE){try{importDriveList(window.MUSES_PRIVATE_P90_DRIVE);}catch(e){console.warn('P90X private manifest invalid');}}
  function trainingMedia(raw){
   const match=String(raw||'').trim().match(/^https:\/\/drive\.google\.com\/file\/d\/([\w-]{10,200})(?:\/(?:view|preview))?(?:\?[^#\s]*)?$/);
@@ -1242,7 +1332,7 @@ function installTrainingWorkspaceMX(){
   return values(d,n).map(x=>{const a=stableEntry(run,n).moves?.[x.key]||{},p=previous(run,n,x.key),stamp=db().chapters[d]?.[x.key],prev=p?fields.filter(([k])=>p[k]!==undefined&&p[k]!=='').map(([k,t])=>H(t+': '+p[k])).join(' · '):'';
    return `<article class="mx-training-set" data-occurrence="${H(x.key)}"><div class="mx-training-row-main"><label class="mx-training-check" title="Tamamlandı"><input type="checkbox" aria-label="${H(x.name)} tamamlandı" data-field="done" ${a.done?'checked':''}></label><div class="mx-training-name">${x.index+1}. ${H(x.name)}${prev?`<small>Önceki: ${prev}</small>`:''}</div>${primaryKeys.map(k=>input(fields.find(f=>f[0]===k),a,true)).join('')}</div><details class="mx-training-details"><summary>Ayrıntılar${a.note?' · not':''}</summary><div class="mx-training-fields">${fields.filter(([k])=>!primaryKeys.includes(k)).map(f=>input(f,a)).join('')}</div><label>Not / değişiklik<textarea data-field="note" rows="2" maxlength="1000">${H(a.note||'')}</textarea></label><div class="mx-palace-tools"><button data-stamp="${H(x.key)}">Video zamanı kaydet</button><button data-seek="${H(x.key)}" ${Number.isFinite(stamp)?'':'disabled'}>${Number.isFinite(stamp)?Math.floor(stamp/60)+':'+String(Math.floor(stamp%60)).padStart(2,'0')+' · Git':'Zaman yok'}</button></div></details></article>`;}).join('')||'<p>Bu DVD için hareket verisi yok.</p>';
  }
- window.mxTrainingSettings=function(d){if(!DVD[d])return;clearMedia();modal5('<div class="modalhead5"><h2>P90X · Video arşivi</h2><button onclick="close5()">×</button></div><div class="card"><b>DVD '+d+' · '+H(DVD[d])+'</b><label>Video seç<input type="file" id="mx-training-file" accept="video/*,.mp4,.webm,.mov,.m4v,.mkv"></label><label>DVD 01–12 · Toplu video seç<input type="file" id="mx-training-batch" multiple accept="video/*,.mp4,.webm,.mov,.m4v,.mkv"></label><p id="mx-training-batch-status" role="status"></p><button id="mx-training-play-now" hidden>Oynat</button></div><details class="card"><summary>Drive bağlantıları</summary><label>Bağlantı listesi (.json)<input type="file" id="mx-training-drive-list" accept=".json,application/json"></label><form id="mx-training-link"><label>DVD bağlantısı<input name="url" type="url" value="'+H(v6().videoLinks[d]||'')+'"></label><button class="primary">Kaydet</button></form><p id="mx-training-drive-status" role="status"></p></details><section class="card"><h3>Video arşivi</h3><div id="mx-training-library"></div></section>');
+ window.mxTrainingSettings=function(d){if(!DVD[d])return;clearMedia();modal5('<div class="modalhead5"><h2>P90X · Video arşivi</h2><button onclick="close5()">×</button></div><div class="card"><b>DVD '+d+' · '+H(DVD[d])+'</b><label>Video seç<input type="file" id="mx-training-file" accept="video/*,.mp4,.webm,.mov,.m4v,.mkv"></label><label>DVD 01–12 · Toplu video seç<input type="file" id="mx-training-batch" multiple accept="video/*,.mp4,.webm,.mov,.m4v,.mkv"></label><p id="mx-training-batch-status" role="status"></p><button id="mx-training-play-now" hidden>Oynat</button></div><details class="card"><summary>Drive bağlantıları</summary><label>Bağlantı listesi (.json)<input type="file" id="mx-training-drive-list" accept=".json,application/json"></label><form id="mx-training-link"><label>DVD bağlantısı<input name="url" type="url" value="'+H(v6().videoLinks[d]||'')+'"></label><button class="primary">Kaydet</button></form><p id="mx-training-drive-status" role="status"></p></details><section class="card"><button onclick="mxDriveSettings()">Google Drive</button><h3>Video arşivi</h3><div id="mx-training-library"></div></section>');
  const out=document.querySelector('#mx-training-batch-status'),single=document.querySelector('#mx-training-file'),batch=document.querySelector('#mx-training-batch'),library=document.querySelector('#mx-training-library'),play=document.querySelector('#mx-training-play-now');
  function drawLibrary(){library.innerHTML=Object.keys(DVD).filter(k=>Number(k)>=1&&Number(k)<=12).map(k=>'<div class="line"><span>'+H('DVD '+k+' · '+DVD[k])+'</span><small>'+H(v6().mediaNames[k]?'Cihazda':v6().videoLinks[k]?'Bağlı':'—')+'</small></div>').join('');}
  drawLibrary();play.onclick=()=>playDVD6(d);
@@ -1266,13 +1356,14 @@ function installTrainingWorkspaceMX(){
   const persistTraining=e=>{const el=e.target.closest('[data-field]'),row=el?.closest('[data-occurrence]');if(!row)return;const k=el.dataset.field;if(e.type==='input'&&k==='done')return;if(el.validity?.badInput)return;const entry=stableEntry(run,n),a=(entry.moves??={})[row.dataset.occurrence]??={};if(k==='done')a[k]=el.checked;else if(k==='note')a[k]=el.value.slice(0,1000);else if(el.value==='')delete a[k];else {const v=Number(el.value);if(!Number.isFinite(v)||v<0||k==='rpe'&&v>10){el.value=a[k]??'';return toast('Geçerli miktar gir.');}a[k]=v;}a.date=today();save();status.textContent='Hareket kaydedildi';if(panel.open)progress(host,d);};host.querySelector('.mx-training-rows').addEventListener('input',persistTraining);host.querySelector('.mx-training-rows').addEventListener('change',persistTraining);panel.addEventListener('toggle',()=>{if(panel.open)progress(host,d);});
   host.querySelector('.mx-training-rows').addEventListener('click',e=>{const stamp=e.target.closest('[data-stamp]'),seek=e.target.closest('[data-seek]');if(stamp){if(!state.video)return toast('Zaman eşleştirme yerel/doğrudan videoda kullanılabilir.');const v=Math.floor(state.video.currentTime);(db().chapters[d]??={})[stamp.dataset.stamp]=v;save();const btn=stamp.nextElementSibling;btn.disabled=false;btn.textContent=Math.floor(v/60)+':'+String(v%60).padStart(2,'0')+' · Git';}if(seek&&state.video){const t=db().chapters[d]?.[seek.dataset.seek];if(Number.isFinite(t))state.video.currentTime=t;}});
   let blob;try{blob=await get6('media','p90-'+d);}catch{}
+  if(!(blob instanceof Blob)&&driveConnected()&&driveIndex.has(d)){try{blob=await downloadDriveDVD(d,status);}catch(e){status.textContent=e.message;}}
   if(workspace!==state||!host.isConnected)return;
   const m=trainingMedia(v6().videoLinks[d]||p90SourceMX(d));
   if(blob instanceof Blob||m?.kind==='video'){
    const v=document.createElement('video');v.controls=true;v.playsInline=true;v.preload='metadata';if(blob instanceof Blob){localURL=URL.createObjectURL(blob);v.src=localURL;}else v.src=m.src;state.video=v;player.replaceChildren(v);
    v.onloadedmetadata=()=>{const t=db().positions[key];if(Number.isFinite(t)&&t<v.duration)v.currentTime=t;};let last=0;v.ontimeupdate=()=>{if(Date.now()-last>10000){last=Date.now();remember();}};v.onpause=remember;v.onerror=()=>{status.textContent='Video açılamadı.';};
   }else if(m?.kind==='embed'){const frame=document.createElement('iframe');frame.src=m.src;frame.title=DVD[d];frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';player.replaceChildren(frame);}
-  else player.innerHTML='<button onclick="mxTrainingSettings('+d+')">Video ekle</button>';
+  else player.innerHTML='<div class="flex"><button onclick="mxDriveSettings()">Google Drive</button><button onclick="mxTrainingSettings('+d+')">Video ekle</button></div>';
  };
  document.querySelector('#dialog5')?.addEventListener('close',clearMedia);window.addEventListener('pagehide',remember);
  // The day schedule owns DVD navigation; retain the legacy set details as a secondary disclosure.
@@ -1282,7 +1373,7 @@ function installTrainingWorkspaceMX(){
   const detail=template.content.querySelector('details'),summary=detail?.querySelector('summary');
   if(detail&&summary){detail.open=false;detail.classList.add('mx-p90-legacy-sets');summary.textContent='Hareket listesi ve tek hareket medyası';}
   const arr=P90_MOVES[d]||[],moves=p90entry(n).moves||{},done=arr.filter((_,i)=>moves[d+'-'+i]?.done).length;
-  const ready=v6().mediaNames[d]?'Yerel video':v6().videoLinks[d]?'Kayıtlı bağlantı':p90SourceMX(d)?'Kaynak bağlantısı':'Video ekle';
+  const ready=v6().mediaNames[d]?'Yerel video':driveConnected()&&driveIndex.has(d)?'Google Drive':v6().videoLinks[d]?'Kayıtlı bağlantı':'Video ekle';
   return `<section class="card mx-p90-day-dvd" data-p90-dvd="${d}"><button type="button" class="mx-p90-dvd-open" onclick="playDVD6(${d})"><span class="mx-p90-disc">${String(d).padStart(2,'0')}</span><span class="mx-p90-dvd-text"><b>DVD ${String(d).padStart(2,'0')} · ${H(DVD[d])}</b><small>${done}/${arr.length} hareket · ${H(ready)}</small></span><span aria-hidden="true" class="mx-p90-play">▶</span></button><button type="button" class="mx-p90-media-settings" onclick="mxTrainingSettings(${d})" aria-label="DVD ${d} video ayarları">⚙</button>${template.innerHTML}</section>`;
  };
  const oldP90=p90View;

@@ -31,6 +31,12 @@ try{
   const blob=new Blob(chunks,{type:'video/webm'});if(!blob.size)throw Error('Video fixture empty');
   await put6('media','p90-1',blob);window.mxTestVideoBlob=blob;
  });
+ // Owner-only Drive settings are exposed without storing credentials in source.
+ await page.evaluate(()=>mxDriveSettings());
+ assert.match(await page.locator('[data-drive-status]').innerText(),/Bağlı değil/);
+ assert(await page.locator('[data-drive-connect]').isVisible());
+ assert(await page.locator('[data-drive-sync]').isDisabled());
+ await page.evaluate(()=>close5());
  // P90X day navigation: no duplicate daily player; scheduled DVD opens the set workspace.
  await page.evaluate(()=>{pday=1;go('p90');});
  assert.equal(await page.getByRole('heading',{name:'Günün video oynatıcısı',exact:true}).count(),0);
