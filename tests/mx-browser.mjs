@@ -18,6 +18,13 @@ try{
  await page.waitForFunction(()=>window.mxRootInteraction&&window.mxTrainingWorkspace&&window.mxMimoRewardsInstalled&&window.mxDailyLearningReady,{},{timeout:30000});
  await page.waitForFunction(()=>document.querySelector('img.mx-real-cat'),{},{timeout:30000});
  assert.equal(await page.locator('img.mx-real-cat').count()>0,true);
+
+ // Test actual nested resource navigation before unrelated calendar assertions.
+ const nested=await page.evaluate(()=>{for(const r of resourceRows()){const tree=sourceTree(r);const group=tree.find(x=>x.children?.length);if(group)return {rid:r.id,id:group.id,children:group.children.map(x=>x.id)};}return null;});
+ assert(nested,'A nested resource must exist');await page.evaluate(r=>mxPalaceOpen(enc5(r)),nested.rid);
+ const groupStop=page.locator('.mx-stop').filter({has:page.locator('.mx-subpath-open')}).first();await groupStop.locator('.mx-node').click();await page.getByRole('button',{name:'Alt durakları aç',exact:true}).click();
+ assert.deepEqual(await page.locator('.mx-road-view .mx-stop').evaluateAll(els=>els.map(e=>e.dataset.stopId)),nested.children,'Child path must contain only immediate children');
+ await page.getByRole('button',{name:'Üst yola dön',exact:true}).click();assert(await page.locator('.mx-road-view .mx-subpath-open').count()>0);
  await page.evaluate(()=>go('home'));
  await page.waitForSelector('.mx-floating-cat',{state:'visible'});const cat=page.locator('.mx-floating-cat');await cat.hover();const cb=await cat.boundingBox();await page.mouse.move(cb.x+cb.width/2,cb.y+cb.height/2);await page.mouse.down();await page.mouse.move(cb.x+cb.width/2-75,cb.y+cb.height/2-100,{steps:10});await page.mouse.up();assert.equal(await cat.getAttribute('data-mx-pinned'),'yes');await page.evaluate(()=>mxResumeCatWalk());
  await cat.click();const catPanel=page.locator('#mx-cat-panel');await catPanel.waitFor({state:'visible'});assert.equal(await cat.getAttribute('aria-expanded'),'true');assert.equal(await cat.getAttribute('data-pose'),'love');

@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Visible installed version, accessible light/dark flashcard colors, and independent lifetime flashcard archive; incremental archive writes",
-  "revision": 12
+  "purpose": "Nested resource paths, independent path scroll and parent/journey return; preserves R12 appearance and archive",
+  "revision": 13
 }

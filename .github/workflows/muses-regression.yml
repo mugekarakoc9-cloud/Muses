@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-      - run: node tests/native-update.cjs && node tests/check.mjs && node tests/catalog-check.mjs && node tests/mx-regression.mjs && node tests/offline-worker.mjs
+      - run: node tests/native-update.cjs && node tests/nested-path.mjs && node tests/check.mjs && node tests/catalog-check.mjs && node tests/mx-regression.mjs && node tests/offline-worker.mjs
       - run: python3 tests/linux-launcher.py
       - run: npm install --no-save --package-lock=false playwright@1.51.1 jsdom@26.1.0
       - run: npx playwright install --with-deps chromium
