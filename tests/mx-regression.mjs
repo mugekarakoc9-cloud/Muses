@@ -46,3 +46,12 @@ const pageFns=new Function(pageSource+';return {span:mxPageSpanMX,weighted:mxWei
  assert(vocabStudio.includes("start(keys,'type',false,true)"));
  assert(vocabStudio.includes("d.lastReviewSession=s.id"));
  console.log('PASS: reversed display grade and explicit practice routing');
+
+const reviewEvents=extract(studio,'mxvReviewEvents','mxvTally');
+const reviewRows=Array.from({length:450},(_,i)=>[{session:'fixture',key:'card'+i,type:'rating',grade:3},{session:'fixture',key:'card'+i,type:'answer',selfAssessment:true,mode:'flash'}]).flat();
+assert.equal(reviewEvents(reviewRows).length,450);
+assert.equal(reviewEvents([...reviewRows,reviewRows[0]]).length,450);
+assert.equal(reviewEvents([{type:'answer',selfAssessment:true,mode:'flash',id:'legacy'}]).length,1);
+assert.equal(reviewEvents([{type:'answer',mode:'type',ok:true}]).length,0);
+assert.equal(reviewEvents([...reviewRows,{session:'second',key:'card0',type:'rating',grade:2}]).length,451);
+console.log('Review history regression: 450 cards, deduplication, legacy fallback and repeated session passed.');
