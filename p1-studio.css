@@ -1296,3 +1296,40 @@ body #app .mx-month-grid [data-p1-task]{touch-action:none!important;user-select:
 body #app .mx-agenda-switch button.mx39-calendar-mode,body #app .mx39-calendar-mode{font-size:11px!important;line-height:1.2!important;min-height:29px!important;padding:4px 5px!important;box-shadow:none!important}
 body #dialog5 .mx39-days button{min-height:34px!important}
 body #dialog5 .mx39-picker summary{outline-offset:2px}
+
+/* R40 — shared pastel tracks, calm reader, scroll-first calendar */
+body #app .mx-goal-row34:after{height:10px!important;background:linear-gradient(90deg,color-mix(in srgb,var(--mx40-color,var(--accent)) 75%,white),var(--mx40-color,var(--accent))) 0 0/var(--pct) 100% no-repeat,color-mix(in srgb,var(--mx40-color,var(--accent)) 22%,var(--paper))!important;border-radius:999px!important}
+body #app .mx-goal-row34{min-height:51px!important;padding-bottom:17px!important}
+body #app .mx-learning-row30 .journeyTrack7{height:10px!important;border-radius:999px!important;background:color-mix(in srgb,var(--mx40-color,var(--accent)) 22%,var(--paper))!important}
+body #app .mx-learning-row30 .journeyTrack7>i{border-radius:999px!important;background:linear-gradient(90deg,color-mix(in srgb,var(--mx40-color,var(--accent)) 76%,white),var(--mx40-color,var(--accent)))!important}
+body.mx40-home #app .card{box-shadow:none!important;border:0!important;border-radius:16px!important}
+body.mx40-home #app .mx38-spark i{border-radius:5px 5px 2px 2px;background:linear-gradient(0deg,var(--metric38),color-mix(in srgb,var(--metric38) 66%,white))!important}
+body.mx40-home #app .mx38-spark i.missing{background:none!important}
+.mx40-empty{color:var(--muted)!important;font-weight:500!important}
+body #app .mx40-icon,.mx40-icon{display:inline-grid;place-items:center;min-width:36px;min-height:36px;padding:4px 8px!important;background:transparent!important;border:0!important;box-shadow:none!important;color:var(--ink)!important;font-size:19px!important;cursor:pointer;list-style:none}
+.mx40-icon::-webkit-details-marker{display:none}.mx40-icon:focus-visible{outline:2px solid var(--accent)}
+.mx40-hard-head,.mx40-hard-tools{display:flex;align-items:center;justify-content:space-between;gap:8px}
+body #app .mx40-hard-card{display:grid!important;place-content:center;gap:12px;width:100%;min-height:118px;padding:14px!important;border:0!important;border-radius:14px;background:linear-gradient(120deg,color-mix(in srgb,#9476ca 22%,var(--paper)),color-mix(in srgb,#65ae9b 15%,var(--paper)))!important;color:var(--ink)!important;white-space:normal!important;overflow-wrap:anywhere}
+.mx40-hard-card small{color:var(--muted);letter-spacing:.12em;font-size:11px}.mx40-hard-card strong{font-size:clamp(19px,4vw,26px);line-height:1.3}
+body.mx40-reader #app .readerShell9,body.mx40-reader #app .readerPage9,body.mx40-reader #app .readerTools9{border:0!important;box-shadow:none!important;border-radius:0!important}
+body.mx40-reader #app .readerPage9{max-width:100%!important;padding:clamp(14px,3vw,35px)!important}
+body.mx40-reader #app .readerTools9{display:flex!important;align-items:center;justify-content:flex-end;gap:4px!important;padding:4px 8px!important;overflow:visible!important}
+.mx40-reader-menu,.mx40-agenda-menu{position:relative;flex:none}.mx40-reader-menu-panel,.mx40-agenda-menu[open]>.mx-agenda-switch,.mx40-agenda-menu[open]>.mx-agendaviews35{position:absolute;right:0;top:100%;z-index:50;min-width:min(240px,80vw);max-width:85vw;background:var(--paper)!important;box-shadow:0 8px 25px #0003;border-radius:12px;padding:8px!important}
+.mx40-reader-menu:not([open])>.mx40-reader-menu-panel,.mx40-agenda-menu:not([open])>:not(summary){display:none!important}
+.mx40-reader-menu-panel{display:grid;gap:3px;max-height:55dvh;overflow:auto}
+body #app .mx40-reader-menu-panel :is(button,select){border:0!important;box-shadow:none!important;border-radius:6px!important;text-align:left;white-space:normal}
+.mx40-reader-content{position:relative;font-family:var(--mx40-font,Georgia,serif)!important}.mx40-reader-content :is(p,.readerPara10,.readerWord10){font-family:inherit!important}
+.mx40-ink-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;overflow:hidden}.mx40-ink-layer.active{pointer-events:auto;touch-action:none;cursor:crosshair}
+.mx40-ink-color{width:28px;height:28px;border:0;background:transparent;padding:2px}.mx40-pen[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 20%,var(--paper))!important;border-radius:8px}
+#lens10{border:0!important;border-radius:18px!important;padding:14px!important;max-width:min(460px,calc(100vw - 20px))!important;max-height:75dvh!important;overflow:auto!important;background:var(--paper)!important;color:var(--ink)!important}
+#lens10 .mx-highlight-palette{border:0!important;margin:0 0 6px!important;padding:0!important;gap:6px!important}
+#lens10 .mx-highlight-palette button:not(.mx-clear-highlight){width:25px!important;height:25px!important;min-height:25px!important;border-radius:50%!important}
+.mx40-note-row{display:flex;align-items:center;gap:6px;margin:6px 0}.mx40-word-note{flex:1;min-width:0;resize:vertical;min-height:40px;border:0!important;background:color-mix(in srgb,var(--accent) 9%,var(--paper))!important;color:var(--ink)!important;border-radius:8px;padding:8px}
+body #app .mx-hour-task[data-mx-hour-task],body #app .mx-month-grid [data-p1-task]{touch-action:pan-x pan-y!important;cursor:pointer!important}
+body.mx-bulk-mode #app .mx-hour-task[data-mx-hour-task],body.mx-bulk-mode #app .mx-month-grid [data-p1-task]{touch-action:none!important}
+body #app .mx-hour-entry{display:flex!important;align-items:flex-start;min-width:0;gap:2px!important}
+body #app .mx-hour-task{flex:1;min-width:0!important;max-width:100%;overflow:hidden;text-align:left}
+body #app .mx-hour-task span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;word-break:normal!important;overflow-wrap:normal!important}
+body #app .mx-hour-grid{grid-template-columns:48px repeat(var(--days),minmax(112px,1fr))!important}
+body #app .mx-hour-scroll{overflow:auto;overscroll-behavior:contain}
+@media(max-width:600px){body.mx40-reader .mx-floating-cat,body.mx40-reader .mx-next-cat{visibility:hidden!important;pointer-events:none!important}body.mx40-reader #app{padding-inline:0!important}body.mx40-home #app .mx39-today-metrics{gap:6px!important}body.mx40-reader .mx-focus-dock{max-width:180px!important}}
