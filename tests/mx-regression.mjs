@@ -62,3 +62,18 @@ assert.equal(currentPath(stalePath),47);
 assert.equal(currentPath([{done:false},{done:true}]),1);
 assert.equal(currentPath([]),-1);
 console.log('Path regression: stale stop cannot override later progress.');
+
+
+const measure = new Function(studio.slice(studio.indexOf('const MX_MEASURE_UNITS='),studio.indexOf('/* Unit controls and multi-section goals. */'))+';return mxConvertMeasure')();
+assert.equal(measure('2,5','litre','ml'),2500);
+assert.equal(measure(1.5,'kg','gram'),1500);
+assert.equal(measure(.5,'saat','dakika'),30);
+assert.equal(measure(1,'bardak','litre'),null);
+assert.equal(measure(1,'sayfa','kg'),null);
+const reconcile=new Function(studio.slice(studio.indexOf('function mxvReviewEvents('),studio.indexOf('/* Isolated vocabulary workspace */'))+';return mxReviewCountWithReported')();
+const date='2026-11-26',dated=reviewRows.map(x=>({...x,date}));
+assert.equal(reconcile(dated,{[date]:450},date,date),450);
+assert.equal(reconcile(dated.slice(0,40),{[date]:450},date,date),450);
+assert.equal(reconcile(dated,{[date]:20},date,date),450);
+assert.equal(reconcile(dated,{[date]:450},'2026-11-27','2026-11-27'),0);
+console.log('PASS: reported daily totals reconcile without inventing card events; compatible unit conversions');
