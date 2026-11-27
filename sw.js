@@ -1,7 +1,7 @@
-const CACHE = 'muses-life-v01611-r36-shared-appearance';
-const FILES = ['./', './index.html', './p1-planning.js', './p1-studio.js', './p1-studio.css', './p1-activity.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const CACHE = 'muses-life-v01611-r37-front-walk';
+const FILES = ['./', './index.html', './p1-planning.js', './p1-studio.js', './p1-studio.css', './p1-activity.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './assets/mimo/front.json'];
 const core = new Set(FILES.map(path => new URL(path, self.registration.scope).href));
-const isMimo = url => /^assets\/mimo\/(idle|happy|love|knead|walk|still|greet|sad|play|sleep|gift)\.json$/.test(url.href.slice(self.registration.scope.length));
+const isMimo = url => /^assets\/mimo\/(idle|happy|love|knead|walk|front|still|greet|sad|play|sleep|gift)\.json$/.test(url.href.slice(self.registration.scope.length));
 self.addEventListener('install', event => event.waitUntil((async () => {
   const cache = await caches.open(CACHE);
   // Never install a login page or a tunnel error as an application asset.
