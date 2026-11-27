@@ -1385,3 +1385,39 @@ body.mx40-reader #app .readerWord10.mx-reader-line{text-decoration-thickness:2px
 #lens10 .mx41-note-colors button{background:var(--swatch)!important;border:1px solid #302a3640!important;min-width:22px!important;min-height:22px!important;width:22px!important;height:22px!important;padding:0!important;border-radius:50%!important}
 #lens10 .mx41-note-colors button[aria-pressed=true]{outline:2px solid #302a36!important;outline-offset:1px;background:var(--swatch)!important}
 @media(max-width:760px){#lens10.mx41-lens{top:auto!important;left:8px!important;right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;margin:auto!important;width:calc(100vw - 16px)!important;max-width:460px!important}}
+
+/* R42 — readable, edge-to-edge reader and compact movement / calendar controls. */
+body.mx40-reader #app{width:100%!important;max-width:none!important;padding-inline:clamp(5px,1.5vw,20px)!important;box-sizing:border-box}
+body.mx40-reader #app .readerShell9,body.mx40-reader .mx-quiet-bar{max-width:960px!important}
+body.mx40-reader.mx42-wide #app .readerShell9,body.mx40-reader.mx42-wide .mx-quiet-bar{width:100%!important;max-width:none!important}
+body.mx40-reader.mx42-wide #app .readerPage9{width:100%!important;max-width:none!important;padding:clamp(7px,1.4vw,22px)!important;box-sizing:border-box}
+body.mx40-reader.mx42-wide #app :is(.readerColumns10,#readerContent10,.mx40-reader-content){width:100%!important;max-width:none!important;margin-inline:0!important}
+body.mx40-reader #app :is(.readerPara10,.trPara10){overflow-wrap:break-word!important;word-break:normal!important}
+body.mx40-reader #app .parallel10 .mx-pair{gap:clamp(10px,2vw,28px)!important}
+@media(max-width:600px){body.mx40-reader #app{padding-inline:4px!important}body.mx40-reader.mx42-wide #app .readerPage9{padding-inline:6px!important}}
+#mx-pole-selected33{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px!important}
+.mx42-workout,.mx42-workout-log{background:color-mix(in srgb,var(--accent) 8%,var(--paper));color:var(--ink);padding:10px;border-radius:12px;min-width:0}
+.mx42-workout header{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}
+.mx42-workout header strong{font-size:13px;overflow-wrap:anywhere}
+#mx-pole-selected33 .mx42-workout header button{background:transparent!important;border:0!important;box-shadow:none!important;min-width:24px!important;min-height:26px!important;padding:2px!important}
+.mx42-workout-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.mx42-workout-fields label{font-size:11px!important;color:var(--muted)!important;min-width:0;margin:0!important}
+.mx42-workout-fields input{width:100%!important;min-width:0!important;box-sizing:border-box;padding:5px!important;font-size:14px!important;border-radius:7px!important}
+body #app .mx-atlas-grid34.mx42-atlas-table{display:flex!important;flex-direction:column;gap:4px!important}
+body #app .mx42-atlas-table .atlas-tile{display:grid!important;grid-template-columns:minmax(75px,18%) minmax(0,1fr);align-items:center;min-width:0;gap:8px;padding:4px!important}
+body #app .mx42-atlas-table .atlas-tile :is(.media-thumb,.media-placeholder){height:68px!important;max-height:68px!important}
+body #app .atlas-tile.mx42-filtered{display:none!important}
+body #app .atlas-tile :is(.favorite3,.mx-pole-pick33){width:24px!important;min-width:24px!important;height:24px!important;min-height:24px!important;padding:3px!important;border:0!important;border-radius:6px!important;font-size:13px!important;background:color-mix(in srgb,var(--paper) 88%,transparent)!important;box-shadow:none!important}
+body #app .atlas-tile :is(.favorite3,.mx-pole-pick33) svg{width:13px!important;height:13px!important}
+body #app .atlas-tile .mx-pole-pick33[aria-pressed=true]{background:var(--accent)!important;color:var(--paper)!important}
+.mx42-atlas-controls{display:grid;gap:7px;padding:6px 0;color:var(--ink)}
+.mx42-filter-label{display:flex;align-items:center;gap:7px;font-size:12px}
+body #app .mx42-drag-handle{display:inline-flex!important;align-items:center;justify-content:center;flex:none;touch-action:none!important;cursor:grab;color:var(--muted);font-size:15px;min-width:20px;min-height:24px;user-select:none;-webkit-user-select:none}
+body #app .mx-hour-task[data-mx-hour-task],body #app .mx-month-grid [data-p1-task]{cursor:grab!important}
+body #app .mx-hour-task:has(.mx42-drag-handle){display:flex!important;align-items:center;gap:4px}
+body #app .mx-hour-task:has(.mx42-drag-handle) span:not(.mx42-drag-handle){min-width:0}
+body #mx-cat-panel{width:min(285px,calc(100vw - 20px))!important;max-width:min(285px,calc(100vw - 20px))!important;padding:10px!important;border:1px solid var(--line)!important;border-radius:18px!important;background:var(--paper)!important;color:var(--ink)!important;box-shadow:0 14px 42px #0003!important}
+body #mx-cat-panel .mx-cat-head{display:flex;align-items:center;justify-content:space-between;padding:1px 4px 8px}
+body #mx-cat-panel .mx-cat-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
+body #mx-cat-panel .mx-cat-grid button{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px!important;border:0!important;border-radius:10px!important;background:color-mix(in srgb,var(--accent) 8%,var(--paper))!important;color:var(--ink)!important}
+body #mx-cat-panel .mx-cat-grid button span{font-size:18px!important}body #mx-cat-panel .mx-cat-grid button small{font-size:10px!important;line-height:1.25;color:var(--ink)!important}

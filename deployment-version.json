@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Compact reader chrome, short-tap pronunciation, long-press highlights, colored sticky notes",
-  "revision": 41
+  "purpose": "Wider reader, exercise plan repetition fields, all-date agenda drag, compact atlas and Mimo menu",
+  "revision": 42
 }
