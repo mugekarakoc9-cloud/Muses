@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Dedicated front-facing Mimo Path animation with offline cache and existing local import support",
-  "revision": 37
+  "purpose": "Compact habit navigation and heatmaps, borderless flashcard controls, metric icons and real-data sparklines",
+  "revision": 38
 }
