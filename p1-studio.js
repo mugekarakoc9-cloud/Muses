@@ -1408,7 +1408,7 @@ function installTrainingWorkspaceMX(){
   }
   else player.innerHTML='<div class="flex"><button onclick="mxDriveSettings()">Google Drive</button><button onclick="mxTrainingSettings('+d+')">Video ekle</button></div>';
  };
- document.querySelector('#dialog5')?.addEventListener('close',clearMedia);window.addEventListener('pagehide',remember);
+ document.querySelector('#dialog5')?.addEventListener('close',e=>{if(!e.currentTarget.open)clearMedia();});window.addEventListener('pagehide',remember);
  // The day schedule owns DVD navigation; retain the legacy set details as a secondary disclosure.
  const originalDVD=p90dvd;
  p90dvd=function(d,n){

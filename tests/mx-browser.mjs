@@ -276,13 +276,15 @@ try{
  let account='owner-a';
  await page.route('https://www.googleapis.com/drive/v3/**',route=>{
   const url=new URL(route.request().url()),p=url.pathname;
+  const headers={'access-control-allow-origin':origin,'access-control-allow-methods':'GET, OPTIONS','access-control-allow-headers':'authorization, x-goog-drive-resource-keys'};
+  if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers});
   if(p.endsWith('/files/fixture_drive_video_03')&&url.searchParams.get('alt')==='media'){
    assert.equal(route.request().headers()['authorization'],'Bearer fixture-token');
    assert.equal(route.request().headers()['x-goog-drive-resource-keys'],'fixture_drive_video_03/0-testkey');
-   return route.fulfill({status:200,contentType:'video/webm',body:fixture});
+   return route.fulfill({status:200,headers,contentType:'video/webm',body:fixture});
   }
   const json=p.endsWith('/about')?{user:{permissionId:account,emailAddress:'fixture@example.invalid'}}:p.endsWith('/files/fixture_folder_123')?{id:'fixture_folder_123',mimeType:'application/vnd.google-apps.folder',ownedByMe:true}:p.endsWith('/files/fixture_drive_video_03')?{id:'fixture_drive_video_03',name:'03 - fixture.webm',mimeType:'video/webm',size:String(fixture.length),ownedByMe:true,capabilities:{canDownload:true}}:p.endsWith('/files')?{files:[]}:null;
-  return route.fulfill({status:json?200:404,contentType:'application/json',body:JSON.stringify(json||{})});
+  return route.fulfill({status:json?200:404,headers,contentType:'application/json',body:JSON.stringify(json||{})});
  });
  await page.evaluate(()=>{window.google={accounts:{oauth2:{initTokenClient:cfg=>({requestAccessToken:()=>cfg.callback({access_token:'fixture-token',expires_in:600})})}}};mxDriveSettings();});
  await page.locator('[data-drive-client]').fill('123456-test.apps.googleusercontent.com');
@@ -294,7 +296,7 @@ try{
  assert.equal(pin.owner,'owner-a');assert(!JSON.stringify(pin).includes('fixture-token'));
  await page.evaluate(()=>{close5();playDVD6(3);});
  const driveVideo=page.locator('#mx-training-workspace [data-player] video');
- await driveVideo.waitFor({timeout:30000});
+ try{await driveVideo.waitFor({timeout:30000});}catch(e){throw Error('Drive fixture playback: '+await page.locator('[data-training-status]').textContent()+' / '+await page.locator('[data-player]').textContent(),{cause:e});}
  assert.equal(await page.locator('#mx-training-workspace [data-player] iframe').count(),0);
  await driveVideo.evaluate(async v=>{v.muted=true;await v.play();});
  await page.waitForFunction(()=>{const v=document.querySelector('#mx-training-workspace [data-player] video');return v&&v.videoWidth>0&&v.currentTime>0.2&&!v.error;},{},{timeout:12000});
