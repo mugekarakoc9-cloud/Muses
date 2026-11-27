@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Compact Pole, agenda-linked combinations, activity calendar and Mimo controls",
-  "revision": 33
+  "purpose": "Compact borderless controls, goal remainders, calendar progress and drag improvements",
+  "revision": 34
 }
