@@ -1513,7 +1513,7 @@ installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractio
 /* Live build indicator and manual update: no local record migration. */
 function installLiveBuildMX(){
  if(window.mxLiveBuildInstalled)return;window.mxLiveBuildInstalled=true;
- const version='0.16.11',revision=30,buildLabel=version+' R'+revision;
+ const version='0.16.11',revision=31,buildLabel=version+' R'+revision;
  const oldHome=home;
  const css=document.createElement('style');css.textContent=`
  .mx-home-banner{padding:clamp(16px,3vw,28px);border-radius:22px;background:linear-gradient(128deg,#e6dcef,#e3eddf);color:#3c3450;border:1px solid #b8abc83b}
@@ -2292,7 +2292,7 @@ function installModern1611MX() {
     const rows=agendaRows5(today()).filter(r=>r.kind!=='actual'&&!String(r.id).startsWith('time9:')),unique=[...new Map(rows.map(r=>[r.id,r])).values()],done=unique.filter(r=>r.done).length,total=unique.length,pct=total?Math.round(done/total*100):0;
     const routes=[['calendar','Ajanda','Gününü düzenle','calendar'],['resources','Öğren','Kaldığın yerden','book'],['p90','Hareket','Antrenman ve pole','move'],['habits','Yaşam','Rutinlerini takip et','leaf']];
     const icons={calendar:'<rect x="4" y="6" width="24" height="22" rx="5"/><path d="M10 3v6m12-6v6M4 13h24m-18 6h3m6 0h3m-12 5h3"/>',book:'<path d="M16 8c-5-4-10-3-12-2v20c5-2 9-1 12 1 3-2 7-3 12-1V6c-2-1-7-2-12 2Zm0 0v19"/>',move:'<path d="m8 24 16-16M4 17l11 11M17 4l11 11M3 23l6 6M23 3l6 6"/>',leaf:'<path d="M26 5C11 2 2 12 7 23c10 5 20-3 19-18ZM7 25l14-14m-8 8v-7m0 7h7"/>'};
-    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R30</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
+    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R31</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
     return h.slice(0,start)+banner+h.slice(end+10);
   };
   // Native assets are bundled: reloading localhost cannot install a new APK.
@@ -2308,7 +2308,7 @@ function installModern1611MX() {
         if(!response.ok)throw Error('source manifest unavailable');
         const remote=await response.json();
         if(!/^\d+\.\d+\.\d+$/.test(remote.release)||!Number.isSafeInteger(remote.revision)||remote.revision<0)throw Error('invalid metadata');
-        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??30;
+        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??31;
         const rv=remote.release.split('.').map(Number),iv=installedRelease.split('.').map(Number);
         const cmp=rv[0]-iv[0]||rv[1]-iv[1]||rv[2]-iv[2];
         const newer=cmp>0||(cmp===0&&remote.revision>installedRevision);
@@ -2368,7 +2368,7 @@ async function mxFlushStudyState(){
 }
 function installStudySafetyR10(){
  if(window.mxStudySafetyR10)return;window.mxStudySafetyR10=true;
- document.title='MUSES Life Studio · 0.16.11 R30';
+ document.title='MUSES Life Studio · 0.16.11 R31';
  window.mxVerifyStudySave=async()=>{const ok=await mxFlushStudyState();toast(ok?'Kayıt bu cihazda doğrulandı.':'Kayıt doğrulanamadı. JSON yedeğini hemen al.');return ok;};
  const previous=settings;settings=function(){return '<section class="card mx-storage-status"><h3>Kayıt güvenliği</h3><p>'+esc(dbStatus6)+' · Bu cihazın kayıtlarıdır, cihazlar arası eşitleme değildir.</p><button onclick="mxVerifyStudySave()">Kaydı doğrula</button> <button onclick="backup()">JSON yedeği al</button></section>'+previous();};
 }
@@ -2401,7 +2401,7 @@ function installCompactIcons27(){
   document.querySelectorAll('#mx-bulk-tools button').forEach(b=>{if(b.textContent.trim()==='☑ Çoklu seç')apply(b,'select','Çoklu seç');else if(b.textContent.trim()==='Son silmeyi geri al')apply(b,'undo','Son silmeyi geri al');});
   document.querySelectorAll('.mxh25-menu').forEach(b=>apply(b,'more',b.getAttribute('aria-label')||'Seçenekler'));
   document.querySelectorAll('button').forEach(b=>{if(b.dataset.mxIcon27||b.disabled||b.type==='submit'||b.closest('.mxv-card,.mxv-ratings,.mxh26-grid,.mxh24-week,.mx-palace,.mx-goal-menu,.mxv-sidebar'))return;const name=b.textContent.trim(),action=b.getAttribute('onclick');if(!action)return;const exact={'Ara':'search','Görev ekle':'plus','Yeni görev':'plus','Tam ekran':'expand','Düzenle':'edit','Sil':'trash','⋮':'more','⋯':'more','Yenile':'refresh'};if(exact[name])apply(b,exact[name],b.getAttribute('aria-label')||name);});
-  const side=document.querySelector('#mxv-root .mxv-sidebar');if(side&&!side.querySelector('.mx-side-toggle27')){const button=document.createElement('button');button.type='button';button.className='mx-side-toggle27';const toggle=()=>{const root=side.closest('#mxv-root');const next=!root.classList.contains('mx-sidebar-folded27');root.classList.toggle('mx-sidebar-folded27',next);button.setAttribute('aria-expanded',String(!next));};button.onclick=toggle;button.setAttribute('aria-expanded','true');apply(button,'panel','Kelime menüsünü daralt / genişlet');side.prepend(button);}
+  const side=document.querySelector('#mxv-root .mxv-sidebar');if(side&&!window.mxActivityMapReady31&&!side.querySelector('.mx-side-toggle27')){const button=document.createElement('button');button.type='button';button.className='mx-side-toggle27';const toggle=()=>{const root=side.closest('#mxv-root');const next=!root.classList.contains('mx-sidebar-folded27');root.classList.toggle('mx-sidebar-folded27',next);button.setAttribute('aria-expanded',String(!next));};button.onclick=toggle;button.setAttribute('aria-expanded','true');apply(button,'panel','Kelime menüsünü daralt / genişlet');side.prepend(button);}
  }
  const old=render;render=function(){old();decorate();};let pending=false;const observer=new MutationObserver(()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;decorate();});});observer.observe(document.body,{childList:true,subtree:true});decorate();
 }
@@ -2418,7 +2418,7 @@ function installHomeCompact30(){
   const progress=oldHero.querySelector('.mx-day-ring');if(!progress)return template.innerHTML;
   const dashboard=document.createElement('section');dashboard.className='mx-modern-hero mx-dashboard30';
   const shortcuts=[['path','Yol haritam',"go('english')"],['cards','Flashcard',"go('flash')"],['book','Kitaplık',"go('library')"],['target','Hedeflerim',"go('goals')"],['move','Pole',"go('atlas')"],['calendar','Ajanda',"go('calendar')"],['settings','Ayarlar',"go('settings')"],['expand','Tam ekran','fullscreenP1()']];
-  dashboard.innerHTML='<div class="mx-dashboard-main30"><div class="mx-dashboard-title30"><small>MUSES · 0.16.11 R30</small><h1>Bugün</h1><p>'+esc(dateLabel5(today()))+'</p></div><div class="mx-dashboard-ring30"></div></div><div class="mx-dashboard-actions30">'+button('search','Ara','openPaletteP1()')+button('plus','Görev ekle','mxHourlyCreate(today())',true)+button('clock','Odak modu','focusOpen7()')+button('target','Hedef ekle','mxHomeGoal30()')+'<details class="mx-dashboard-menu30"><summary title="Diğer işlemler" aria-label="Diğer işlemler">'+mxIcon27('more')+'</summary><div>'+shortcuts.map(([i,l,a])=>'<button type="button" onclick="'+a+'">'+mxIcon27(i)+'<span>'+l+'</span></button>').join('')+'</div></details>'+button('refresh','Güncellemeleri denetle','mxCheckUpdate()')+'</div>';
+  dashboard.innerHTML='<div class="mx-dashboard-main30"><div class="mx-dashboard-title30"><small>MUSES · 0.16.11 R31</small><h1>Bugün</h1><p>'+esc(dateLabel5(today()))+'</p></div><div class="mx-dashboard-ring30"></div></div><div class="mx-dashboard-actions30">'+button('search','Ara','openPaletteP1()')+button('plus','Görev ekle','mxHourlyCreate(today())',true)+button('clock','Odak modu','focusOpen7()')+button('target','Hedef ekle','mxHomeGoal30()')+'<details class="mx-dashboard-menu30"><summary title="Diğer işlemler" aria-label="Diğer işlemler">'+mxIcon27('more')+'</summary><div>'+shortcuts.map(([i,l,a])=>'<button type="button" onclick="'+a+'">'+mxIcon27(i)+'<span>'+l+'</span></button>').join('')+'</div></details>'+button('refresh','Güncellemeleri denetle','mxCheckUpdate()')+'</div>';
   dashboard.querySelector('.mx-dashboard-ring30').append(progress);oldHero.remove();root.prepend(dashboard);
   root.querySelectorAll('.mx-launch-grid,.mx-shortcuts,.p1-tools').forEach(el=>{if(el.matches('.p1-tools')&&[...el.querySelectorAll('button')].some(b=>!['openPaletteP1()','fullscreenP1()'].includes(b.getAttribute('onclick'))))return;el.remove();});
   const titleText=h=>h.textContent.trim().replace(/\s+/g,' ').toLocaleLowerCase('tr');
@@ -2462,6 +2462,46 @@ function installHomeCompact30(){
  const prior=render;render=function(){prior();decorate();};decorate();
 }
 const priorHomeCompact30=installStudioP1;installStudioP1=function(){priorHomeCompact30();installHomeCompact30();};
+
+/* R31: one responsive, real-data activity calendar for home and fitness. */
+function mxActivityDay31(date,module,rows){
+ const filtered=rows.filter(r=>r.kind!=='actual'&&!String(r.id).startsWith('time9:')&&(!module||r.module===module));
+ const unique=[...new Map(filtered.map(r=>[String(r.id),r])).values()];
+ const actual=rows.filter(r=>r.kind==='actual'&&(!module||r.module===module));
+ return {date,rows:unique,actual,total:unique.length,done:unique.filter(r=>r.done).length};
+}
+function mxActivityWeeks31(end,addDay){
+ const start=addDay(end,-((new Date(end+'T12:00:00').getDay()+6)%7)-77);
+ return Array.from({length:12},(_,i)=>Array.from({length:7},(_,j)=>addDay(start,i*7+j)));
+}
+function installActivityMap31(){
+ if(window.mxActivityMapReady31)return;window.mxActivityMapReady31=true;
+ const H=x=>esc(String(x??'')),months=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'],short=d=>Number(d.slice(-2))+' '+months[Number(d.slice(5,7))-1];
+ const glyph='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="m8 13-2 8 6-3 6 3-2-8"/></svg>';
+ const cache=new Map(),dateData=(date,module)=>{const key=module+'|'+date;if(!cache.has(key))cache.set(key,mxActivityDay31(date,module,agendaRows5(date)));return cache.get(key);};
+ const goalList=(module,start,end)=>v5().challenges.filter(g=>(!module||g.module===module)&&g.start<=end&&g.end>=start);
+ function status(g){try{const info=challengeInfo5(g);return Number(info.target)>0&&Number(info.count)>=Number(info.target);}catch{return false;}}
+ function mapHTML(module=''){
+  cache.clear();const end=today(),weeks=mxActivityWeeks31(end,add),first=weeks[0][0],last=weeks.at(-1).at(-1),goals=goalList(module,first,last),title=module==='p90'?'P90X aktivite haritası':module==='pole'?'Pole aktivite haritası':'12 haftalık aktivite haritası';
+  const lines=weeks.map((dates,i)=>{
+   const cells=dates.map(d=>{const x=dateData(d,module),future=d>end,ratio=x.total?x.done/x.total:0,state=future?'future':x.total?ratio===1?'complete':ratio>=.75?'high':ratio>=.5?'mid':ratio>0?'low':'planned':x.actual.length?'actual':'empty',label=short(d)+' · '+(future?'Gelecek gün':x.total?x.done+'/'+x.total+' tamamlandı':x.actual.length?'Plan dışı kayıt':'Plan yok');return '<button type="button" class="mx-am-cell31 '+state+'" title="'+H(label)+'" aria-label="'+H(label)+'" onclick="mxActivityDetail31(\''+d+'\',\''+module+'\')"><span>'+Number(d.slice(-2))+'</span><b>'+(future?'—':x.total?x.done+'/'+x.total:x.actual.length?'·':'—')+'</b></button>';}).join('');
+   const lanes=goals.filter(g=>g.start<=dates[6]&&g.end>=dates[0]).map(g=>{const a=Math.max(0,dates.findIndex(d=>d>=g.start)),b=dates.reduce((n,d,i)=>d<=g.end?i:n,-1),finish=dates.includes(g.end),done=finish&&g.end<=end&&status(g),key=enc5(g.id);if(b<a)return '';return '<button type="button" class="mx-am-lane31 '+(done?'done':'')+'" style="grid-column:'+(a+1)+' / '+(b+2)+'" title="'+H(g.title+' · '+g.start+' – '+g.end)+'" aria-label="'+H(g.title+' · '+g.start+' – '+g.end)+'" onclick="mxActivityGoal31(\''+key+'\')"><span>'+H(g.title)+'</span>'+(finish?(done?glyph:'<i class="mx-am-end31"></i>'):'')+'</button>';}).join('');
+   return '<div class="mx-am-week31"><small class="mx-am-weeklabel31">'+H(short(dates[0]))+' – '+H(short(dates[6]))+'</small><div class="mx-am-grid31">'+cells+'</div>'+(lanes?'<div class="mx-am-lanes31">'+lanes+'</div>':'')+'</div>';
+  }).join('');
+  return '<section class="card mx-am31" data-module="'+H(module)+'"><div class="mx-am-head31"><h3>'+title+'</h3><small>'+H(short(first))+' – '+H(short(last))+'</small></div><div class="mx-am-grid31 mx-am-days31">'+['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'].map(x=>'<small>'+x+'</small>').join('')+'</div>'+lines+'<div class="mx-am-key31"><span>■ Tamamlandı</span><span>▧ Kısmi</span><span>□ Plan yok</span><span>· Plan dışı</span></div></section>';
+ }
+ window.mxActivityDetail31=function(date,module){if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!['','p90','pole'].includes(module))return;cache.clear();const x=dateData(date,module),rows=x.rows.map(r=>'<li>'+ (r.done?'✓ ':'○ ')+H(r.label||r.title||'Görev')+'</li>').join(''),actual=x.actual.map(r=>'<li>'+H(r.label||r.title||'Gerçekleşen kayıt')+'</li>').join('');modal5('<div class="modalhead5"><h2>'+H(dateLabel5(date))+'</h2><button onclick="close5()">×</button></div><p>'+x.done+'/'+x.total+' plan tamamlandı</p>'+(rows?'<ul>'+rows+'</ul>':'<p>Bu gün için plan kaydı yok.</p>')+(actual?'<h3>Gerçekleşen kayıtlar</h3><ul>'+actual+'</ul>':'')+'<button id="mx-am-open31">Ajandayı aç</button>');document.querySelector('#mx-am-open31').onclick=()=>{close5();selected=date;calMonth=date.slice(0,7);go('calendar');};};
+ window.mxActivityGoal31=function(key){const g=v5().challenges.find(x=>String(x.id)===String(dec5(key)));if(!g)return;const info=challengeInfo5(g);modal5('<div class="modalhead5"><h2>'+H(g.title)+'</h2><button onclick="close5()">×</button></div><p>'+H(g.start)+' – '+H(g.end)+'</p><p>'+H(info.count)+' / '+H(info.target)+'</p><button id="mx-am-goal31">Hedefi aç</button>');document.querySelector('#mx-am-goal31').onclick=()=>{close5();go('goals');};};
+ function replaceLegacy(app){if(app.querySelector('.mx-am31'))return;const h=[...app.querySelectorAll('h2,h3,h4')].find(e=>/^12 haftalık aktivite haritası$/i.test(e.textContent.trim()));if(!h){app.insertAdjacentHTML('beforeend',mapHTML());return;}const section=h.closest('section,.card'),head=h.parentElement,grid=[...((section||app).querySelectorAll('div'))].find(el=>el.classList.contains('mx-activity-grid30')||([...el.children].length>=70&&[...el.children].every(x=>x.matches('button'))));if(grid){const marker=document.createElement('div');marker.innerHTML=mapHTML();grid.replaceWith(marker.firstElementChild);if(head!==section&&head!==app&&head.children.length<=2&&head.querySelector('h2,h3,h4')===h)head.remove();else h.remove();}else{h.insertAdjacentHTML('afterend',mapHTML());h.remove();}}
+ function sports(app,module){if(app.querySelector('.mx-am31'))return;app.insertAdjacentHTML('beforeend',mapHTML(module));}
+ function flashSide(){const root=document.querySelector('#mxv-root'),side=root?.querySelector('.mxv-sidebar'),main=root?.querySelector('.mxv-main');if(!side||!main)return;const page=root.dataset.mxvPage||'';if(page==='study'||page==='choose')return;const folded=S.mxFlashSidebarFolded31??(innerWidth<751);root.classList.toggle('mx-sidebar-folded31',folded);root.classList.remove('mx-sidebar-folded27');side.querySelector('.mx-side-toggle27')?.remove();
+  let bar=root.querySelector('.mx-flash-tools31');if(!bar){bar=document.createElement('div');bar.className='mx-flash-tools31';const toggle=document.createElement('button');toggle.type='button';toggle.className='mx-compact-action30';toggle.title='Yan menüyü aç / kapat';toggle.setAttribute('aria-label',toggle.title);toggle.innerHTML=mxIcon27('panel');toggle.onclick=()=>{const next=!root.classList.contains('mx-sidebar-folded31');S.mxFlashSidebarFolded31=next;root.classList.toggle('mx-sidebar-folded31',next);toggle.setAttribute('aria-expanded',String(!next));save();};bar.append(toggle);root.prepend(bar);}bar.firstElementChild.setAttribute('aria-expanded',String(!folded));
+  const plus=side.querySelector('[data-act="createMenu"]');if(plus&&!plus.dataset.mxPlus31){plus.dataset.mxPlus31='yes';plus.title='Klasör / liste / kelime ekle';plus.setAttribute('aria-label',plus.title);plus.classList.add('mx-compact-action30');plus.innerHTML=mxIcon27('plus');}
+ }
+ function decorate(){const app=document.querySelector('#app');if(!app)return;if(view==='home')replaceLegacy(app);else if(view==='p90')sports(app,'p90');else if(view==='atlas')sports(app,'pole');else if(view==='flash')flashSide();}
+ const prior=render;render=function(){prior();decorate();};let queued=false;const observer=new MutationObserver(()=>{if(view!=='flash'||queued)return;queued=true;requestAnimationFrame(()=>{queued=false;flashSide();});});observer.observe(document.body,{childList:true,subtree:true});decorate();
+}
+const priorActivityMap31=installStudioP1;installStudioP1=function(){priorActivityMap31();installActivityMap31();};
 function mxHabitDirection(name){return S.mxGoalControls?.habitUnits?.[name]?.direction||(/sigara|kahve/i.test(name)?'max':'min');}
 function mxHabitGoalMet(name,date,target,direction){
  const value=Number(actual5('habit',name,date));if(date>today()||!Number.isFinite(value)||!Number.isFinite(target))return false;
