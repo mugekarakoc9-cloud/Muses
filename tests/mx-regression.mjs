@@ -77,3 +77,22 @@ assert.equal(reconcile(dated.slice(0,40),{[date]:450},date,date),450);
 assert.equal(reconcile(dated,{[date]:20},date,date),450);
 assert.equal(reconcile(dated,{[date]:450},'2026-11-27','2026-11-27'),0);
 console.log('PASS: reported daily totals reconcile without inventing card events; compatible unit conversions');
+
+
+const ink=new Function(studio.slice(studio.indexOf('function mxHighlightInk('),studio.indexOf('async function mxFlushStudyState('))+';return mxHighlightInk')();
+assert.equal(ink('#000000'),'#ffffff');
+assert.equal(ink('#ffffff'),'#000000');
+assert.equal(ink('rgb(22, 24, 32)'),'#ffffff');
+assert.equal(ink('#f1abd3'),'#000000');
+assert.equal(measure(1,'bulmaca','ders'),null);
+const habitCode=studio.slice(studio.indexOf('function mxHabitGoalMet('));
+const habitFactory=new Function('actual5','today','hasValue5','v5',habitCode+';return mxHabitGoalMet');
+const h=(value,exists,closed)=>habitFactory(()=>value,()=> '2026-11-27',()=>exists,()=>({closed:{'2026-11-27':closed}}));
+assert.equal(h(5,true,false)('Sigara','2026-11-26',15,'max'),true);
+assert.equal(h(0,false,true)('Sigara','2026-11-26',15,'max'),false);
+assert.equal(h(16,true,true)('Sigara','2026-11-27',15,'max'),false);
+assert.equal(h(5,true,false)('Sigara','2026-11-27',15,'max'),false);
+assert.equal(h(0,true,true)('Sigara','2026-11-27',0,'max'),true);
+assert.equal(h(1,true,false)('Su','2026-11-27',1,'min'),true);
+assert.equal(h(1,true,true)('Su','2026-11-28',1,'min'),false);
+console.log('PASS: reader highlight contrast and minimum/maximum habit semantics');
