@@ -927,3 +927,8 @@ body #app .mx-cal-nav33 button{width:26px!important;min-width:26px!important;hei
 .mx-floating-cat img,.mx-next-cat img{scale:var(--mx-pet-scale33,1);transform-origin:bottom center}
 @media(prefers-reduced-motion:no-preference){.mx-day-ring{animation:mxRingBreathe33 4s ease-in-out infinite}.mx-am-cell31.complete:active{scale:1.05;transition:scale .15s}}
 @keyframes mxRingBreathe33{0%,100%{scale:1}50%{scale:1.025}}
+
+/* R33 visual and disclosure refinements */
+.mx-pole-form33 [hidden]{display:none!important}
+body #app .atlas-tile .media-thumb,body #app .atlas-tile .media-placeholder{background:color-mix(in srgb,var(--muted) 8%,var(--paper))!important;color:var(--muted)!important}
+body #app .atlas-tile .media-placeholder small{color:var(--muted)!important}

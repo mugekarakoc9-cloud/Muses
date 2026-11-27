@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const src=fs.readFileSync(new URL('../p1-studio.js',import.meta.url),'utf8');
+const a=src.indexOf('function mxPolePlanDates33('),b=src.indexOf('function installCompactPole33(',a);
+assert.ok(a>=0&&b>a);
+const dates=new Function(src.slice(a,b)+';return mxPolePlanDates33;')();
+const add=(d,n)=>{const t=new Date(d+'T12:00:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10);};
+assert.deepEqual(dates('2026-11-27','2026-11-27',[5],add),['2026-11-27']);
+assert.deepEqual(dates('2026-11-27','2026-12-08',[1,2],add),['2026-11-30','2026-12-01','2026-12-07','2026-12-08']);
+assert.deepEqual(dates('2026-12-08','2026-11-27',[1],add),[]);
+assert.equal(dates('2026-01-01','2028-01-01',[0,1,2,3,4,5,6],add).length,366);
+new Function(src);
+console.log('R33 date recurrence and studio syntax OK');
