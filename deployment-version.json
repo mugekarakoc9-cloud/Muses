@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Compact habit navigation and heatmaps, borderless flashcard controls, metric icons and real-data sparklines",
-  "revision": 38
+  "purpose": "Compact goals and daily metrics; themed time/unit pickers; weekday recurrence, series deletion, five flags, compact companion",
+  "revision": 39
 }
