@@ -38,7 +38,7 @@ try{
  await page.evaluate(()=>go('english'));assert(await page.locator('.mx-palace').count(),'New journey should be the default');await page.evaluate(()=>go('home'));
 
  await page.waitForFunction(()=>[...document.querySelectorAll('img.mx-real-cat')].some(img=>img.complete&&img.naturalWidth>0),{},{timeout:20000});
- assert.match(await page.locator('#app').innerText(),/0\.16\.9/);
+ assert.match(await page.locator('#app').innerText(),/0\.16\.11/);
  await page.evaluate(()=>openPaletteP1());
  await page.locator('#paletteKindP1').waitFor();
  const kinds=await page.locator('#paletteKindP1 option').allTextContents();

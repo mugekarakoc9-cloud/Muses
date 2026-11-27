@@ -577,9 +577,10 @@ function installPalaceMX(){
  function hero(t,s){return `<div class="mx-palace-hero"><div><small>MUSES · MEMORY PALACE</small><h2>${H(t)}</h2><p>${H(s)}</p></div>${P().hideCat?'':cat()}</div>`;}
  function tile(t,s,c,i,action,a=0,b=0){return `<button class="mx-palace-tile" style="--mx-color:${c}" onclick="${action}"><span class="mx-palace-icon">${icon(i)}</span><b>${H(t)}</b><small>${H(s)}</small>${b?bar(a,b):''}</button>`;}
  function road(rows,color,act,strict=P().strict!==false){
-   const all=pathStatusMX(rows,strict),next=pathCurrentMX(all),pathKey=JSON.stringify([sourceSelected||'',P().goal||'',P().day||'',rows[0]?.id,rows.at(-1)?.id]);if(P().pageKey!==pathKey){P().pageKey=pathKey;P().page=P().roadPages?.[pathKey]??Math.max(0,Math.floor(next/18));}const page=Math.min(Math.max(0,P().page||0),Math.max(0,Math.ceil(all.length/18)-1)),start=page*18;
-   return `<div class="mx-palace-tools"><button onclick="mxPalacePage(-1)" ${page?'':'disabled'}>‹</button><small>${all.length?start+1:0}–${Math.min(start+18,all.length)} / ${all.length}</small><button onclick="mxPalacePage(1)" ${start+18>=all.length?'disabled':''}>›</button><small>${all.filter(x=>x.done).length}/${all.length} tamamlandı${all.some(x=>x.skipped)?' · '+all.filter(x=>x.skipped).length+' atlandı':''}</small><button onclick="mxPathSettings()" title="Yol ayarları" aria-label="Yol ayarları">⚙</button></div><div class="mx-road-view" tabindex="0" aria-label="Öğrenme yolu"><div class="mx-road" style="--mx-color:${color};zoom:${P().zoom||1}"><svg class="mx-road-line" aria-hidden="true"></svg>${all.slice(start,start+18).map((x,i)=>{const cmd=act(x).replace(/^mxPalaceOpen\(/,'mxPalacePathOpen('),status=x.state==='done'?'Tamamlandı':x.state==='skipped'?'Atlandı':x.state==='locked'?'Kilitli · tıkla ve aç':x.started?'Devam ediyor':'Açık';return `<div class="mx-stop" data-state="${x.state}" data-current="${start+i===next?'yes':'no'}" data-stop-id="${H(x.id)}" ${x.bulkTask?`data-mx-bulk-task="${H(K(x.bulkTask))}"`:x.bulkResource?`data-mx-bulk-resource="${H(K(x.bulkResource))}" data-mx-bulk-node="${H(K(x.id))}"`:x.bulkGoal?`data-mx-bulk-goal="${H(K(x.bulkGoal))}" data-mx-bulk-day="${H(x.id)}"`:''} data-side="${i%2?'right':'left'}" style="--mx-shift:${Math.round(Math.sin(i*Math.PI/2)*48)}px"><button class="mx-node" aria-label="${H(x.title+' · '+status)}" onclick="${cmd}">${x.state==='done'?'<span class="mx-path-tick" aria-hidden="true">✓</span>':icon(x.state==='locked'?4:x.icon||0)}</button><div class="mx-stop-label"><button onclick="${cmd}"><b>${H(x.title)}</b><small>${H(x.sub||'')}</small><small>${status}</small></button></div>${start+i===next&&!P().hideCat?'<span class="mx-next-tag">Şu an</span>':''}</div>`;}).join('')||'<p>Bu dalda kayıtlı durak yok.</p>'}</div></div>`;
+   const all=pathStatusMX(rows,strict),next=pathCurrentMX(all),pathKey=JSON.stringify([sourceSelected||'',P().goal||'',P().day||'',rows[0]?.id,rows.at(-1)?.id]),start=0;
+   return `<div class="mx-palace-tools"><button onclick="mxPathCurrent()">Kaldığım yere dön</button><small>${all.filter(x=>x.done).length}/${all.length} tamamlandı${all.some(x=>x.skipped)?' · '+all.filter(x=>x.skipped).length+' atlandı':''}</small><button onclick="mxPathSettings()" title="Yol ayarları" aria-label="Yol ayarları">⚙</button></div><div class="mx-road-view" data-mx-road-key="${H(pathKey)}" tabindex="0" aria-label="Öğrenme yolu"><div class="mx-road" style="--mx-color:${color};zoom:${P().zoom||1}"><svg class="mx-road-line" aria-hidden="true"></svg>${all.map((x,i)=>{const cmd=act(x).replace(/^mxPalaceOpen\(/,'mxPalacePathOpen('),status=x.state==='done'?'Tamamlandı':x.state==='skipped'?'Atlandı':x.state==='locked'?'Kilitli · tıkla ve aç':x.started?'Devam ediyor':'Açık';return `<div class="mx-stop" data-state="${x.state}" data-current="${start+i===next?'yes':'no'}" data-stop-id="${H(x.id)}" ${x.bulkTask?`data-mx-bulk-task="${H(K(x.bulkTask))}"`:x.bulkResource?`data-mx-bulk-resource="${H(K(x.bulkResource))}" data-mx-bulk-node="${H(K(x.id))}"`:x.bulkGoal?`data-mx-bulk-goal="${H(K(x.bulkGoal))}" data-mx-bulk-day="${H(x.id)}"`:''} data-side="${i%2?'right':'left'}" style="--mx-shift:${Math.round(Math.sin(i*Math.PI/2)*48)}px"><button class="mx-node" aria-label="${H(x.title+' · '+status)}" onclick="${cmd}">${x.state==='done'?'<span class="mx-path-tick" aria-hidden="true">✓</span>':icon(x.state==='locked'?4:x.icon||0)}</button><div class="mx-stop-label"><button onclick="${cmd}"><b>${H(x.title)}</b><small>${H(x.sub||'')}</small><small>${status}</small></button></div>${start+i===next&&!P().hideCat?'<span class="mx-next-tag">Şu an</span>':''}</div>`;}).join('')||'<p>Bu dalda kayıtlı durak yok.</p>'}</div></div>`;
  }
+ window.mxPathCurrent=()=>{const v=document.querySelector('.mx-road-view'),n=v?.querySelector('[data-current=yes]');if(v&&n)v.scrollTo({top:n.offsetTop-v.clientHeight/2,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});};
  window.mxPalacePage=n=>{P().page=Math.max(0,(P().page||0)+n);(P().roadPages??={})[P().pageKey]=P().page;save();render();};
  window.mxPalaceZoom=n=>{P().zoom=n?Math.max(.7,Math.min(1.5,Math.round(((P().zoom||1)+n)*10)/10)):1;save();render();};
  window.mxPalaceStrict=()=>{P().strict=P().strict===false;save();render();};
@@ -768,7 +769,7 @@ function installPalaceMX(){
       walker.style.left=pts[current][0]+'px';walker.style.top=pts[current][1]+'px';walker.style.transform='translate(-50%,-88%)';
     }
    }
-   for(const v of document.querySelectorAll('.mx-road-view')){if(v.dataset.wired)continue;v.dataset.wired='1';let o=null;v.onpointerdown=e=>{if(e.pointerType!=='mouse'||e.button!==0||e.target.closest('button,input,a'))return;o={x:e.clientX,y:e.clientY,l:v.scrollLeft,t:v.scrollTop};v.setPointerCapture(e.pointerId);};v.onpointermove=e=>{if(o)v.scrollTo(o.l+o.x-e.clientX,o.t+o.y-e.clientY);};v.onpointerup=v.onpointercancel=v.onlostpointercapture=()=>{o=null;};}
+   for(const v of document.querySelectorAll('.mx-road-view')){if(v.dataset.wired)continue;v.dataset.wired='1';const positions=P().roadScroll??={},key=v.dataset.mxRoadKey,current=v.querySelector('[data-current=yes]');v.scrollTop=positions[key]??Math.max(0,(current?.offsetTop||0)-v.clientHeight/2);v.addEventListener('scroll',()=>{positions[key]=v.scrollTop;},{passive:true});let o=null;v.onpointerdown=e=>{if(e.pointerType!=='mouse'||e.button!==0||e.target.closest('button,input,a'))return;o={x:e.clientX,y:e.clientY,l:v.scrollLeft,t:v.scrollTop};v.setPointerCapture(e.pointerId);};v.onpointermove=e=>{if(o)v.scrollTo(o.l+o.x-e.clientX,o.t+o.y-e.clientY);};v.onpointerup=v.onpointercancel=v.onlostpointercapture=()=>{o=null;};}
    if(blobURL&&(!localVideo||!localVideo.isConnected)){URL.revokeObjectURL(blobURL);blobURL=null;localVideo=null;}
    const local=document.querySelector('[data-mx-lesson] video:not([src])');if(local){const k=D(local.closest('[data-mx-lesson]').dataset.mxLesson),m=P().media[k];if(m?.kind==='local')get6('media',m.key).then(blob=>{if(!local.isConnected)return;if(!(blob instanceof Blob)){local.nextElementSibling.textContent='Yerel video bulunamadı.';return;}if(blobURL)URL.revokeObjectURL(blobURL);blobURL=URL.createObjectURL(blob);localVideo=local;local.src=blobURL;}).catch(()=>{if(local.isConnected)local.nextElementSibling.textContent='Dosya açılamadı.';});}
  }
@@ -1232,7 +1233,7 @@ installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractio
 /* Live build indicator and manual update: no local record migration. */
 function installLiveBuildMX(){
  if(window.mxLiveBuildInstalled)return;window.mxLiveBuildInstalled=true;
- const version='0.16.9';
+ const version='0.16.11';
  const oldHome=home;
  const css=document.createElement('style');css.textContent=`
  .mx-home-banner{padding:clamp(16px,3vw,28px);border-radius:22px;background:linear-gradient(128deg,#e6dcef,#e3eddf);color:#3c3450;border:1px solid #b8abc83b}
@@ -1383,11 +1384,11 @@ function installHourlyAgendaMX(){
   function reset(){cancelAnimationFrame(frame);ghost?.remove();ghost=null;gesture?.node.classList.remove('mx-hour-dragging');gesture?.scroll.classList.remove('mx-dragging');gesture=null;clear();}
   document.addEventListener('dragstart',e=>{if(e.target.closest('[data-mx-hour-task]'))e.preventDefault();},true);
   document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-mx-hour-task]'))e.preventDefault();});
-  document.addEventListener('pointerdown',e=>{const n=e.target.closest('[data-mx-hour-task]');if(!n||e.button!==0||gesture)return;const scroll=n.closest('.mx-hour-scroll');if(!scroll)return;suppressUntil=0;gesture={id:e.pointerId,node:n,k:n.dataset.mxHourTask,scroll,x:e.clientX,y:e.clientY,cx:e.clientX,cy:e.clientY,moved:false};try{n.setPointerCapture(e.pointerId);}catch{}},true);
+  document.addEventListener('pointerdown',e=>{const n=e.target.closest('[data-mx-hour-task]');if(!n||e.button!==0||gesture||e.shiftKey||e.ctrlKey||e.metaKey||document.body.classList.contains('mx-bulk-mode'))return;const scroll=n.closest('.mx-hour-scroll');if(!scroll)return;suppressUntil=0;gesture={id:e.pointerId,node:n,k:n.dataset.mxHourTask,scroll,x:e.clientX,y:e.clientY,cx:e.clientX,cy:e.clientY,moved:false};try{n.setPointerCapture(e.pointerId);}catch{}},true);
   document.addEventListener('pointermove',e=>{if(!gesture||gesture.id!==e.pointerId)return;gesture.cx=e.clientX;gesture.cy=e.clientY;if(!gesture.moved&&Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>=7){gesture.moved=true;gesture.node.classList.add('mx-hour-dragging');gesture.scroll.classList.add('mx-dragging');ghost=document.createElement('div');ghost.className='mx-hour-ghost';ghost.textContent=gesture.node.innerText;document.body.append(ghost);frame=requestAnimationFrame(autoScroll);}if(gesture.moved){if(e.cancelable)e.preventDefault();highlight();}},{capture:true,passive:false});
   document.addEventListener('pointerup',e=>{if(!gesture||gesture.id!==e.pointerId)return;const g=gesture,d=hit(e.clientX,e.clientY);if(g.moved){suppressUntil=Date.now()+500;if(e.cancelable)e.preventDefault();}reset();if(g.moved&&d){const scrollTop=g.scroll.scrollTop,scrollLeft=g.scroll.scrollLeft;if(move(g.k,d.dataset.mxDropDate,+d.dataset.mxDropHour)){const sc=document.querySelector('.mx-hour-scroll');if(sc){sc.scrollTop=scrollTop;sc.scrollLeft=scrollLeft;}}}},true);
   document.addEventListener('pointercancel',e=>{if(gesture?.id===e.pointerId)reset();},true);
-  window.addEventListener('blur',reset);
+  window.addEventListener('blur',reset);window.mxCancelCalendarDrag=reset;
   document.addEventListener('click',e=>{if(Date.now()<suppressUntil&&e.target.closest('.mx-hour-agenda')){e.preventDefault();e.stopImmediatePropagation();suppressUntil=0;}},true);
  const oldRender=render;render=function(){oldRender();const filter=document.querySelector('#mx-hour-filter'),hide=document.querySelector('#mx-hour-hide');if(filter)filter.onchange=()=>{P().filter=filter.value;save();render();};if(hide)hide.onchange=()=>{P().hideDone=hide.checked;save();render();};};
 }
@@ -1644,21 +1645,21 @@ function installBulkSelectionMX(){
   for(const el of document.querySelectorAll(selector)){const d=descriptor(el);if(!d)continue;el.classList.toggle('mx-bulk-selected',chosen.has(key(d)));if(enabled)el.setAttribute('aria-selected',String(chosen.has(key(d))));else el.removeAttribute('aria-selected');if(d.kind==='task'){const t=S.tasks.find(x=>x.id===d.id);el.classList.toggle('mx-bulk-task-done',!!t&&taskDone5(t));}}
   const els=available();document.body.classList.toggle('mx-bulk-mode',enabled);
   if(!bar){bar=document.createElement('div');bar.id='mx-bulk-tools';bar.className='mx-bulk-tools';document.body.append(bar);}
-  bar.hidden=!els.length&&!enabled;bar.replaceChildren();
+  bar.hidden=!els.length&&!enabled&&!S.mxBulkDeleted?.length;bar.replaceChildren();
   function btn(label,fn,primary=false){const b=document.createElement('button');b.type='button';b.textContent=label;if(primary)b.className='primary';b.onclick=fn;bar.append(b);return b;}
-  if(!enabled){btn('☑ Çoklu seç',()=>{enabled=true;paint();});return;}
+  if(!enabled){btn('☑ Çoklu seç',()=>{enabled=true;paint();});if(S.mxBulkDeleted?.length)btn('Son silmeyi geri al',()=>{for(const t of S.mxBulkDeleted)if(!S.tasks.some(x=>x.id===t.id))S.tasks.push(t);S.mxBulkDeleted=[];save();render();});return;}
   const count=document.createElement('strong');count.textContent=chosen.size+' seçili';bar.append(count);
   btn('Görünenleri seç',()=>{for(const el of available()){const d=descriptor(el);chosen.set(key(d),d);}paint();});
   btn('Temizle',()=>{chosen.clear();anchor=null;paint();});const done=btn('✓ Seçileni tamamla',complete,true);done.disabled=!chosen.size;
   const tasks=[...chosen.values()].filter(d=>d.kind==='task');
-  const edit=btn('Tarih / saat / öncelik',()=>editTasks(tasks));edit.disabled=!tasks.length||tasks.length!==chosen.size;
+  const edit=btn('Düzenle',()=>editTasks(tasks));edit.disabled=!tasks.length||tasks.length!==chosen.size;
   const del=btn('Seçili görevleri sil',()=>deleteTasks(tasks));del.disabled=!tasks.length||tasks.length!==chosen.size;const resources=[...chosen.values()].filter(d=>d.kind==='resource');if(resources.length===chosen.size&&resources.length)btn('Seçili bölümleri ajandaya ekle',()=>scheduleResources(resources));
   btn('Çık',()=>{chosen.clear();enabled=false;gesture=null;anchor=null;paint();});
  }
  function set(el,value){const d=descriptor(el);if(!d)return;const k=key(d);if(value)chosen.set(k,d);else chosen.delete(k);}
  function reset(){chosen.clear();enabled=false;gesture=null;anchor=null;save();render();}
- function deleteTasks(ds){const ids=new Set(ds.map(d=>d.id));if(!confirm(ids.size+' ajanda görevi silinsin mi? Kaynak ve çalışma geçmişi korunur.'))return;S.tasks=S.tasks.filter(t=>!ids.has(t.id));reset();}
- function editTasks(ds){modal5('<div class="modalhead5"><h2>Toplu görev düzenle</h2><button onclick="close5()">×</button></div><form id="mx-bulk-edit"><label>Yeni tarih (boşsa değişmez)<input type="date" name="date"></label><label>Yeni saat (boşsa değişmez)<input type="time" name="time"></label><label>Öncelik<select name="priority"><option value="">Değişmez</option><option>Düşük</option><option>Orta</option><option>Yüksek</option></select></label><button class="primary">Uygula</button></form>');const form=document.querySelector('#mx-bulk-edit');form.onsubmit=e=>{e.preventDefault();const f=new FormData(form),date=f.get('date'),time=f.get('time'),priority=f.get('priority');if(!date&&!time&&!priority)return;const ids=new Set(ds.map(d=>d.id));for(const t of S.tasks){if(!ids.has(t.id))continue;if(date)t.date=date;if(time)t.time=time;if(priority)t.priority=priority;}close5();reset();};}
+ function deleteTasks(ds){const ids=new Set(ds.map(d=>d.id));if(!confirm(ids.size+' ajanda görevi silinsin mi? Kaynak ve çalışma geçmişi korunur.'))return;S.mxBulkDeleted=S.tasks.filter(t=>ids.has(t.id)).map(t=>structuredClone(t));S.tasks=S.tasks.filter(t=>!ids.has(t.id));reset();}
+ function editTasks(ds){modal5('<div class="modalhead5"><h2>Toplu görev düzenle</h2><button onclick="close5()">×</button></div><form id="mx-bulk-edit"><label>Yeni tarih (boşsa değişmez)<input type="date" name="date"></label><label>Yeni saat (boşsa değişmez)<input type="time" name="time"></label><label>Öncelik<select name="priority"><option value="">Değişmez</option><option>Düşük</option><option>Orta</option><option>Yüksek</option></select></label><label>Miktar (boşsa değişmez)<input name="amount" inputmode="decimal" placeholder="2,5"></label><label>Birim (bağımsız görevler)<input name="unit" maxlength="32" placeholder="litre, sayfa, özel birim…"></label><button class="primary">Uygula</button></form>');const form=document.querySelector('#mx-bulk-edit');form.onsubmit=e=>{e.preventDefault();const f=new FormData(form),date=f.get('date'),time=f.get('time'),priority=f.get('priority'),raw=String(f.get('amount')||'').trim(),amount=raw?Number(raw.replace(',','.')):null,unit=String(f.get('unit')||'').trim();if(raw&&(!Number.isFinite(amount)||amount<0))return toast('Geçerli bir miktar gir.');if(!date&&!time&&!priority&&!raw&&!unit)return;const ids=new Set(ds.map(d=>d.id));for(const t of S.tasks){if(!ids.has(t.id))continue;if(date)t.date=date;if(time)t.time=time;if(priority)t.priority=priority;if(!linked5(t)){if(raw)t.amount=amount;if(unit)t.unit=unit;}}close5();reset();};}
  function scheduleResources(ds){modal5('<div class="modalhead5"><h2>Seçili bölümleri planla</h2><button onclick="close5()">×</button></div><form id="mx-bulk-resource-plan"><label>Başlangıç<input name="date" type="date" required value="'+today()+'"></label><label>Günlük bölüm<input name="pace" type="number" min="1" step="1" required value="1"></label><label>Saat<input name="time" type="time"></label><button class="primary">Planla</button></form>');const form=document.querySelector('#mx-bulk-resource-plan');form.onsubmit=e=>{e.preventDefault();const f=new FormData(form),pace=Number(f.get('pace')),start=String(f.get('date')),time=String(f.get('time'));if(!start||!Number.isInteger(pace)||pace<1)return;const items=new Map();for(const d of ds){const r=resourceRows().find(x=>x.id===d.rid);const n=r&&findNode6(sourceTree(r),d.nid);if(!n)continue;function walk(x){if(x.children?.length)x.children.forEach(walk);else if(!leafDone(x))items.set(r.id+'~'+x.id,{r,n:x});}walk(n);}let i=0;for(const [target,{r,n}] of items){const date=add(start,Math.floor(i/pace));if(S.tasks.some(t=>t.module==='resource'&&t.target===target&&!taskDone5(t)))continue;S.tasks.push({id:uid(),title:r.title+' · '+n.title,module:'resource',target,date,time,amount:1,priority:'Orta',note:'',done:false});i++;}close5();reset();toast(i+' bölüm planlandı.');};}
  function range(el){const d=descriptor(el),k=key(d),rows=available().filter(x=>{const a=descriptor(x);return a.kind===d.kind&&(d.kind!=='resource'||a.rid===d.rid)&&(d.kind!=='goal'||a.id===d.id);});const i=rows.findIndex(x=>key(descriptor(x))===anchor),j=rows.findIndex(x=>key(descriptor(x))===k);if(i>=0&&j>=0){for(const x of rows.slice(Math.min(i,j),Math.max(i,j)+1))set(x,true);}else set(el,true);anchor=k;}
  function complete(){
@@ -1674,12 +1675,18 @@ function installBulkSelectionMX(){
   const count=window.mxBulkPathComplete?.(resources)||0;for(const t of plain)t.done=true;const skipped=others.length;chosen.clear();enabled=false;gesture=null;save();render();toast((count+plain.length)+' çalışma birimi tamamlandı.'+(skipped?' '+skipped+' özel kayıt kendi ekranından tamamlanmalı.':''));
  }
  function hit(x,y){return document.elementFromPoint(x,y)?.closest(selector);}
- document.addEventListener('pointerdown',e=>{if(e.button!==0)return;const el=e.target.closest?.(selector);if(!el||!descriptor(el))return;const d=descriptor(el);if(!enabled&&!e.shiftKey){anchor=key(d);return;}e.preventDefault();e.stopImmediatePropagation();enabled=true;const value=e.shiftKey||!chosen.has(key(d));if(e.shiftKey)range(el);else{anchor=key(d);set(el,value);}gesture={id:e.pointerId,x:e.clientX,y:e.clientY,value,seen:new Set([key(d)])};paint();},true);
+ let pressTimer=null,pressOrigin=null;
+ document.addEventListener('pointerdown',e=>{const el=e.target.closest?.(selector);if(!el||enabled||e.pointerType!=='touch')return;const x=e.clientX,y=e.clientY,id=e.pointerId;clearTimeout(pressTimer);pressOrigin={x,y,id};pressTimer=setTimeout(()=>{window.mxCancelCalendarDrag?.();enabled=true;const d=descriptor(el);anchor=key(d);set(el,true);gesture={id,x,y,value:true,seen:new Set([key(d)])};suppressUntil=Date.now()+700;paint();},450);},true);
+ document.addEventListener('pointermove',e=>{if(!gesture&&pressOrigin&&e.pointerId===pressOrigin.id&&Math.hypot(e.clientX-pressOrigin.x,e.clientY-pressOrigin.y)>=7){clearTimeout(pressTimer);pressTimer=null;pressOrigin=null;}},true);
+ for(const type of ['pointerup','pointercancel'])document.addEventListener(type,()=>{clearTimeout(pressTimer);pressTimer=null;pressOrigin=null;},true);
+ document.addEventListener('dragstart',e=>{if(enabled&&e.target.closest?.(selector)){e.preventDefault();e.stopImmediatePropagation();}},true);
+
+ document.addEventListener('pointerdown',e=>{if(e.button!==0)return;const el=e.target.closest?.(selector);if(!el||!descriptor(el))return;const d=descriptor(el);if(!enabled&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey){anchor=key(d);return;}e.preventDefault();e.stopImmediatePropagation();enabled=true;const value=e.shiftKey||!chosen.has(key(d));if(e.shiftKey)range(el);else{anchor=key(d);set(el,value);}gesture={id:e.pointerId,x:e.clientX,y:e.clientY,value,seen:new Set([key(d)])};paint();},true);
  document.addEventListener('pointermove',e=>{if(!gesture||e.pointerId!==gesture.id)return;e.preventDefault();e.stopImmediatePropagation();const g=gesture,dx=e.clientX-g.x,dy=e.clientY-g.y,steps=Math.max(1,Math.min(80,Math.ceil(Math.hypot(dx,dy)/14)));for(let i=1;i<=steps;i++){const el=hit(g.x+dx*i/steps,g.y+dy*i/steps),d=descriptor(el);if(!d||g.seen.has(key(d)))continue;g.seen.add(key(d));set(el,g.value);}g.x=e.clientX;g.y=e.clientY;paint();},true);
  function finish(e){if(!gesture||e.pointerId!==gesture.id)return;e.preventDefault();e.stopImmediatePropagation();gesture=null;suppressUntil=Date.now()+400;}
  document.addEventListener('pointerup',finish,true);document.addEventListener('pointercancel',finish,true);
- document.addEventListener('click',e=>{const el=e.target.closest?.(selector);if(!el||(!enabled&&!e.shiftKey))return;if(Date.now()<suppressUntil){e.preventDefault();e.stopImmediatePropagation();return;}if(e.detail===0){e.preventDefault();e.stopImmediatePropagation();const d=descriptor(el);if(d){if(e.shiftKey){enabled=true;range(el);}else{anchor=key(d);set(el,!chosen.has(key(d)));}}paint();}},true);
- document.addEventListener('keydown',e=>{if(e.target.closest?.('input,textarea,select,[contenteditable=true]'))return;if(e.key==='Escape'&&enabled){gesture=null;chosen.clear();enabled=false;anchor=null;paint();}else if(enabled&&(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'){e.preventDefault();for(const el of available())set(el,true);paint();}});
+ document.addEventListener('click',e=>{const el=e.target.closest?.(selector);if(!el||(!enabled&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey))return;if(Date.now()<suppressUntil){e.preventDefault();e.stopImmediatePropagation();return;}if(e.detail===0){e.preventDefault();e.stopImmediatePropagation();const d=descriptor(el);if(d){if(e.shiftKey){enabled=true;range(el);}else{anchor=key(d);set(el,!chosen.has(key(d)));}}paint();}},true);
+ document.addEventListener('keydown',e=>{if(e.target.closest?.('input,textarea,select,[contenteditable=true]'))return;if(e.key==='Escape'&&enabled){gesture=null;chosen.clear();enabled=false;anchor=null;paint();}else if((enabled||['calendar','resources','english'].includes(view))&&(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'&&available().length){e.preventDefault();enabled=true;for(const el of available())set(el,true);paint();}});
  // Goal picker checkboxes: Shift range and drag selection, preserving disabled rows.
  let pick=null,pickAnchor=null;
  function applyPick(cb,value){if(!cb||cb.disabled||cb.checked===value)return;cb.checked=value;cb.dispatchEvent(new Event('input',{bubbles:true}));}
@@ -1727,7 +1734,7 @@ function installGoalActionsMX(){
   const days=g.mxWeekdays?.length?g.mxWeekdays:g.rhythm==='weekdays'?[1,2,3,4,5]:[0,1,2,3,4,5,6],scoped=g.module==='resource'&&g.kind==='total',plan=schedule9(g),info=challengeInfo5(g);
   const unit=g.unit||g.mxDisplayUnit||unit5(g.module,g.target),displayAmount=g.mxDisplayAmount??g.amount,factor=Number(displayAmount)>0?Number(g.amount)/Number(displayAmount):1;
   modal5('<div class="modalhead5"><h2>Hedefi düzenle</h2><button type="button" onclick="close5()" aria-label="Kapat">×</button></div><form id="mx-goal-edit"><label>Hedef adı<input name="title" required maxlength="160" value="'+H(g.title)+'"></label><div class="mx-edit-grid"><label>Başlangıç<input type="date" name="start" required value="'+H(g.start)+'"></label><label>Bitiş<input type="date" name="end" required value="'+H(g.end)+'"></label><label>'+ (g.kind==='total'?'Toplam miktar':g.kind==='limit'?'Günlük üst sınır':'Günlük miktar')+' ('+H(unit)+')<input type="number" name="amount" min="'+(g.kind==='limit'?0:0.001)+'" step="any" required value="'+H(displayAmount)+'" '+(scoped?'readonly':'')+'></label><label>Saat<input type="time" name="time" value="'+H(g.time||'')+'"></label></div><fieldset class="mx-edit-days"><legend>Çalışma günleri</legend>'+['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'].map((d,i)=>'<label><input type="checkbox" name="weekday" value="'+i+'" '+(days.includes(i)?'checked':'')+'>'+d+'</label>').join('')+'</fieldset><details><summary>Hatırlatma</summary><label>Bildirim<select name="alarm">'+opt5([['','Yok'],['0','Saatinde'],['5','5 dk önce'],['15','15 dk önce'],['30','30 dk önce']],g.alarm||'')+'</select></label></details>'+(scoped?'<small>Bağlı kaynak ve alt bölümler korunur. Tarihler değişirse bitmemiş, tek hedefe bağlı ajanda görevleri yeni çalışma günlerine taşınır.</small>':'<small>Gerçekleşen kayıtlar korunur. Geçmiş günlerin değerlendirmesi değiştirdiğin tarih ve miktara göre yeniden hesaplanır.</small>')+'<p role="status" data-goal-preview></p><button class="primary">Değişiklikleri kaydet</button></form>');
-  const f=document.querySelector('#mx-goal-edit'),status=f.querySelector('[data-goal-preview]');const ul=document.createElement('label');ul.textContent='Birim';const us=document.createElement('select');us.name='mxEditUnit';for(const u of [...new Set(g.module==='general'?[...MX_UNIT_SET_1611,unit]:[unit])])us.add(new Option(u,u));us.value=unit;us.disabled=g.module!=='general';ul.append(us);f.elements.amount.closest('label').after(ul);
+  const f=document.querySelector('#mx-goal-edit'),status=f.querySelector('[data-goal-preview]');const ul=document.createElement('label');ul.textContent='Birim';const us=document.createElement('select');us.name='mxEditUnit';for(const u of [...new Set(g.module==='general'?[...MX_UNIT_SET_1611,...(S.mxCustomUnits||[]),unit]:[unit])])us.add(new Option(u,u));us.value=unit;us.disabled=g.module!=='general';ul.append(us);f.elements.amount.closest('label').after(ul);
   function data(){const z=new FormData(f),start=String(z.get('start')),end=String(z.get('end')),days=z.getAll('weekday').map(Number),dates=mxGoalEditDatesMX(start,end,days),amount=Number(z.get('amount'))*factor;return {start,end,days,dates,amount,display:Number(z.get('amount')),title:String(z.get('title')).trim(),time:String(z.get('time')),alarm:String(z.get('alarm'))};}
   function preview(){const x=data();status.textContent=x.dates.length?x.dates.length+' çalışma günü · mevcut ilerleme: '+info.count+'/'+info.target:'Geçerli tarih aralığı ve en az bir gün seç.';}
   f.addEventListener('input',preview);preview();
@@ -1830,7 +1837,8 @@ function installSharedUnits1611MX(){
   const label=document.createElement('label');label.textContent='Birim';
   const select=document.createElement('select');select.name='mxSharedUnit';
   const selected=record?.unit||(free?(draft?.unit||'adet'):base);
-  for(const u of [...new Set(free?[...MX_UNIT_SET_1611,selected]:[base,selected])])select.add(new Option(u,u));select.value=selected;
+  for(const u of [...new Set(free?[...MX_UNIT_SET_1611,...(S.mxCustomUnits||[]),selected]:[base,selected])])select.add(new Option(u,u));select.value=selected;
+  if(free){select.add(new Option('＋ Özel birim','__custom'));select.addEventListener('change',()=>{if(select.value!=='__custom')return;const value=prompt('Özel ölçü birimi (ör. çizim, sayfa):')?.trim().slice(0,32);if(!value){select.value=selected;return;}const units=S.mxCustomUnits??=[];if(!units.includes(value))units.push(value);select.add(new Option(value,value));select.value=value;save();});}
   if(!free){select.disabled=true;select.title='Bağlı kaynağın ölçü birimi korunur.';}
   label.append(select);row.append(label);
   let amount=existing;
@@ -1849,3 +1857,86 @@ function installSharedUnits1611MX(){
  const card=challengeCard5;challengeCard5=function(g){const html=card(g);if(!g.unit)return html;const note='<small class="mx-task-quantity">'+H(g.amount+' '+g.unit)+'</small>';return html.includes('</article>')?html.replace('</article>',note+'</article>'):html+note;};
 }
 const priorSharedUnits1611MX=installStudioP1;installStudioP1=function(){priorSharedUnits1611MX();installSharedUnits1611MX();};
+
+/* MUSES 0.16.11 modern Reader. Additive state; no storage keys are replaced. */
+function mxAnnotationKey(book, page, para, word, occurrence) {
+  const text=String(para);let a=2166136261,b=5381;for(let i=0;i<text.length;i++){a=Math.imul(a^text.charCodeAt(i),16777619);b=Math.imul(b,33)^text.charCodeAt(i);}const fingerprint=text.length+':'+(a>>>0).toString(16)+':'+(b>>>0).toString(16);
+  return JSON.stringify([String(book), Number(page), fingerprint, String(word), Number(occurrence)]);
+}
+function mxDisplayGrade(stored) { return Number.isInteger(stored) && stored >= 1 && stored <= 5 ? 6-stored : null; }
+function mxValidColor(color) { return /^#[0-9a-f]{6}$/i.test(String(color)); }
+function installModern1611MX() {
+  if (window.mxModern1611) return;
+  window.mxModern1611 = true;
+  const palette = ['#a8dfba','#88d8d2','#a6c8ff','#f5dc87','#f4b38e','#f1abd3','#c9b1ee'];
+  const names = ['Yeşil','Turkuaz','Mavi','Sarı','Turuncu','Pembe','Mor'];
+  const difficulty = ['#f1abd3','#f4b38e','#f5dc87','#a8dfba','#88d8d2'];
+  const prefs = id => { const p=(S.mxReaderPrefs??={})[id]??={levels:['A1','A2','B1','B2','C1','C2'],meanings:false,phrases:true};p.colorMode??='level';p.colorStyle??='underline';return p; };
+  const annotations = () => S.mxReaderHighlights??={};
+  let selectedKeys=[];
+  function words() { return [...document.querySelectorAll('#readerContent10 .readerWord10')]; }
+  function decorate() {
+    const a=readerCurrent10(); if(!a) return;
+    const p=prefs(a.b.id),seen=new Map();
+    for(const el of words()) {
+      const para=el.closest('.readerPara10,.mx-source'),context=para?.textContent||'',word=el.dataset.word||el.textContent;
+      const seqKey=JSON.stringify([context,word]),count=seen.get(seqKey)||0;seen.set(seqKey,count+1);
+      const k=mxAnnotationKey(a.b.id,a.i,context,word,count);el.dataset.mxHighlightKey=k;
+      let color=el.style.backgroundColor;
+      const rows=findWords10(word)||[];
+      const grades=rows.map(w=>mxDisplayGrade(S.mxVocabularyV2?.lastGrades?.[key4(w)]??Number(p4(w)?.level))).filter(n=>n!==null);
+      if(p.colorMode==='difficulty') color=grades.length?difficulty[Math.min(...grades)-1]:'';
+      if(p.colorMode==='off') color='';
+      const manual=annotations()[k];if(manual&&mxValidColor(manual.color))color=manual.color;
+      el.style.removeProperty('background');el.style.removeProperty('background-color');el.style.removeProperty('color');
+      el.classList.remove('mx-reader-fill','mx-reader-line');el.style.removeProperty('--mx-mark');
+      if(color){el.style.setProperty('--mx-mark',color);el.classList.add(manual||p.colorStyle==='fill'?'mx-reader-fill':'mx-reader-line');}
+      const grade=grades.length?Math.min(...grades):null;
+      if(p.colorMode==='difficulty'&&grade)el.title='Zorluk: '+grade+'/5 · '+['Çok zor','Zor','Orta','Kolay','Çok kolay'][grade-1];
+    }
+    const tools=document.querySelector('.readerTools9');if(tools&&!tools.querySelector('.mx-reader-options')){
+      const b=document.createElement('button');b.type='button';b.className='mx-reader-options';b.textContent='Renk ve anlam';b.onclick=()=>mxReaderPreferences();tools.prepend(b);
+      const tr=document.createElement('button');tr.type='button';tr.textContent=p.meanings?'TR açık':'TR kapalı';tr.setAttribute('aria-pressed',String(p.meanings));tr.onclick=()=>{p.meanings=!p.meanings;save();render();};tools.prepend(tr);
+    }
+    // Move preferences into the working toolbar; quiet reading used to hide this separate card.
+    for(const b of document.querySelectorAll('#app section.card > button[onclick="mxReaderPreferences()"]'))b.parentElement.remove();
+  }
+  // Stored progress is indexed by key, never create a word merely to highlight it.
+  function p4(w) { try { return st4(key4(w)); } catch { return null; } }
+  const priorPrefs=window.mxReaderPreferences;
+  window.mxReaderPreferences=function(){priorPrefs();const form=document.querySelector('#mx-reader-prefs'),a=readerCurrent10();if(!form||!a)return;const p=prefs(a.b.id);
+    const div=document.createElement('div');div.className='mx-reader-color-settings';div.innerHTML='<label>Otomatik renk<select name="colorMode"><option value="level">CEFR seviyesi</option><option value="difficulty">Verdiğim zorluk puanı</option><option value="off">Kapalı</option></select></label><label>Görünüm<select name="colorStyle"><option value="underline">Renkli alt çizgi</option><option value="fill">Renkli arka plan</option></select></label><p class="muted">1 çok zor, 5 çok kolay. Puanı veya bilinen seviyesi olmayan kelimeler otomatik boyanmaz. Elle seçtiğin renkler korunur.</p>';
+    form.prepend(div);form.elements.colorMode.value=p.colorMode;form.elements.colorStyle.value=p.colorStyle;
+    form.addEventListener('submit',()=>{p.colorMode=form.elements.colorMode.value;p.colorStyle=form.elements.colorStyle.value;},true);
+  };
+  document.addEventListener('pointerdown',e=>{const word=e.target.closest?.('.readerWord10');if(word?.dataset.mxHighlightKey)selectedKeys=[word.dataset.mxHighlightKey];},true);
+  document.addEventListener('pointerup',()=>{const selection=window.getSelection();if(!selection||selection.isCollapsed||!selection.rangeCount)return;const range=selection.getRangeAt(0);if(!document.querySelector('#readerContent10')?.contains(selection.anchorNode))return;selectedKeys=words().filter(el=>range.intersectsNode(el)).map(el=>el.dataset.mxHighlightKey);},true);
+  document.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){const el=e.target.closest?.('.readerWord10');if(el)selectedKeys=[el.dataset.mxHighlightKey];}},true);
+  function mark(color) {
+    if(color!==null&&!mxValidColor(color))return;
+    const a=readerCurrent10();if(!a||!selectedKeys.length)return;
+    for(const key of selectedKeys){if(color===null)delete annotations()[key];else annotations()[key]={color,book:a.b.id,updated:new Date().toISOString()};}
+    save();render();closeLens10();toast(color?'Vurgu kaydedildi':'Elle eklenen vurgu kaldırıldı');
+  }
+  const oldLens=renderLens10;
+  renderLens10=function(){oldLens();const lens=document.querySelector('#lens10');if(!lens||lens.querySelector('.mx-highlight-palette'))return;
+    const box=document.createElement('fieldset');box.className='mx-highlight-palette';const legend=document.createElement('legend');legend.textContent='Vurgu rengi';box.append(legend);
+    palette.forEach((color,i)=>{const b=document.createElement('button');b.type='button';b.style.setProperty('--swatch',color);b.setAttribute('aria-label',names[i]+' ile vurgula');b.title=names[i];b.onclick=()=>mark(color);box.append(b);});
+    const custom=document.createElement('input');custom.type='color';custom.value='#c9b1ee';custom.setAttribute('aria-label','Özel vurgu rengi');custom.onchange=()=>mark(custom.value);box.append(custom);
+    const remove=document.createElement('button');remove.type='button';remove.className='mx-clear-highlight';remove.textContent='Vurguyu kaldır';remove.onclick=()=>mark(null);box.append(remove);lens.append(box);
+  };
+  const oldRender=render;render=function(){oldRender();decorate();};
+  const oldHome=home;
+  home=function(){const h=oldHome(),start=h.indexOf('<section class="mx-home-banner">'),end=h.indexOf('</section>',start);if(start<0||end<0)return h;
+    const rows=agendaRows5(today()).filter(r=>r.kind!=='actual'&&!String(r.id).startsWith('time9:')),unique=[...new Map(rows.map(r=>[r.id,r])).values()],done=unique.filter(r=>r.done).length,total=unique.length,pct=total?Math.round(done/total*100):0;
+    const routes=[['calendar','Ajanda','Gününü düzenle','calendar'],['resources','Öğren','Kaldığın yerden','book'],['p90','Hareket','Antrenman ve pole','move'],['habits','Yaşam','Rutinlerini takip et','leaf']];
+    const icons={calendar:'<rect x="4" y="6" width="24" height="22" rx="5"/><path d="M10 3v6m12-6v6M4 13h24m-18 6h3m6 0h3m-12 5h3"/>',book:'<path d="M16 8c-5-4-10-3-12-2v20c5-2 9-1 12 1 3-2 7-3 12-1V6c-2-1-7-2-12 2Zm0 0v19"/>',move:'<path d="m8 24 16-16M4 17l11 11M17 4l11 11M3 23l6 6M23 3l6 6"/>',leaf:'<path d="M26 5C11 2 2 12 7 23c10 5 20-3 19-18ZM7 25l14-14m-8 8v-7m0 7h7"/>'};
+    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
+    return h.slice(0,start)+banner+h.slice(end+10);
+  };
+  // Native assets are bundled: reloading localhost cannot install a new APK.
+  if(window.Capacitor?.isNativePlatform?.()){
+    window.mxCheckUpdate=async function(manual=true){if(manual)toast('Bu APK: 0.16.11. Yeni APK aynı imzayla kurulduğunda kayıtların korunur. Otomatik APK dağıtım adresi henüz bağlı değil.');};
+  }
+}
+const priorModern1611MX=installStudioP1;installStudioP1=function(){priorModern1611MX();installModern1611MX();};

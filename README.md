@@ -1,4 +1,4 @@
-# MUSES Life Studio — v0.6.1
+# MUSES Life Studio — v0.16.11
 
 Personal local-first learning, agenda and fitness application. This working repository contains a personal embedded data archive; **keep it private**. Do not publish through public GitHub Pages. Do not commit personal exports, credentials or backups.
 
@@ -74,3 +74,7 @@ Bu bölüm uygulanmış özellik değil, geliştirme gereksinimidir.
 - Uyku, neşe, oyun, sakin, merak, kutlama modları; farklı sesler, ses seviyesi, sessiz mod ve azaltılmış hareket tercihi.
 - Pointer Events ile dokunmatik sürükleme; tıklama ve sürükleme ayrımı, ekran sınırları ve güvenli alanlar, ajanda görevleri ve kedi katmanları çakışmaz; menü ekran dışına taşmaz.
 - Mama bakiyesi, ödül geçmişi, mod, konum ve ses tercihleri mevcut yerel kayıt/yedek sistemine geriye uyumlu eklenir. Eski kayıtlar korunur. Mobil sürükleme, çift ödül engeli, yedek geri yükleme, ses ve çakışma testleri gereklidir.
+
+## 0.16.11 modern Reader ve mobil paket
+
+Kelime bazında elle vurgu, kişisel zorluk renkleri, sade ana ekran, toplu seçim düzeltmeleri ve kesintisiz Path. Tam kapsam ve doğrulama sınırları: [MODERN-1611-DENETIM.md](MODERN-1611-DENETIM.md). APK otomatik dağıtımı bağlı değildir; ayrı paket eski uygulamanın yanına kurulur.
