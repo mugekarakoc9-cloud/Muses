@@ -24,7 +24,7 @@ let pending=null,busy=false,checked=0,notice='',lastNotified=0;
 function getFeed(){try{return localStorage.getItem(key)||'';}catch{return '';}}
 function showMessage(message){notice=message;const el=document.querySelector('#mx-native-update-status');if(el)el.textContent=message;}
 async function openPrivate(url){
-  if(typeof window.mxFlushStudyState!=='function'||!await window.mxFlushStudyState()) {showMessage('Kayıt doğrulanamadı. Güncelleme ertelendi.');return;}
+  if(typeof mxFlushStudyState!=='function'||!await mxFlushStudyState()) {showMessage('Kayıt doğrulanamadı. Güncelleme ertelendi.');return;}
   if(!window.confirm('Önce Ayarlar bölümünden tam yedek al. APK’yi eski uygulamayı silmeden kur. GitHub hesabında oturum açman gerekebilir. Devam edilsin mi?'))return;
   window.location.assign(url);
 }

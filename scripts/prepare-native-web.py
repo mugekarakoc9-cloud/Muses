@@ -11,7 +11,7 @@ index = root / "index.html"
 html = index.read_text(encoding="utf-8")
 # Preserve origin, application ID, localStorage, and IndexedDB.
 bootstrap = """<script src="./mx-native-offline.js"></script>"""
-html, count = re.subn(r"(<head(?:\\s[^>]*)?>)", lambda m: m.group(1) + bootstrap, html, count=1, flags=re.I)
+html, count = re.subn(r"(<head(?:\s[^>]*)?>)", lambda m: m.group(1) + bootstrap, html, count=1, flags=re.I)
 if count != 1:
     raise SystemExit("Native build: cannot find HTML head")
 # Native update checks must not read the APK's own version as a remote version.

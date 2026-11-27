@@ -28,13 +28,17 @@ jobs:
           MUSES_KEYSTORE_PASSWORD: ${{ secrets.MUSES_KEYSTORE_PASSWORD }}
           MUSES_ANDROID_APP_ID: ${{ vars.MUSES_ANDROID_APP_ID }}
           MUSES_ANDROID_CERT_SHA256: ${{ vars.MUSES_ANDROID_CERT_SHA256 }}
+          MUSES_OLD_VERSION_CODE: ${{ vars.MUSES_OLD_VERSION_CODE }}
         run: |
           test -n "$MUSES_KEYSTORE_B64" && test -n "$MUSES_KEYSTORE_PASSWORD" || { echo "Private Android signing secrets missing"; exit 1; }
           case "$MUSES_ANDROID_APP_ID" in com.muses.life|com.muses.studio) ;; *) echo 'Set MUSES_ANDROID_APP_ID to the installed APK package'; exit 1;; esac
           [[ "$MUSES_ANDROID_CERT_SHA256" =~ ^[0-9a-fA-F]{64}$ ]] || { echo 'Set the installed APK certificate SHA-256 fingerprint'; exit 1; }
           echo "MUSES_APP_ID=$MUSES_ANDROID_APP_ID" >> "$GITHUB_ENV"
           echo "MUSES_CERT_SHA256=${MUSES_ANDROID_CERT_SHA256,,}" >> "$GITHUB_ENV"
-          echo "MUSES_BUILD_CODE=$((1000000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+          [[ "$MUSES_OLD_VERSION_CODE" =~ ^[1-9][0-9]{0,9}$ ]] && (( MUSES_OLD_VERSION_CODE < 2000000000 )) || { echo "Set the installed APK versionCode"; exit 1; }
+          code=$((1000000 + GITHUB_RUN_NUMBER + MUSES_OLD_VERSION_CODE))
+          (( code <= 2100000000 )) || { echo "Android versionCode limit exceeded"; exit 1; }
+          echo "MUSES_BUILD_CODE=$code" >> "$GITHUB_ENV"
           if [[ "$MUSES_ANDROID_APP_ID" == com.muses.studio ]]; then echo MUSES_SIDE_BY_SIDE=1 >> "$GITHUB_ENV"; fi
       - name: Verify updater and core application
         run: node tests/native-update.cjs && node tests/check.mjs && node tests/catalog-check.mjs && node tests/mx-regression.mjs && node tests/offline-worker.mjs
