@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Compact journey toolbar with arrows and plus; view scales and settings in overflow menu",
-  "revision": 28
+  "purpose": "Borderless winding paths, smaller resource names, explicit lock and completion glyphs",
+  "revision": 29
 }
