@@ -1051,3 +1051,11 @@ body #app .mx-road-view .mx-node{box-shadow:0 3px 0 color-mix(in srgb,var(--acce
 @media(prefers-reduced-motion:no-preference){.mx-road-view .mx-node{transition:transform .18s ease,filter .18s ease}.mx-road-view .mx-node:active{transform:translateY(2px) scale(.96)}.mx-road-view .mx-stop[data-current=yes] .mx-node{animation:mxCurrent35 3s ease-in-out infinite}}
 @keyframes mxCurrent35{0%,100%{filter:brightness(1)}50%{filter:brightness(1.16)}}
 @media(max-width:750px){body #app #mxv-root:has(.mx-flash-tools31):not(.mx-sidebar-folded31):not(.mxv-studying) .mxv-sidebar{display:block!important;max-height:50dvh!important;overflow:auto!important}body #app .mx-hour-grid{grid-template-columns:32px repeat(var(--days),minmax(76px,1fr))!important;min-width:calc(32px + var(--days)*76px)!important}body #app .mx-hour-grid[style*="--days:1"]{grid-template-columns:32px minmax(0,1fr)!important;min-width:0!important}}
+
+/* R35 touch grips and compact calendar menus */
+body #app .mx-grip35{flex:none;touch-action:none!important;cursor:grab;user-select:none;display:grid!important;place-items:center;width:19px!important;min-width:19px!important;min-height:32px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;color:var(--muted)!important;font-size:15px!important}
+.mx-listdrag35{opacity:.5}
+body #app .mx-matrixgrid35 .mx-grip35{width:15px!important;min-width:15px!important}
+body #app .mx-am31 .mx-am-head31{flex-wrap:nowrap!important;gap:3px!important}.mx-am-head31 h3{margin-right:auto!important}.mx-am-head31>small{white-space:nowrap;font-size:9px!important}.mx-am-head31 .mx-cal-nav33{margin-left:0!important}
+body #app .mx-monthbar35+.calendar5 .mx-agenda-switch{display:none!important}
+body #app .mx-life-overview .mx-life-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px!important}body #app .mx-life-overview .mx-life-metrics button{padding:5px!important;min-width:0!important}body #app .mx-life-overview .mx-life-metrics strong{font-size:16px!important}body #app .mx-life-overview .mx-life-metrics small{font-size:9px!important;overflow-wrap:anywhere}
