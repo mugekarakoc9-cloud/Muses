@@ -1147,11 +1147,33 @@ installStudioP1=function(){previousStudioInstallerNotesMX();installNotesMX();};
 
 
 /* Persistent P90X media and set workspace. */
-function p90SourceMX(d){const ids={1:'x941iya',2:'x941jho',3:'x941jlu',4:'x941jnq',5:'x941jrc',6:'x941ki4',7:'x941jsk',8:'x941jty',9:'x941juw',10:'x943agm',12:'x943asm'};return ids[d]?'https://www.dailymotion.com/video/'+ids[d]:'';}
+function p90SourceMX(d){return '';}
 function installTrainingWorkspaceMX(){
  if(window.mxTrainingWorkspace)return;window.mxTrainingWorkspace=true;
  const H=x=>esc(String(x??'')),K=x=>enc5(String(x??'')),D=x=>dec5(x);
  const db=()=>S.mxTrainingWorkspace??={positions:{},chapters:{}};
+ function dvdFileNumber(file){const m=/^(?:p90x[\s._–—-]+)?(?:0|o)?([1-9]|1[0-2])(?=[ ._–—-]|$)/i.exec(file.name||'');return Number(m?.[1]||0);}
+ function isVideoFile(file){return file instanceof Blob&&file.size>0&&!/\.part(?:[.-]|$)/i.test(file.name||'')&&(/^video\//i.test(file.type)||/\.(mp4|webm|mkv|mov|m4v)$/i.test(file.name||''));}
+ async function verifyVideoFile(file){
+  const url=URL.createObjectURL(file),video=document.createElement('video');
+  try{await new Promise((resolve,reject)=>{const timer=setTimeout(()=>finish(Error('Video okunamadı.')),20000);function finish(err){clearTimeout(timer);video.onloadeddata=null;video.onerror=null;err?reject(err):resolve();}video.onloadeddata=()=>video.videoWidth>0?finish():finish(Error('Video görüntüsü yok.'));video.onerror=()=>finish(Error('Video açılamadı.'));video.preload='auto';video.muted=true;video.src=url;});}
+  finally{video.removeAttribute('src');video.load();URL.revokeObjectURL(url);}
+ }
+ async function importVideoFiles(files,chosen,status){
+  const by=new Map(),errors=[];let count=0;
+  for(const file of files){const id=chosen||dvdFileNumber(file);if(!DVD[id]||!isVideoFile(file)){errors.push(file.name+': geçersiz video');continue;}if(!by.has(id))by.set(id,[]);by.get(id).push(file);}
+  for(const [id,list] of by){if(list.length!==1){errors.push('DVD '+id+': mükerrer');continue;}const file=list[0];status.textContent='DVD '+id+' hazırlanıyor · '+Math.round(file.size/1048576)+' MB';try{
+    if(chosen&&dvdFileNumber(file)&&dvdFileNumber(file)!==chosen)throw Error('DVD numarası farklı.');
+    await verifyVideoFile(file);
+    await put6('media','p90-'+id,file);
+    const stored=await get6('media','p90-'+id);
+    if(!(stored instanceof Blob)||stored.size!==file.size)throw Error('Depolama doğrulanamadı.');
+    v6().mediaNames[id]=file.name;save();count++;
+  }catch(e){errors.push('DVD '+id+': '+(e.message||'Kaydedilemedi.'));}}
+  status.textContent=count+' DVD kaydedildi.'+(errors.length?' '+errors.join(' · '):'');return count;
+ }
+ function importDriveList(data){if(data.format!=='muses-p90-drive-v1'||!Array.isArray(data.dvds))throw Error('Geçersiz bağlantı listesi.');const links=new Map();for(const item of data.dvds){const id=Number(item.dvd),m=trainingMedia(item.url);if(!Number.isInteger(id)||!DVD[id]||m?.provider!=='Google Drive'||links.has(id))throw Error('Geçersiz DVD.');links.set(id,m.url);}for(const [id,url] of links)v6().videoLinks[id]=url;save();return links.size;}
+ window.mxImportP90DriveManifest=importDriveList;
  function trainingMedia(raw){
   const match=String(raw||'').trim().match(/^https:\/\/drive\.google\.com\/file\/d\/([\w-]{10,200})(?:\/(?:view|preview))?(?:\?[^#\s]*)?$/);
   if(match)return {kind:'embed',provider:'Google Drive',src:'https://drive.google.com/file/d/'+match[1]+'/preview',url:'https://drive.google.com/file/d/'+match[1]+'/view'};
@@ -1218,17 +1240,16 @@ function installTrainingWorkspaceMX(){
   return values(d,n).map(x=>{const a=stableEntry(run,n).moves?.[x.key]||{},p=previous(run,n,x.key),stamp=db().chapters[d]?.[x.key],prev=p?fields.filter(([k])=>p[k]!==undefined&&p[k]!=='').map(([k,t])=>H(t+': '+p[k])).join(' · '):'';
    return `<article class="mx-training-set" data-occurrence="${H(x.key)}"><div class="mx-training-row-main"><label class="mx-training-check" title="Tamamlandı"><input type="checkbox" aria-label="${H(x.name)} tamamlandı" data-field="done" ${a.done?'checked':''}></label><div class="mx-training-name">${x.index+1}. ${H(x.name)}${prev?`<small>Önceki: ${prev}</small>`:''}</div>${primaryKeys.map(k=>input(fields.find(f=>f[0]===k),a,true)).join('')}</div><details class="mx-training-details"><summary>Ayrıntılar${a.note?' · not':''}</summary><div class="mx-training-fields">${fields.filter(([k])=>!primaryKeys.includes(k)).map(f=>input(f,a)).join('')}</div><label>Not / değişiklik<textarea data-field="note" rows="2" maxlength="1000">${H(a.note||'')}</textarea></label><div class="mx-palace-tools"><button data-stamp="${H(x.key)}">Video zamanı kaydet</button><button data-seek="${H(x.key)}" ${Number.isFinite(stamp)?'':'disabled'}>${Number.isFinite(stamp)?Math.floor(stamp/60)+':'+String(Math.floor(stamp%60)).padStart(2,'0')+' · Git':'Zaman yok'}</button></div></details></article>`;}).join('')||'<p>Bu DVD için hareket verisi yok.</p>';
  }
- window.mxTrainingSettings=function(d){if(!DVD[d])return;clearMedia();modal5(`<div class="modalhead5"><h2>DVD ${d} · ${H(DVD[d])}</h2><button onclick="close5()">×</button></div><form id="mx-training-link"><label>Google Drive / YouTube / Dailymotion / HTTPS MP4<input name="url" type="url" value="${H(v6().videoLinks[d]||p90SourceMX(d))}"></label>${d===1?'<small>Gönderdiğin birleşik Chest & Back + Ab Ripper X bağlantısı: <button type="button" id="mx-training-suggest">Adresini kullan</button></small>':''}<button class="primary">Bağlantıyı kaydet</button></form><label>Özel Drive DVD bağlantı listesi <input type="file" id="mx-training-drive-list" accept=".json,application/json"></label><p id="mx-training-drive-status" role="status"></p><label>Yerel video <input type="file" id="mx-training-file" accept="video/*,.mp4,.webm"></label><button onclick="removeLocalVideo6(${d})">Yerel videoyu kaldır</button><details><summary>DVD 01–12 toplu yerel video aktarımı</summary><label>Numaralı video dosyalarını seç<input type="file" id="mx-training-batch" multiple accept="video/*,.mp4,.webm,.mkv,.mov,.m4v"></label><p id="mx-training-batch-status" role="status"></p></details>`);
- const f=document.querySelector('#mx-training-link'),suggest=document.querySelector('#mx-training-suggest');if(suggest)suggest.onclick=()=>{f.elements.url.value='https://www.dailymotion.com/video/x941iya';};
- f.onsubmit=e=>{e.preventDefault();const raw=f.elements.url.value.trim(),m=raw?trainingMedia(raw):null;if(raw&&(!m||m.kind==='audio'))return toast('Geçerli video adresi gir.');if(m)v6().videoLinks[d]=raw;else delete v6().videoLinks[d];save();close5();render();};
- document.querySelector('#mx-training-file').onchange=e=>{const f=e.target.files[0];if(f)saveLocalVideo6(f,d);};
- const driveList=document.querySelector('#mx-training-drive-list'),driveStatus=document.querySelector('#mx-training-drive-status');
- driveList.onchange=async()=>{const file=driveList.files?.[0];if(!file)return;try{if(file.size>100000)throw Error('Dosya çok büyük.');const data=JSON.parse(await file.text());if(data.format!=='muses-p90-drive-v1'||!Array.isArray(data.dvds))throw Error('Geçersiz DVD bağlantı listesi.');const links=new Map();for(const item of data.dvds){const id=Number(item.dvd),m=trainingMedia(item.url);if(!Number.isInteger(id)||!DVD[id]||m?.provider!=='Google Drive'||links.has(id))throw Error('Geçersiz veya mükerrer DVD.');links.set(id,m.url);}for(const [id,url] of links)v6().videoLinks[id]=url;save();driveStatus.textContent=links.size+' DVD bağlantısı kaydedildi.';}catch(e){driveStatus.textContent=e.message;}finally{driveList.value='';}};
- const batch=document.querySelector('#mx-training-batch'),out=document.querySelector('#mx-training-batch-status');
- batch.onchange=async()=>{const files=Array.from(batch.files||[]),by=new Map(),skipped=[];let saved=0;batch.disabled=true;
-  for(const file of files){const match=/^(?:p90x[\s._–—-]+)?(?:0|o)?([1-9]|1[0-2])(?=[ ._–—-]|$)/i.exec(file.name);const id=Number(match?.[1]);if(!DVD[id]||!file.size||!(/^(video\/)/i.test(file.type)||/\.(mp4|webm|mkv|mov|m4v)$/i.test(file.name))){skipped.push(file.name);continue;}if(!by.has(id))by.set(id,[]);by.get(id).push(file);}
-  try{for(const [id,list] of by){if(list.length!==1){skipped.push('DVD '+id+' (birden fazla dosya)');continue;}try{if(await get6('media','p90-'+id)){skipped.push('DVD '+id+' (zaten kayıtlı)');continue;}await put6('media','p90-'+id,list[0]);v6().mediaNames[id]=list[0].name;save();saved++;}catch{skipped.push('DVD '+id+' (depolama hatası)');}out.textContent=saved+' DVD kaydedildi…';}}finally{batch.disabled=false;batch.value='';out.textContent=saved+' DVD kaydedildi.'+(skipped.length?' Atlanan: '+skipped.join(', '):'');}
- };};
+ window.mxTrainingSettings=function(d){if(!DVD[d])return;clearMedia();modal5('<div class="modalhead5"><h2>P90X · Video arşivi</h2><button onclick="close5()">×</button></div><div class="card"><b>DVD '+d+' · '+H(DVD[d])+'</b><label>Video seç<input type="file" id="mx-training-file" accept="video/*,.mp4,.webm,.mov,.m4v,.mkv"></label><label>DVD 01–12 · Toplu video seç<input type="file" id="mx-training-batch" multiple accept="video/*,.mp4,.webm,.mov,.m4v,.mkv"></label><p id="mx-training-batch-status" role="status"></p><button id="mx-training-play-now" hidden>Oynat</button></div><details class="card"><summary>Drive bağlantıları</summary><label>Bağlantı listesi (.json)<input type="file" id="mx-training-drive-list" accept=".json,application/json"></label><form id="mx-training-link"><label>DVD bağlantısı<input name="url" type="url" value="'+H(v6().videoLinks[d]||'')+'"></label><button class="primary">Kaydet</button></form><p id="mx-training-drive-status" role="status"></p></details><section class="card"><h3>Video arşivi</h3><div id="mx-training-library"></div></section>');
+ const out=document.querySelector('#mx-training-batch-status'),single=document.querySelector('#mx-training-file'),batch=document.querySelector('#mx-training-batch'),library=document.querySelector('#mx-training-library'),play=document.querySelector('#mx-training-play-now');
+ function drawLibrary(){library.innerHTML=Object.keys(DVD).filter(k=>Number(k)>=1&&Number(k)<=12).map(k=>'<div class="line"><span>'+H('DVD '+k+' · '+DVD[k])+'</span><small>'+H(v6().mediaNames[k]?'Cihazda':v6().videoLinks[k]?'Bağlı':'—')+'</small></div>').join('');}
+ drawLibrary();play.onclick=()=>playDVD6(d);
+ async function selectFiles(input,chosen){const files=Array.from(input.files||[]);if(!files.length)return;single.disabled=batch.disabled=true;try{const count=await importVideoFiles(files,chosen,out);drawLibrary();play.hidden=!v6().mediaNames[d];if(count&&chosen&&play.isConnected)await playDVD6(d);}catch(e){out.textContent=e.message||'Video kaydedilemedi.';}finally{input.value='';single.disabled=batch.disabled=false;}}
+ single.onchange=()=>selectFiles(single,d);batch.onchange=()=>selectFiles(batch,0);
+ const f=document.querySelector('#mx-training-link'),driveList=document.querySelector('#mx-training-drive-list'),driveStatus=document.querySelector('#mx-training-drive-status');
+ f.onsubmit=e=>{e.preventDefault();const raw=f.elements.url.value.trim(),m=raw?trainingMedia(raw):null;if(raw&&(!m||m.kind==='audio')){driveStatus.textContent='Geçersiz bağlantı.';return;}if(m)v6().videoLinks[d]=raw;else delete v6().videoLinks[d];save();drawLibrary();driveStatus.textContent='Kaydedildi.';};
+ driveList.onchange=async()=>{const file=driveList.files?.[0];if(!file)return;try{if(file.size>100000)throw Error('Geçersiz bağlantı dosyası.');driveStatus.textContent=importDriveList(JSON.parse(await file.text()))+' DVD bağlantısı kaydedildi.';drawLibrary();}catch(e){driveStatus.textContent=e.message;}finally{driveList.value='';}};
+ };
  setDVD6=function(d){return window.mxTrainingSettings(d);};
  playDVD6=async function(d){
   if(!DVD[d])return;clearMedia();
