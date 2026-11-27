@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Restore always-visible P90X dark media surface and Drive shared preview alongside verified owner media and movement recording",
-  "revision": 23
+  "purpose": "Grouped weekly habit screen and explicit daily maximum confirmation; retain R23 P90X media",
+  "revision": 24
 }
