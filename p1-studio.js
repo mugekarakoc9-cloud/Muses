@@ -1448,6 +1448,17 @@ function installTaskStudioMX(){
 const previousStudioInstallerTaskMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerTaskMX();installTaskStudioMX();};
 
+function mxvReviewEvents(rows){
+ const rated=new Set(rows.filter(x=>x.type==='rating'&&x.session&&x.key).map(x=>JSON.stringify([x.session,x.key])));
+ const seen=new Set();return rows.filter(x=>{
+ if(x.type!=='rating'&&!(x.type==='answer'&&x.selfAssessment&&x.mode==='flash'))return false;
+ const pair=x.session&&x.key?JSON.stringify([x.session,x.key]):null;
+ if(x.type!=='rating'&&pair&&rated.has(pair))return false;
+ const id=pair||(x.id?'id:'+x.id:null);
+ if(id&&seen.has(id))return false;if(id)seen.add(id);return true;
+ });
+}
+
 /* Isolated vocabulary workspace */
 function installVocabularyStudioV2(){
  if(window.mxVocabularyV2)return;window.mxVocabularyV2=true;
@@ -1489,16 +1500,7 @@ function installVocabularyStudioV2(){
  function listkeys(rows){return [...new Set(rows.filter(r=>groups.has(r.id)||groups.has('folder:'+r.folder)).flatMap(r=>r.keys))];}
  function actions(){return db().actions;}
  function historyStats(n){const d=day(),from=n?plus(d,1-n):'0000-00-00';return actions().filter(x=>x.date>=from&&x.date<=d);}
-function mxvReviewEvents(rows){
- const rated=new Set(rows.filter(x=>x.type==='rating'&&x.session&&x.key).map(x=>JSON.stringify([x.session,x.key])));
- const seen=new Set();return rows.filter(x=>{
- if(x.type!=='rating'&&!(x.type==='answer'&&x.selfAssessment&&x.mode==='flash'))return false;
- const pair=x.session&&x.key?JSON.stringify([x.session,x.key]):null;
- if(x.type!=='rating'&&pair&&rated.has(pair))return false;
- const id=pair||(x.id?'id:'+x.id:null);
- if(id&&seen.has(id))return false;if(id)seen.add(id);return true;
- });
-}
+
 function mxvTally(rows){const out={ok:0,bad:0,g1:0,g2:0,g3:0,g4:0,g5:0};for(const x of rows){const k=x.type==='rating'?'g'+x.grade:x.type==='answer'&&!x.selfAssessment?(x.ok?'ok':'bad'):null;if(k&&Object.hasOwn(out,k))out[k]++;}return out;}
 function mxvBuckets(n,hist,end){const plus=(d,n)=>{const x=new Date(d+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10);};const start=n?plus(end,1-n):(hist.map(x=>x.date).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&x<=end).sort()[0]||end),span=Math.round((Date.parse(end)-Date.parse(start))/86400000)+1,step=span>90?Math.ceil(span/30):span>31?Math.ceil(span/21):1,result=[];for(let i=0;i<span;i+=step){const from=plus(start,i),to=plus(start,Math.min(span-1,i+step-1));result.push({from,to,counts:mxvTally(hist.filter(x=>x.date>=from&&x.date<=to))});}return result;}
  const series=[['ok','Doğru','#5ebd92'],['bad','Yanlış','#e3767e'],['g5','1 · Çok zor','#b58ad9'],['g4','2 · Zor','#e8935e'],['g3','3 · Orta','#d4b55c'],['g2','4 · Kolay','#92c67d'],['g1','5 · Çok kolay','#45b9b1']];
@@ -1969,14 +1971,18 @@ function installActivityOverviewMX(){
   const events=(S.mxVocabularyV2?.actions||[]).filter(x=>x.date>=dates[0]&&x.date<=end);
   const reviews=mxvReviewEvents(events),answers=events.filter(x=>x.type==='answer'&&!x.selfAssessment);
   const reviewed=new Map(),answered=new Map();for(const x of reviews)reviewed.set(x.date,(reviewed.get(x.date)||0)+1);for(const x of answers)answered.set(x.date,(answered.get(x.date)||0)+1);
-  const values=metric==='review'?reviewed:answered, max=Math.max(1,...values.values()),total=metric==='review'?reviews.length:answers.length;
+  const corrections=S.mxReviewReportedTotals||{};
+  for(const d of dates){const reported=Number(corrections[d]);if(Number.isSafeInteger(reported)&&reported>=0)reviewed.set(d,Math.max(reviewed.get(d)||0,reported));}
+  const reviewTotal=[...reviewed.values()].reduce((a,b)=>a+b,0);
+  const values=metric==='review'?reviewed:answered, max=Math.max(1,...values.values()),total=metric==='review'?reviewTotal:answers.length;
   const focusDate=dates.includes(selected)?selected:end;
-  return '<section class="card mx-life-overview"><div class="mx-life-head"><h3>Çalışma istatistiklerim</h3><button onclick="go(\'flash\')">Ayrıntılar →</button></div><div class="mx-life-period">'+[7,30,90,365].map(n=>'<button aria-pressed="'+(n===period)+'" onclick="mxOverviewPeriod('+n+')">'+n+' gün</button>').join('')+'</div><div class="mx-life-metrics"><button aria-pressed="'+(metric==='review')+'" onclick="mxOverviewMetric(\'review\')"><small>Gözden geçirilen</small><strong>'+reviews.length+'</strong><span>kart</span></button><button aria-pressed="'+(metric==='answer')+'" onclick="mxOverviewMetric(\'answer\')"><small>Alıştırma cevapları</small><strong>'+answers.length+'</strong><span>cevap</span></button></div><div class="mx-life-chart" aria-label="Günlük çalışma grafiği">'+dates.map(d=>'<button type="button" aria-label="'+H(d+' · '+(values.get(d)||0))+'" title="'+H(d+' · '+(values.get(d)||0))+'" aria-pressed="'+(d===focusDate)+'" onclick="mxOverviewDate(\''+d+'\')"><i style="height:'+Math.max(2,100*(values.get(d)||0)/max)+'%"></i></button>').join('')+'</div><div class="mx-life-foot"><small>'+H(dates[0])+' – '+H(end)+'</small><b>'+H(focusDate)+' · '+(values.get(focusDate)||0)+' '+(metric==='review'?'kart':'cevap')+'</b></div><small class="muted">Bu cihazdaki kayıtlı çalışma olayları · toplam '+total+'</small></section>';
+  return '<section class="card mx-life-overview"><div class="mx-life-head"><h3>Çalışma istatistiklerim</h3><button onclick="go(\'flash\')">Ayrıntılar →</button></div><div class="mx-life-period">'+[7,30,90,365].map(n=>'<button aria-pressed="'+(n===period)+'" onclick="mxOverviewPeriod('+n+')">'+n+' gün</button>').join('')+'</div><div class="mx-life-metrics"><button aria-pressed="'+(metric==='review')+'" onclick="mxOverviewMetric(\'review\')"><small>Gözden geçirilen</small><strong>'+reviewTotal+'</strong><span>kart</span></button><button aria-pressed="'+(metric==='answer')+'" onclick="mxOverviewMetric(\'answer\')"><small>Alıştırma cevapları</small><strong>'+answers.length+'</strong><span>cevap</span></button></div><div class="mx-life-chart" aria-label="Günlük çalışma grafiği">'+dates.map(d=>'<button type="button" aria-label="'+H(d+' · '+(values.get(d)||0))+'" title="'+H(d+' · '+(values.get(d)||0))+'" aria-pressed="'+(d===focusDate)+'" onclick="mxOverviewDate(\''+d+'\')"><i style="height:'+Math.max(2,100*(values.get(d)||0)/max)+'%"></i></button>').join('')+'</div><div class="mx-life-foot"><small>'+H(dates[0])+' – '+H(end)+'</small><b>'+H(focusDate)+' · '+(values.get(focusDate)||0)+' '+(metric==='review'?'kart':'cevap')+'</b></div><small class="muted">Kayıtlı olaylar ve varsa bildirilen günlük toplam · '+total+'</small><button onclick="mxOverviewReport()">Günlük kart toplamını düzelt</button></section>';
  }
  const refresh=()=>{const el=document.querySelector('.mx-life-overview');if(el)el.outerHTML=statsHTML();};
  window.mxOverviewPeriod=n=>{if([7,30,90,365].includes(n)){period=n;selected='';refresh();}};
  window.mxOverviewMetric=m=>{if(['review','answer'].includes(m)){metric=m;refresh();}};
  window.mxOverviewDate=d=>{selected=d;refresh();};
+ window.mxOverviewReport=()=>{const date=prompt('Çalışma tarihi (YYYY-AA-GG)',selected||today());if(!date||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date||date>today())return;const raw=prompt('O gün gözden geçirdiğin toplam kart sayısı. Boş bırakırsan manuel düzeltme kaldırılır.',String(S.mxReviewReportedTotals?.[date]??''));if(raw===null)return;const totals=S.mxReviewReportedTotals??={};if(!raw.trim())delete totals[date];else{const n=Number(raw);if(!Number.isSafeInteger(n)||n<0||n>1000000)return toast('Geçerli kart sayısı gir.');totals[date]=n;}save();refresh();};
  const prior=home;home=function(){return prior()+statsHTML();};
 }
 const priorActivityOverviewMX=installStudioP1;installStudioP1=function(){priorActivityOverviewMX();installActivityOverviewMX();};
