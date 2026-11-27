@@ -598,3 +598,26 @@ body[data-theme=dark] .mx-modern-hero{background:linear-gradient(115deg,#32283f,
 .mx-life-foot{margin-top:9px;font-size:12px}
 .mx-life-overview button:focus-visible,#mxv-root .mxv-sidebar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:600px){.mx-life-overview{padding:11px}.mx-life-period{gap:4px}.mx-life-period button{font-size:11px;padding:5px}.mx-life-chart{gap:2px}}
+
+
+/* Compact accessible folder tree and journey overview */
+#mxv-root .mxv-sidebar {font-size:13px; scrollbar-width:thin; min-width:0}
+#mxv-root .mxv-sidebar .mxv-side-row {display:flex;align-items:center;min-width:0;padding:2px 3px;border-radius:7px}
+#mxv-root .mxv-sidebar .mxv-side-row:hover {background:var(--mx-control-soft,var(--line))}
+#mxv-root .mxv-sidebar .mxv-side-row button {flex:1;min-width:0;min-height:29px;padding:4px 6px;line-height:1.35;text-align:start;overflow-wrap:anywhere}
+#mxv-root .mxv-sidebar details {margin:3px 0}
+#mxv-root .mxv-sidebar summary {min-height:30px;line-height:1.4}
+#mxv-root .mxv-sidebar summary button {min-height:26px;padding:2px 6px}
+#mxv-root .mxv-sidebar :is(input,select,textarea),.mx-life-overview :is(input,select) {color:var(--ink);background:var(--paper);border-color:var(--line)}
+#mxv-root .mxv-sidebar input[type=checkbox]{accent-color:var(--accent)}
+#mxv-root :is(.mxv-chart,.mxv-metrics article,.mxv-editor){color:var(--ink);background:var(--paper);border-color:var(--line)}
+#mxv-root :is(.mxv-muted,.mxv-metrics small,.mxv-chart small){color:var(--muted)}
+.mx-palace-grid.mx-journey-path{display:flex;flex-direction:column;align-items:center;position:relative;gap:24px;padding:16px 6px;isolation:isolate}
+.mx-journey-path:before{content:"";position:absolute;top:24px;bottom:24px;left:50%;border-left:5px dotted var(--accent);opacity:.48;z-index:-1}
+.mx-journey-path .mx-palace-tile{width:min(86%,410px);min-height:88px;position:relative;background:var(--paper);color:var(--ink);border-color:var(--line);box-shadow:0 3px 12px #00000012;text-align:start}
+.mx-journey-path .mx-palace-tile:nth-child(odd){transform:translateX(-6%)}
+.mx-journey-path .mx-palace-tile:nth-child(even){transform:translateX(6%)}
+.mx-journey-path .mx-palace-tile small{color:var(--muted)}
+.mx-life-overview .mx-life-chart button:focus-visible{outline:2px solid var(--accent);outline-offset:0}
+@media(max-width:600px){#mxv-root .mxv-sidebar .mxv-side-row button{min-height:36px}.mx-journey-path .mx-palace-tile{width:86%}}
+@media(prefers-reduced-motion:reduce){.mx-journey-path .mx-palace-tile{transition:none}}
