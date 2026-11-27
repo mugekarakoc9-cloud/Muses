@@ -97,6 +97,15 @@ try{
  assert.equal(themes.light.bg,'rgb(255, 255, 255)');
  assert.equal(themes.dark.bg,'rgb(38, 42, 56)');
  assert.notEqual(themes.light.fg,themes.dark.fg);
+ const contrast=await page.evaluate(()=>{
+   const lum=c=>{const values=c.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{const q=v/255;return q<=.04045?q/12.92:((q+.055)/1.055)**2.4;});return values[0]*.2126+values[1]*.7152+values[2]*.0722;};
+   const root=document.body,old=root.dataset.theme,side=document.querySelector('#mxv-root .mxv-sidebar'),out={};
+   for(const mode of ['light','dark']){root.dataset.theme=mode;const c=getComputedStyle(side),a=lum(c.color),b=lum(c.backgroundColor);out[mode]=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);}
+   if(old)root.dataset.theme=old;else delete root.dataset.theme;return out;
+ });
+ assert(contrast.light>=4.5&&contrast.dark>=4.5,'Folder sidebar text contrast');
+ assert(await page.locator('#mxv-root [data-mx-touch-drag]').count(),'Touch list drag handles available');
+
  await page.locator('#mxv-root [data-act="map"]').click();
  await page.locator('#mxv-root [data-map-key]').first().click();
  assert.equal(await page.locator('#mxv-root').getAttribute('data-mxv-page'),'map');
