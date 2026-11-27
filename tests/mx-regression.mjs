@@ -55,3 +55,10 @@ assert.equal(reviewEvents([{type:'answer',selfAssessment:true,mode:'flash',id:'l
 assert.equal(reviewEvents([{type:'answer',mode:'type',ok:true}]).length,0);
 assert.equal(reviewEvents([...reviewRows,{session:'second',key:'card0',type:'rating',grade:2}]).length,451);
 console.log('Review history regression: 450 cards, deduplication, legacy fallback and repeated session passed.');
+
+const currentPath=extract(studio,'pathCurrentMX','pathVideoMX');
+const stalePath=Array.from({length:50},(_,i)=>({done:i<47&&i!==17,active:i===17}));
+assert.equal(currentPath(stalePath),47);
+assert.equal(currentPath([{done:false},{done:true}]),1);
+assert.equal(currentPath([]),-1);
+console.log('Path regression: stale stop cannot override later progress.');
