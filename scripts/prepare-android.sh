@@ -24,7 +24,7 @@ if [ ! -d android ]; then npx cap add android; fi
 npx cap sync android
 python3 ../scripts/install-android-drive.py
 node - <<'JS'
-const fs=require('fs'),c=JSON.parse(fs.readFileSync('capacitor.config.json')),v=JSON.parse(fs.readFileSync('../deployment-version.json')).release;
+const fs=require('fs'),c=JSON.parse(fs.readFileSync('capacitor.config.json')),release=JSON.parse(fs.readFileSync('../deployment-version.json')),v=release.release+'-R'+release.revision;
 const code=Number(process.env.MUSES_BUILD_CODE);if(!Number.isSafeInteger(code)||code<1||code>2100000000)throw Error('Invalid build code');
 const file='android/app/build.gradle';let s=fs.readFileSync(file,'utf8');s=s.replace(/applicationId "[^"]+"/,'applicationId "'+c.appId+'"').replace(/versionCode \d+/,'versionCode '+code).replace(/versionName "[^"]+"/,'versionName "'+v+'"');fs.writeFileSync(file,s);
 const strings='android/app/src/main/res/values/strings.xml';s=fs.readFileSync(strings,'utf8');for(const k of ['app_name','title_activity_main'])s=s.replace(new RegExp('(<string name="'+k+'">)[^<]*'),(_,a)=>a+c.appName);for(const k of ['package_name','custom_url_scheme'])s=s.replace(new RegExp('(<string name="'+k+'">)[^<]*'),(_,a)=>a+c.appId);fs.writeFileSync(strings,s);

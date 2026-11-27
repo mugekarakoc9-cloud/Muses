@@ -31,7 +31,7 @@ async function openPrivate(url){
 function showPanel(){
   if(typeof modal5!=='function')return;
   modal5('<div class="modalhead5"><h2>Android güncellemeleri</h2><button onclick="close5()">×</button></div><div class="card"><p id="mx-native-current"></p><p id="mx-native-update-status" role="status"></p><button id="mx-native-release">Özel GitHub sürümlerini aç</button> <button id="mx-native-download" hidden>Yeni APK’yı indir</button><p>Kurulumdan önce Ayarlar’dan tam yedek al. Uygulamayı kaldırma.</p></div><div class="card"><label for="mx-native-feed">Otomatik kontrol için özel HTTPS sürüm adresi (isteğe bağlı)</label><input id="mx-native-feed" type="url" placeholder="https://…/android-update.json"><button id="mx-native-feed-save">Kaydet ve kontrol et</button><small>GitHub özel depo oturumu tarayıcıdadır. Erişilebilir bir sürüm adresi tanımlanmadıkça otomatik kontrol yapılamaz.</small></div>');
-  document.querySelector('#mx-native-current').textContent='Kurulu sürüm '+local.version+' · derleme '+(local.buildCode||'doğrulanmadı');
+  document.querySelector('#mx-native-current').textContent='Kurulu sürüm '+local.version+' R'+(local.revision??0)+' · derleme '+(local.buildCode||'doğrulanmadı');
   document.querySelector('#mx-native-update-status').textContent=notice||'Özel yayın henüz kontrol edilmedi.';
   document.querySelector('#mx-native-feed').value=getFeed();
   document.querySelector('#mx-native-release').onclick=()=>openPrivate(releases).catch(()=>showMessage('Özel sürüm sayfası açılamadı.'));
@@ -49,7 +49,7 @@ async function check(manual=true,force=false){
     const response=await fetch(feedURL(feed),{cache:'no-store',credentials:'omit',redirect:'error',signal:controller.signal});
     if(!response.ok)throw Error('Feed unavailable');
     const remote=await response.json();pending=validate(local,remote)?remote:null;
-    showMessage(pending?'Yeni APK hazır: '+pending.version+' · '+pending.buildCode:'Kurulu derlemeden daha yeni APK yok.');
+    showMessage(pending?'Yeni APK hazır: '+pending.version+' R'+(pending.revision??0)+' · '+pending.buildCode:'Kurulu derlemeden daha yeni APK yok.');
     const download=document.querySelector('#mx-native-download');if(download)download.hidden=!pending;
     if(pending&&lastNotified!==pending.buildCode){lastNotified=pending.buildCode;if(typeof toast==='function')toast('Yeni Android güncellemesi hazır. Ana sayfada ↻ ile aç.');}
   }catch{pending=null;const download=document.querySelector('#mx-native-download');if(download)download.hidden=true;showMessage('Yeni APK doğrulanamadı. Özel sürüm sayfasını kontrol et.');}

@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Owner-bound Google Drive read-only connection and private DVD download",
-  "revision": 18
+  "purpose": "P90X verified persistent link save, owner-authorized playback, revision-aware updates",
+  "revision": 19
 }

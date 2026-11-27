@@ -61,7 +61,25 @@ try{
  const imported=page.locator('#mx-training-workspace video');
  await imported.evaluate(async v=>{v.muted=true;await v.play();});
  await page.waitForFunction(()=>{const v=document.querySelector('#mx-training-workspace video');return v&&v.videoWidth>0&&v.currentTime>0.2&&!v.error;},{},{timeout:12000});
- await page.evaluate(()=>{close5();pday=1;go('home');});
+ await page.evaluate(()=>{close5();mxTrainingSettings(3);});
+ const linkInput=page.locator('#mx-training-link input[name=url]'),saveLink=page.locator('#mx-training-link-save');
+ assert(await linkInput.isVisible());assert(await saveLink.isVisible());
+ const fakeDrive='https://drive.google.com/open?id=fixture_drive_video_03';
+ await linkInput.fill(fakeDrive);await saveLink.click();
+ await page.waitForFunction(()=>document.querySelector('#mx-training-drive-status')?.textContent.includes('Bağlantı kaydedildi'));
+ const canonicalDrive='https://drive.google.com/file/d/fixture_drive_video_03/view';
+ assert.equal(await page.evaluate(()=>v6().videoLinks[3]),canonicalDrive);
+ await page.evaluate(()=>{close5();mxTrainingSettings(3);});
+ assert.equal(await page.locator('#mx-training-link input[name=url]').inputValue(),canonicalDrive);
+ await page.evaluate(()=>close5());
+ await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.mxTrainingWorkspace,{},{timeout:30000});
+ await page.evaluate(()=>mxTrainingSettings(3));
+ assert.equal(await page.locator('#mx-training-link input[name=url]').inputValue(),canonicalDrive);
+ await page.locator('#mx-training-link-open').click();
+ await page.waitForSelector('#mx-training-workspace');
+ assert.equal(await page.locator('#mx-training-workspace [data-player] iframe').count(),0);
+ assert.match(await page.locator('[data-training-status]').innerText(),/Google Drive bağlantısı gerekli/);
+ await page.evaluate(()=>{delete v6().videoLinks[3];save();close5();pday=1;go('home');});
  // Test actual nested resource navigation before unrelated calendar assertions.
  const nested=await page.evaluate(()=>{for(const r of resourceRows()){const tree=sourceTree(r);const group=tree.find(x=>x.children?.length);if(group)return {rid:r.id,id:group.id,children:group.children.map(x=>x.id)};}return null;});
  assert(nested,'A nested resource must exist');await page.evaluate(r=>mxPalaceOpen(enc5(r)),nested.rid);
