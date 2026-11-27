@@ -1513,7 +1513,7 @@ installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractio
 /* Live build indicator and manual update: no local record migration. */
 function installLiveBuildMX(){
  if(window.mxLiveBuildInstalled)return;window.mxLiveBuildInstalled=true;
- const version='0.16.11',revision=31,buildLabel=version+' R'+revision;
+ const version='0.16.11',revision=32,buildLabel=version+' R'+revision;
  const oldHome=home;
  const css=document.createElement('style');css.textContent=`
  .mx-home-banner{padding:clamp(16px,3vw,28px);border-radius:22px;background:linear-gradient(128deg,#e6dcef,#e3eddf);color:#3c3450;border:1px solid #b8abc83b}
@@ -2292,7 +2292,7 @@ function installModern1611MX() {
     const rows=agendaRows5(today()).filter(r=>r.kind!=='actual'&&!String(r.id).startsWith('time9:')),unique=[...new Map(rows.map(r=>[r.id,r])).values()],done=unique.filter(r=>r.done).length,total=unique.length,pct=total?Math.round(done/total*100):0;
     const routes=[['calendar','Ajanda','Gününü düzenle','calendar'],['resources','Öğren','Kaldığın yerden','book'],['p90','Hareket','Antrenman ve pole','move'],['habits','Yaşam','Rutinlerini takip et','leaf']];
     const icons={calendar:'<rect x="4" y="6" width="24" height="22" rx="5"/><path d="M10 3v6m12-6v6M4 13h24m-18 6h3m6 0h3m-12 5h3"/>',book:'<path d="M16 8c-5-4-10-3-12-2v20c5-2 9-1 12 1 3-2 7-3 12-1V6c-2-1-7-2-12 2Zm0 0v19"/>',move:'<path d="m8 24 16-16M4 17l11 11M17 4l11 11M3 23l6 6M23 3l6 6"/>',leaf:'<path d="M26 5C11 2 2 12 7 23c10 5 20-3 19-18ZM7 25l14-14m-8 8v-7m0 7h7"/>'};
-    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R31</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
+    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R32</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
     return h.slice(0,start)+banner+h.slice(end+10);
   };
   // Native assets are bundled: reloading localhost cannot install a new APK.
@@ -2308,7 +2308,7 @@ function installModern1611MX() {
         if(!response.ok)throw Error('source manifest unavailable');
         const remote=await response.json();
         if(!/^\d+\.\d+\.\d+$/.test(remote.release)||!Number.isSafeInteger(remote.revision)||remote.revision<0)throw Error('invalid metadata');
-        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??31;
+        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??32;
         const rv=remote.release.split('.').map(Number),iv=installedRelease.split('.').map(Number);
         const cmp=rv[0]-iv[0]||rv[1]-iv[1]||rv[2]-iv[2];
         const newer=cmp>0||(cmp===0&&remote.revision>installedRevision);
@@ -2368,7 +2368,7 @@ async function mxFlushStudyState(){
 }
 function installStudySafetyR10(){
  if(window.mxStudySafetyR10)return;window.mxStudySafetyR10=true;
- document.title='MUSES Life Studio · 0.16.11 R31';
+ document.title='MUSES Life Studio · 0.16.11 R32';
  window.mxVerifyStudySave=async()=>{const ok=await mxFlushStudyState();toast(ok?'Kayıt bu cihazda doğrulandı.':'Kayıt doğrulanamadı. JSON yedeğini hemen al.');return ok;};
  const previous=settings;settings=function(){return '<section class="card mx-storage-status"><h3>Kayıt güvenliği</h3><p>'+esc(dbStatus6)+' · Bu cihazın kayıtlarıdır, cihazlar arası eşitleme değildir.</p><button onclick="mxVerifyStudySave()">Kaydı doğrula</button> <button onclick="backup()">JSON yedeği al</button></section>'+previous();};
 }
@@ -2418,7 +2418,7 @@ function installHomeCompact30(){
   const progress=oldHero.querySelector('.mx-day-ring');if(!progress)return template.innerHTML;
   const dashboard=document.createElement('section');dashboard.className='mx-modern-hero mx-dashboard30';
   const shortcuts=[['path','Yol haritam',"go('english')"],['cards','Flashcard',"go('flash')"],['book','Kitaplık',"go('library')"],['target','Hedeflerim',"go('goals')"],['move','Pole',"go('atlas')"],['calendar','Ajanda',"go('calendar')"],['settings','Ayarlar',"go('settings')"],['expand','Tam ekran','fullscreenP1()']];
-  dashboard.innerHTML='<div class="mx-dashboard-main30"><div class="mx-dashboard-title30"><small>MUSES · 0.16.11 R31</small><h1>Bugün</h1><p>'+esc(dateLabel5(today()))+'</p></div><div class="mx-dashboard-ring30"></div></div><div class="mx-dashboard-actions30">'+button('search','Ara','openPaletteP1()')+button('plus','Görev ekle','mxHourlyCreate(today())',true)+button('clock','Odak modu','focusOpen7()')+button('target','Hedef ekle','mxHomeGoal30()')+'<details class="mx-dashboard-menu30"><summary title="Diğer işlemler" aria-label="Diğer işlemler">'+mxIcon27('more')+'</summary><div>'+shortcuts.map(([i,l,a])=>'<button type="button" onclick="'+a+'">'+mxIcon27(i)+'<span>'+l+'</span></button>').join('')+'</div></details>'+button('refresh','Güncellemeleri denetle','mxCheckUpdate()')+'</div>';
+  dashboard.innerHTML='<div class="mx-dashboard-main30"><div class="mx-dashboard-title30"><small>MUSES · 0.16.11 R32</small><h1>Bugün</h1><p>'+esc(dateLabel5(today()))+'</p></div><div class="mx-dashboard-ring30"></div></div><div class="mx-dashboard-actions30">'+button('search','Ara','openPaletteP1()')+button('plus','Görev ekle','mxHourlyCreate(today())',true)+button('clock','Odak modu','focusOpen7()')+button('target','Hedef ekle','mxHomeGoal30()')+'<details class="mx-dashboard-menu30"><summary title="Diğer işlemler" aria-label="Diğer işlemler">'+mxIcon27('more')+'</summary><div>'+shortcuts.map(([i,l,a])=>'<button type="button" onclick="'+a+'">'+mxIcon27(i)+'<span>'+l+'</span></button>').join('')+'</div></details>'+button('refresh','Güncellemeleri denetle','mxCheckUpdate()')+'</div>';
   dashboard.querySelector('.mx-dashboard-ring30').append(progress);oldHero.remove();root.prepend(dashboard);
   root.querySelectorAll('.mx-launch-grid,.mx-shortcuts,.p1-tools').forEach(el=>{if(el.matches('.p1-tools')&&[...el.querySelectorAll('button')].some(b=>!['openPaletteP1()','fullscreenP1()'].includes(b.getAttribute('onclick'))))return;el.remove();});
   const titleText=h=>h.textContent.trim().replace(/\s+/g,' ').toLocaleLowerCase('tr');
@@ -2502,6 +2502,43 @@ function installActivityMap31(){
  const prior=render;render=function(){prior();decorate();};let queued=false;const observer=new MutationObserver(()=>{if(view!=='flash'||queued)return;queued=true;requestAnimationFrame(()=>{queued=false;flashSide();});});observer.observe(document.body,{childList:true,subtree:true});decorate();
 }
 const priorActivityMap31=installStudioP1;installStudioP1=function(){priorActivityMap31();installActivityMap31();};
+
+/* R32: one global navigation; retired standalone media route, embedded media untouched. */
+function mxRetireMedia32(navRows,areas){
+ for(let i=navRows.length-1;i>=0;i--)if(navRows[i][0]==='media')navRows.splice(i,1);
+ for(const area of areas){const children=area[3];if(!Array.isArray(children))continue;for(let i=children.length-1;i>=0;i--)if(children[i]==='media')children.splice(i,1);}
+}
+function installCleanNavigation32(){
+ if(window.mxCleanNavigationReady32)return;window.mxCleanNavigationReady32=true;
+ mxRetireMedia32(nav,areas9);
+ const previousGo=go;go=function(id,...args){return previousGo(id==='media'?'atlas':id,...args);};
+ if(view==='media')view='atlas';
+ function decorate(){
+  const app=document.querySelector('#app');if(!app)return;
+  document.body.classList.toggle('mx-home-clean32',view==='home');
+  app.querySelectorAll('.areaTabs9').forEach(el=>el.remove());
+  for(const el of document.querySelectorAll('button[onclick],a[onclick]')){
+   if(/^\s*go\(['"]media['"]\)\s*;?\s*$/.test(el.getAttribute('onclick')||''))el.remove();
+  }
+  // Preserve all working routes in the hamburger, even if the selected area differs.
+  const sidebar=document.querySelector('#nav');
+  if(sidebar){
+   for(const [id,icon,label,children] of areas9){
+    const area=[...sidebar.querySelectorAll('.area9')].find(el=>el.firstElementChild?.getAttribute('onclick')==="go('"+id+"')");
+    if(!area||area.querySelector('.subnav9'))continue;
+    const list=document.createElement('div');list.className='subnav9';
+    for(const child of children){const item=nav.find(n=>n[0]===child);if(!item)continue;const button=document.createElement('button');button.type='button';button.textContent=item[2];button.title=item[2];button.setAttribute('aria-label',item[2]);button.onclick=()=>go(child);list.append(button);}
+    area.append(list);
+   }
+  }
+  // These legacy shortcut strips contain only duplicate module navigation.
+  for(const el of app.querySelectorAll('.quick3,.mx-home-grid,.mx-launch-grid,.mx-shortcuts')){
+   if(view!=='home')continue;const bs=[...el.querySelectorAll('button')];if(bs.length&&bs.every(b=>/^\s*go\(['"][^'"]+['"]\)\s*;?\s*$/.test(b.getAttribute('onclick')||'')))el.remove();
+  }
+ }
+ const previousRender=render;render=function(){if(view==='media')view='atlas';previousRender();decorate();};decorate();
+}
+const priorCleanNavigation32=installStudioP1;installStudioP1=function(){priorCleanNavigation32();installCleanNavigation32();};
 function mxHabitDirection(name){return S.mxGoalControls?.habitUnits?.[name]?.direction||(/sigara|kahve/i.test(name)?'max':'min');}
 function mxHabitGoalMet(name,date,target,direction){
  const value=Number(actual5('habit',name,date));if(date>today()||!Number.isFinite(value)||!Number.isFinite(target))return false;
