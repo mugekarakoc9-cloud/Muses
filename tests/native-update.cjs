@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict');
+const {validate,feedURL}=require('../scripts/mx-native-update.js');
+const local={version:'0.16.11',buildCode:1000001,appId:'com.muses.life',certificateSHA256:'a'.repeat(64)};
+const remote={...local,buildCode:1000002,downloadUrl:'https://github.com/mugekarakoc9-cloud/Muses/releases/download/android-1000002-1/MUSES.apk'};
+assert.equal(validate(local,remote),true);
+assert.equal(validate(local,{...remote,buildCode:1000001}),false);
+assert.equal(validate(local,{...remote,buildCode:1000000}),false);
+for(const patch of [{appId:'com.muses.studio'},{certificateSHA256:'b'.repeat(64)},{downloadUrl:'https://example.com/MUSES.apk'},{buildCode:'1000002'},{version:'bad'},{downloadUrl:remote.downloadUrl+'?token=abc'}])assert.throws(()=>validate(local,{...remote,...patch}));
+assert.throws(()=>validate({...local,buildCode:0},remote));
+assert.throws(()=>validate({...local,certificateSHA256:''},remote));
+assert.equal(feedURL('https://example.com/android-update.json'),'https://example.com/android-update.json');
+for(const url of ['http://example.com/update','https://user:pass@example.com/update','https://example.com/update?token=secret','https://example.com/update#secret'])assert.throws(()=>feedURL(url));
+console.log('PASS: APK version, package, certificate, URL and private feed validation');

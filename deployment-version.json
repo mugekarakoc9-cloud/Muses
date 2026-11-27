@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Theme contrast, safe study persistence, min/max habit goals and custom units",
-  "revision": 10
+  "purpose": "Native signed APK update controls and private release pipeline; previous features retained",
+  "revision": 11
 }

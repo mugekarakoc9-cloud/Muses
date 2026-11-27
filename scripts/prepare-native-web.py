@@ -1,5 +1,8 @@
 """Native packages ship assets directly; retire the browser PWA worker without touching study data."""
 import pathlib
+import json
+import os
+import shutil
 import re
 import sys
 
@@ -11,6 +14,20 @@ bootstrap = """<script src="./mx-native-offline.js"></script>"""
 html, count = re.subn(r"(<head(?:\\s[^>]*)?>)", lambda m: m.group(1) + bootstrap, html, count=1, flags=re.I)
 if count != 1:
     raise SystemExit("Native build: cannot find HTML head")
+# Native update checks must not read the APK's own version as a remote version.
+source = pathlib.Path(__file__).resolve().parent.parent
+release = json.loads((root / "deployment-version.json").read_text(encoding="utf-8"))
+metadata = {
+    "version": release["release"], "revision": release.get("revision", 0),
+    "buildCode": int(os.environ.get("MUSES_BUILD_CODE", "0")),
+    "appId": os.environ.get("MUSES_APP_ID", "com.muses.studio" if os.environ.get("MUSES_SIDE_BY_SIDE") == "1" else "com.muses.life"),
+    "certificateSHA256": os.environ.get("MUSES_CERT_SHA256", "").lower()
+}
+(root / "mx-native-version.js").write_text("window.MUSES_NATIVE_BUILD = " + json.dumps(metadata) + ";\n", encoding="utf-8")
+shutil.copyfile(source / "scripts" / "mx-native-update.js", root / "mx-native-update.js")
+html, count = re.subn(r"</body\s*>", lambda m: '<script src="./mx-native-version.js"></script><script src="./mx-native-update.js"></script>' + m.group(0), html, count=1, flags=re.I)
+if count != 1:
+    raise SystemExit("Native build: cannot find HTML body")
 index.write_text(html, encoding="utf-8")
 # Update old registrations as well as new installations. No fetch interception.
 (root / "sw.js").write_text("""self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));

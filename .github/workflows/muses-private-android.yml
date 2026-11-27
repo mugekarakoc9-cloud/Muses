@@ -4,7 +4,7 @@ on:
     branches: [fix/reader-import-goal-controls]
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: muses-private-android
   cancel-in-progress: true
@@ -26,8 +26,18 @@ jobs:
         env:
           MUSES_KEYSTORE_B64: ${{ secrets.MUSES_KEYSTORE_B64 }}
           MUSES_KEYSTORE_PASSWORD: ${{ secrets.MUSES_KEYSTORE_PASSWORD }}
+          MUSES_ANDROID_APP_ID: ${{ vars.MUSES_ANDROID_APP_ID }}
+          MUSES_ANDROID_CERT_SHA256: ${{ vars.MUSES_ANDROID_CERT_SHA256 }}
         run: |
           test -n "$MUSES_KEYSTORE_B64" && test -n "$MUSES_KEYSTORE_PASSWORD" || { echo "Private Android signing secrets missing"; exit 1; }
+          case "$MUSES_ANDROID_APP_ID" in com.muses.life|com.muses.studio) ;; *) echo 'Set MUSES_ANDROID_APP_ID to the installed APK package'; exit 1;; esac
+          [[ "$MUSES_ANDROID_CERT_SHA256" =~ ^[0-9a-fA-F]{64}$ ]] || { echo 'Set the installed APK certificate SHA-256 fingerprint'; exit 1; }
+          echo "MUSES_APP_ID=$MUSES_ANDROID_APP_ID" >> "$GITHUB_ENV"
+          echo "MUSES_CERT_SHA256=${MUSES_ANDROID_CERT_SHA256,,}" >> "$GITHUB_ENV"
+          echo "MUSES_BUILD_CODE=$((1000000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+          if [[ "$MUSES_ANDROID_APP_ID" == com.muses.studio ]]; then echo MUSES_SIDE_BY_SIDE=1 >> "$GITHUB_ENV"; fi
+      - name: Verify updater and core application
+        run: node tests/native-update.cjs && node tests/check.mjs && node tests/catalog-check.mjs && node tests/mx-regression.mjs && node tests/offline-worker.mjs
       - name: Prepare offline Android app
         run: bash scripts/prepare-android.sh
       - uses: android-actions/setup-android@v3
@@ -38,7 +48,7 @@ jobs:
         run: |
           cd android-wrapper/android
           # Keep versionName from deployment-version.json; build codes increase on each run.
-          build_code=$((1000000 + GITHUB_RUN_NUMBER))
+          build_code=$MUSES_BUILD_CODE
           sed -i -E "s/versionCode [0-9]+/versionCode $build_code/" app/build.gradle
           grep -E 'version(Name|Code)' app/build.gradle
           chmod +x gradlew
@@ -55,9 +65,11 @@ jobs:
           "$tools/zipalign" -f -p 4 android-wrapper/android/app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
           mkdir -p dist-android
           "$tools/apksigner" sign --ks "$RUNNER_TEMP/muses.p12" --ks-key-alias muses --ks-pass env:MUSES_KEYSTORE_PASSWORD --key-pass env:MUSES_KEYSTORE_PASSWORD --out dist-android/MUSES.apk "$RUNNER_TEMP/aligned.apk"
-          "$tools/apksigner" verify --verbose --print-certs dist-android/MUSES.apk
+          "$tools/apksigner" verify --verbose --print-certs dist-android/MUSES.apk > "$RUNNER_TEMP/cert.txt"
+          actual=$(sed -n "s/^Signer #1 certificate SHA-256 digest: //p" "$RUNNER_TEMP/cert.txt" | tr A-F a-f)
+          test "$actual" = "$MUSES_CERT_SHA256" || { echo "Signing certificate does not match installed APK"; exit 1; }
           "$tools/aapt" dump badging dist-android/MUSES.apk > "$RUNNER_TEMP/apk-badging.txt"
-          head -n 1 "$RUNNER_TEMP/apk-badging.txt"
+          grep -F "package: name='$MUSES_APP_ID' versionCode='$MUSES_BUILD_CODE'" "$RUNNER_TEMP/apk-badging.txt" >/dev/null
           (cd dist-android && sha256sum MUSES.apk > MUSES.apk.sha256)
       - uses: actions/upload-artifact@v4
         with:
@@ -67,3 +79,13 @@ jobs:
             dist-android/MUSES.apk.sha256
           retention-days: 14
           if-no-files-found: error
+      - name: Publish signed APK to private releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh repo view "$GITHUB_REPOSITORY" --json isPrivate --jq .isPrivate)" = true || { echo "Refusing public release"; exit 1; }
+          tag="android-$MUSES_BUILD_CODE-$GITHUB_RUN_ATTEMPT"
+          export MUSES_TAG="$tag"
+          export MUSES_DOWNLOAD="https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/MUSES.apk"
+          node -e 'const fs=require("fs"),e=process.env,v=JSON.parse(fs.readFileSync("deployment-version.json"));fs.writeFileSync("dist-android/android-update.json",JSON.stringify({version:v.release,revision:v.revision,buildCode:Number(e.MUSES_BUILD_CODE),appId:e.MUSES_APP_ID,certificateSHA256:e.MUSES_CERT_SHA256,downloadUrl:e.MUSES_DOWNLOAD},null,2))'
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "MUSES Android $MUSES_BUILD_CODE" --notes "Signed private Android update. Export a backup before installing. Install over the existing app; do not uninstall." --latest dist-android/MUSES.apk dist-android/MUSES.apk.sha256 dist-android/android-update.json
