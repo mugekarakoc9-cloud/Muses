@@ -1513,7 +1513,7 @@ installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractio
 /* Live build indicator and manual update: no local record migration. */
 function installLiveBuildMX(){
  if(window.mxLiveBuildInstalled)return;window.mxLiveBuildInstalled=true;
- const version='0.16.11',revision=32,buildLabel=version+' R'+revision;
+ const version='0.16.11',revision=34,buildLabel=version+' R'+revision;
  const oldHome=home;
  const css=document.createElement('style');css.textContent=`
  .mx-home-banner{padding:clamp(16px,3vw,28px);border-radius:22px;background:linear-gradient(128deg,#e6dcef,#e3eddf);color:#3c3450;border:1px solid #b8abc83b}
@@ -1647,7 +1647,7 @@ function installHourlyAgendaMX(){
   function cell(d,h){const found=rows.filter(t=>t.date===d&&mxHourSlot(t.time)===h).sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));return '<div class="mx-hour-cell" data-mx-drop-date="'+d+'" data-mx-drop-hour="'+h+'">'+found.map(card).join('')+'<button type="button" class="mx-hour-add" title="Görev ekle" aria-label="Görev ekle" onclick="mxHourlyCreate(\''+d+'\',\''+(h<0?'':String(h).padStart(2,'0')+':00')+'\')"></button></div>';}
   return '<section class="card mx-hour-agenda"><header class="mx-hour-header"><div><small>PLANLA · UYGULA · İLERLE</small><h2>'+H(range)+'</h2></div><button class="primary" onclick="mxHourlyCreate(\''+date()+'\')">＋ Görev</button></header><div class="mx-hour-tools">'+switches()+'<div class="flex"><button onclick="mxHourlyMove(-1)" aria-label="Önceki">‹</button><button onclick="mxHourlyToday()">Bugün</button><button onclick="mxHourlyMove(1)" aria-label="Sonraki">›</button></div><details><summary>Filtreler</summary><label>Tür<select id="mx-hour-filter">'+opt5([['','Tümü'],...opts.map(m=>[m,labels[m]||m])],P().filter)+'</select></label><label><input type="checkbox" id="mx-hour-hide" '+(P().hideDone?'checked':'')+'> Tamamlananları gizle</label></details></div><p class="muted">'+count.filter(t=>t.done).length+'/'+count.length+' tamamlandı · Görevi basılı tutup istediğin saate sürükle. Boş alanlardan takvimi kaydır.</p><div class="mx-hour-scroll"><div class="mx-hour-grid" style="--days:'+ds.length+'"><div class="mx-hour-label mx-hour-head">Saat</div>'+ds.map(d=>'<div class="mx-hour-head '+(d===today()?'is-today':'')+'">'+H(dateLabel5(d))+'</div>').join('')+'<div class="mx-hour-label">Saati yok</div>'+ds.map(d=>cell(d,-1)).join('')+Array.from({length:24},(_,h)=>'<div class="mx-hour-label" data-mx-hour-label="'+h+'">'+String(h).padStart(2,'0')+':00</div>'+ds.map(d=>cell(d,h)).join('')).join('')+'</div></div></section>';
  };
- function move(key,d,h){const t=S.tasks.find(x=>x.id===dec5(key));if(!t||taskDone5(t)||!Number.isInteger(h)||h< -1||h>23)return false;if(t.date!==d&&linked5(t)&&S.tasks.some(x=>x!==t&&x.date===d&&x.module===t.module&&x.target===t.target)){toast('Bu çalışma o gün zaten planlı.');return false;}const old=t.date;if(old!==d)t.deferredFrom=[...(Array.isArray(t.deferredFrom)?t.deferredFrom:[]),old];t.date=d;t.time=h<0?'':String(h).padStart(2,'0')+':00';save();render();return true;}
+ function move(key,d,h,keepTime=false){const t=S.tasks.find(x=>x.id===dec5(key));if(!t||taskDone5(t)||!Number.isInteger(h)||h< -1||h>23)return false;if(t.date!==d&&linked5(t)&&S.tasks.some(x=>x!==t&&x.date===d&&x.module===t.module&&x.target===t.target)){toast('Bu çalışma o gün zaten planlı.');return false;}const old=t.date;if(old!==d)t.deferredFrom=[...(Array.isArray(t.deferredFrom)?t.deferredFrom:[]),old];t.date=d;if(!keepTime)t.time=h<0?'':String(h).padStart(2,'0')+':00';save();render();return true;}
  // Empty month cells open the same form; preserve existing date and task controls.
  document.addEventListener('click',e=>{
   if(view!=='calendar'||P().mode!=='month'||e.defaultPrevented)return;
@@ -1666,7 +1666,7 @@ function installHourlyAgendaMX(){
   document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-mx-hour-task]'))e.preventDefault();});
   document.addEventListener('pointerdown',e=>{const n=e.target.closest('[data-mx-hour-task],.mx-month-grid [data-p1-task]');if(!n||e.target.closest('input,select,textarea,.mx-task-check')||e.button!==0||gesture||e.shiftKey||e.ctrlKey||e.metaKey||document.body.classList.contains('mx-bulk-mode'))return;const scroll=n.closest('.mx-hour-scroll,.mx-month-shell')||n.closest('.mx-month-grid')?.parentElement;if(!scroll)return;suppressUntil=0;gesture={id:e.pointerId,node:n,k:n.dataset.mxHourTask||n.dataset.p1Task,scroll,x:e.clientX,y:e.clientY,cx:e.clientX,cy:e.clientY,moved:false};try{n.setPointerCapture(e.pointerId);}catch{}},true);
   document.addEventListener('pointermove',e=>{if(!gesture||gesture.id!==e.pointerId)return;gesture.cx=e.clientX;gesture.cy=e.clientY;if(!gesture.moved&&Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>=7){gesture.moved=true;gesture.node.classList.add('mx-hour-dragging');gesture.scroll.classList.add('mx-dragging');ghost=document.createElement('div');ghost.className='mx-hour-ghost';ghost.textContent=gesture.node.innerText;document.body.append(ghost);frame=requestAnimationFrame(autoScroll);}if(gesture.moved){if(e.cancelable)e.preventDefault();highlight();}},{capture:true,passive:false});
-  document.addEventListener('pointerup',e=>{if(!gesture||gesture.id!==e.pointerId)return;const g=gesture,d=hit(e.clientX,e.clientY);if(g.moved){suppressUntil=Date.now()+500;if(e.cancelable)e.preventDefault();}reset();if(g.moved&&d){const scrollTop=g.scroll.scrollTop,scrollLeft=g.scroll.scrollLeft;if(move(g.k,d.dataset.mxDropDate||d.dataset.p1Date,d.dataset.mxDropHour!==undefined?+d.dataset.mxDropHour:mxHourSlot(S.tasks.find(t=>t.id===dec5(g.k))?.time))){const sc=document.querySelector('.mx-hour-scroll');if(sc){sc.scrollTop=scrollTop;sc.scrollLeft=scrollLeft;}}}},true);
+  document.addEventListener('pointerup',e=>{if(!gesture||gesture.id!==e.pointerId)return;const g=gesture,d=hit(e.clientX,e.clientY);if(g.moved){suppressUntil=Date.now()+500;if(e.cancelable)e.preventDefault();}reset();if(g.moved&&d){const scrollTop=g.scroll.scrollTop,scrollLeft=g.scroll.scrollLeft;if(move(g.k,d.dataset.mxDropDate||d.dataset.p1Date,d.dataset.mxDropHour!==undefined?+d.dataset.mxDropHour:mxHourSlot(S.tasks.find(t=>t.id===dec5(g.k))?.time),d.dataset.mxDropHour===undefined)){const sc=document.querySelector('.mx-hour-scroll,.mx-month-shell');if(sc){sc.scrollTop=scrollTop;sc.scrollLeft=scrollLeft;}}}},true);
   document.addEventListener('pointercancel',e=>{if(gesture?.id===e.pointerId)reset();},true);
   window.addEventListener('blur',reset);window.mxCancelCalendarDrag=reset;
   document.addEventListener('click',e=>{if(Date.now()<suppressUntil&&e.target.closest('.mx-hour-agenda,.mx-month-grid')){e.preventDefault();e.stopImmediatePropagation();suppressUntil=0;}},true);
@@ -2308,7 +2308,7 @@ function installModern1611MX() {
         if(!response.ok)throw Error('source manifest unavailable');
         const remote=await response.json();
         if(!/^\d+\.\d+\.\d+$/.test(remote.release)||!Number.isSafeInteger(remote.revision)||remote.revision<0)throw Error('invalid metadata');
-        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??32;
+        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??34;
         const rv=remote.release.split('.').map(Number),iv=installedRelease.split('.').map(Number);
         const cmp=rv[0]-iv[0]||rv[1]-iv[1]||rv[2]-iv[2];
         const newer=cmp>0||(cmp===0&&remote.revision>installedRevision);
@@ -2368,7 +2368,7 @@ async function mxFlushStudyState(){
 }
 function installStudySafetyR10(){
  if(window.mxStudySafetyR10)return;window.mxStudySafetyR10=true;
- document.title='MUSES Life Studio · 0.16.11 R32';
+ document.title='MUSES Life Studio · 0.16.11 R34';
  window.mxVerifyStudySave=async()=>{const ok=await mxFlushStudyState();toast(ok?'Kayıt bu cihazda doğrulandı.':'Kayıt doğrulanamadı. JSON yedeğini hemen al.');return ok;};
  const previous=settings;settings=function(){return '<section class="card mx-storage-status"><h3>Kayıt güvenliği</h3><p>'+esc(dbStatus6)+' · Bu cihazın kayıtlarıdır, cihazlar arası eşitleme değildir.</p><button onclick="mxVerifyStudySave()">Kaydı doğrula</button> <button onclick="backup()">JSON yedeği al</button></section>'+previous();};
 }
@@ -2418,7 +2418,7 @@ function installHomeCompact30(){
   const progress=oldHero.querySelector('.mx-day-ring');if(!progress)return template.innerHTML;
   const dashboard=document.createElement('section');dashboard.className='mx-modern-hero mx-dashboard30';
   const shortcuts=[['path','Yol haritam',"go('english')"],['cards','Flashcard',"go('flash')"],['book','Kitaplık',"go('library')"],['target','Hedeflerim',"go('goals')"],['move','Pole',"go('atlas')"],['calendar','Ajanda',"go('calendar')"],['settings','Ayarlar',"go('settings')"],['expand','Tam ekran','fullscreenP1()']];
-  dashboard.innerHTML='<div class="mx-dashboard-main30"><div class="mx-dashboard-title30"><small>MUSES · 0.16.11 R32</small><h1>Bugün</h1><p>'+esc(dateLabel5(today()))+'</p></div><div class="mx-dashboard-ring30"></div></div><div class="mx-dashboard-actions30">'+button('search','Ara','openPaletteP1()')+button('plus','Görev ekle','mxHourlyCreate(today())',true)+button('clock','Odak modu','focusOpen7()')+button('target','Hedef ekle','mxHomeGoal30()')+'<details class="mx-dashboard-menu30"><summary title="Diğer işlemler" aria-label="Diğer işlemler">'+mxIcon27('more')+'</summary><div>'+shortcuts.map(([i,l,a])=>'<button type="button" onclick="'+a+'">'+mxIcon27(i)+'<span>'+l+'</span></button>').join('')+'</div></details>'+button('refresh','Güncellemeleri denetle','mxCheckUpdate()')+'</div>';
+  dashboard.innerHTML='<div class="mx-dashboard-main30"><div class="mx-dashboard-title30"><small>MUSES · 0.16.11 R34</small><h1>Bugün</h1><p>'+esc(dateLabel5(today()))+'</p></div><div class="mx-dashboard-ring30"></div></div><div class="mx-dashboard-actions30">'+button('search','Ara','openPaletteP1()')+button('plus','Görev ekle','mxHourlyCreate(today())',true)+button('clock','Odak modu','focusOpen7()')+button('target','Hedef ekle','mxHomeGoal30()')+'<details class="mx-dashboard-menu30"><summary title="Diğer işlemler" aria-label="Diğer işlemler">'+mxIcon27('more')+'</summary><div>'+shortcuts.map(([i,l,a])=>'<button type="button" onclick="'+a+'">'+mxIcon27(i)+'<span>'+l+'</span></button>').join('')+'</div></details>'+button('refresh','Güncellemeleri denetle','mxCheckUpdate()')+'</div>';
   dashboard.querySelector('.mx-dashboard-ring30').append(progress);oldHero.remove();root.prepend(dashboard);
   root.querySelectorAll('.mx-launch-grid,.mx-shortcuts,.p1-tools').forEach(el=>{if(el.matches('.p1-tools')&&[...el.querySelectorAll('button')].some(b=>!['openPaletteP1()','fullscreenP1()'].includes(b.getAttribute('onclick'))))return;el.remove();});
   const titleText=h=>h.textContent.trim().replace(/\s+/g,' ').toLocaleLowerCase('tr');
@@ -2645,7 +2645,7 @@ function installMinimalStudio34(){
   for(const el of app.querySelectorAll('h2,h3,h4,small,p')){if(/^(Mimo (yol )?arkadaşım|Yol arkadaşım Mimo|Mimo · yol arkadaşım)$/i.test(el.textContent.trim())&&!el.querySelector('button,input'))el.hidden=true;}
   for(const tile of app.querySelectorAll('.atlas-tile')){tile.parentElement?.classList.add('mx-atlas-grid34');}
   for(const b of app.querySelectorAll('.mx-am31[data-module="p90"] .mx-am-cell31.complete')){if(b.querySelector('.mx-done34'))continue;b.append(make('i','mx-done34','×'));}
-  compact(app);compact(document.querySelector('#dialog5')||app);
+  compact(app);compact(document.querySelector('#dialog5')||app);compact(document.querySelector('#mx-bulk-tools')||app);
  }
  const old=render;render=function(...args){const r=old.apply(this,args);polish();return r;};
  const oldModal=modal5;modal5=function(...args){const r=oldModal.apply(this,args);const dlg=document.querySelector('#dialog5');if(dlg)compact(dlg);return r;};
