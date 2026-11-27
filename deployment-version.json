@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Compact Today dashboard, 12-week activity fractions and goal span lanes, P90X/Pole activity views and persistent flash sidebar",
-  "revision": 31
+  "purpose": "Single navigation, removed standalone media section, preserved P90X and Pole embedded media",
+  "revision": 32
 }
