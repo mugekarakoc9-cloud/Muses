@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Single compact home dashboard, search/task/focus/goal actions, small word counters, responsive charts and learning cards",
-  "revision": 30
+  "purpose": "Compact Today dashboard, 12-week activity fractions and goal span lanes, P90X/Pole activity views and persistent flash sidebar",
+  "revision": 31
 }
