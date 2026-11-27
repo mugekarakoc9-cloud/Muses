@@ -19,6 +19,18 @@ try{
  await page.waitForFunction(()=>document.querySelector('img.mx-real-cat'),{},{timeout:30000});
  assert.equal(await page.locator('img.mx-real-cat').count()>0,true);
 
+ // Generate a real, short local video in the test browser. No private media is published.
+ await page.evaluate(async()=>{
+  const canvas=document.createElement('canvas');canvas.width=160;canvas.height=90;
+  const ctx=canvas.getContext('2d');const stream=canvas.captureStream(15);
+  const recorder=new MediaRecorder(stream,{mimeType:'video/webm'}),chunks=[];
+  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+  const stopped=new Promise((resolve,reject)=>{recorder.onstop=resolve;recorder.onerror=reject;});
+  recorder.start();for(let i=0;i<18;i++){ctx.fillStyle=i%2?'#285b72':'#794e86';ctx.fillRect(0,0,160,90);ctx.fillStyle='#fff';ctx.fillRect(i*5,30,20,20);await new Promise(r=>setTimeout(r,75));}
+  recorder.stop();await stopped;stream.getTracks().forEach(t=>t.stop());
+  const blob=new Blob(chunks,{type:'video/webm'});if(!blob.size)throw Error('Video fixture empty');
+  await put6('media','p90-1',blob);
+ });
  // P90X day navigation: no duplicate daily player; scheduled DVD opens the set workspace.
  await page.evaluate(()=>{pday=1;go('p90');});
  assert.equal(await page.getByRole('heading',{name:'Günün video oynatıcısı',exact:true}).count(),0);
@@ -26,6 +38,11 @@ try{
  assert.deepEqual(await page.locator('[data-p90-dvd]').evaluateAll(els=>els.map(el=>Number(el.dataset.p90Dvd))),[1,12]);
  await page.locator('[data-p90-dvd="1"] .mx-p90-dvd-open').click();
  await page.locator('#mx-training-workspace').waitFor();assert.match(await page.locator('#dialog5 h2').innerText(),/DVD 1/);
+ const realVideo=page.locator('#mx-training-workspace video');await realVideo.waitFor();
+ await realVideo.evaluate(async v=>{v.muted=true;await v.play();});
+ await page.waitForFunction(()=>{const v=document.querySelector('#mx-training-workspace video');return v&&v.videoWidth>0&&v.currentTime>0.2&&!v.error;},{},{timeout:12000});
+ console.log('PASS: actual local video frames decoded and playback time advanced inside DVD workspace (generated fixture, not private P90X footage)');
+
  await page.evaluate(()=>{close5();pday=2;render();});
  assert.deepEqual(await page.locator('[data-p90-dvd]').evaluateAll(els=>els.map(el=>Number(el.dataset.p90Dvd))),[2]);
  await page.locator('[data-p90-dvd="2"] .mx-p90-dvd-open').click();
