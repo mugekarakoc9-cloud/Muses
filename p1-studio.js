@@ -2993,3 +2993,57 @@ function installR44Reader(){
  const old=render;render=function(...args){const value=old.apply(this,args);decorate();return value;};decorate();
 }
 const mxPreviousR44=installStudioP1;installStudioP1=function(){mxPreviousR44();installR44Reader();};
+
+/* R44: period targets share the existing agenda/challenge records, not a second log. */
+function installR44PeriodGoals(){
+ if(window.mxPeriodGoals44Ready)return;window.mxPeriodGoals44Ready=true;
+ const dateOK=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d);
+ function events(kind){
+  const now=today(),out=new Map();
+  if(kind==='vocab'){
+   const actions=(S.mxVocabularyV2?.actions||[]).filter(x=>x.type==='rating'&&x.key&&dateOK(x.date)&&x.date<=now).slice().sort((a,b)=>a.date.localeCompare(b.date)||(a.at||0)-(b.at||0));
+   for(const x of actions){if(x.grade===1||x.grade===2)out.set(x.key,{date:x.date,title:x.word||x.key});else out.delete(x.key);}
+   return out;
+  }
+  const readers=new Map(readerList9().map(b=>[b.id,b]));
+  for(const [id,b] of readers){
+   const done=v9().read?.[id]?.done||{},dates=Object.values(done);
+   if(b.pages?.length&&dates.length===b.pages.length&&dates.every(dateOK)){const date=dates.sort().at(-1);if(date<=now)out.set(id,{date,title:b.title});}
+  }
+  const logsByBook=new Map();
+  for(const x of v2().reading||[]){if(!x.id||readers.has(x.id)||!dateOK(x.date)||x.date>now||!(Number(x.pages)>0))continue;let group=logsByBook.get(x.id);if(!group){group=[];logsByBook.set(x.id,group);}group.push(x);}
+  for(const b of bookRows()){
+   if(readers.has(b.id)||!(Number(b.pages)>0)||Number(v2().books[b.id])<Number(b.pages))continue;
+   const logs=(logsByBook.get(b.id)||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)),seen=new Set();let total=0;
+   for(const x of logs){if(x.logid&&seen.has(x.logid))continue;if(x.logid)seen.add(x.logid);total+=Number(x.pages);if(total>=Number(b.pages)){out.set(b.id,{date:x.date,title:b.title});break;}}
+  }
+  return out;
+ }
+ function items(g){return [...events(g.mxPeriod44).values()].filter(x=>x.date>=g.start&&x.date<=g.end).sort((a,b)=>a.date.localeCompare(b.date));}
+ const oldInfo=challengeInfo5;challengeInfo5=function(g){
+  if(!g.mxPeriod44)return oldInfo(g);
+  const rows=items(g),count=rows.length,target=Number(g.amount)||0,ds=challengeDays5(g),byDate=new Map();
+  for(const x of rows)byDate.set(x.date,(byDate.get(x.date)||0)+1);
+  const vals=ds.map(d=>({value:byDate.get(d)||0,state:byDate.has(d)?'ok':'pending'}));
+  return {count,target,done:target>0&&count>=target,bad:0,missing:0,best:0,ds,vals};
+ };
+ const oldDaily=challengeDaily5;challengeDaily5=function(g,d){if(!g.mxPeriod44)return oldDaily(g,d);const value=items(g).filter(x=>x.date===d).length;return {value,state:value?'ok':'pending'};};
+ const oldRows=challengeRows5;challengeRows5=function(d){return oldRows(d).filter(row=>{const g=v5().challenges.find(x=>x.id===row.g);return !g?.mxPeriod44||d===g.end||row.value>0;}).map(row=>{const g=v5().challenges.find(x=>x.id===row.g);if(!g?.mxPeriod44)return row;const info=challengeInfo5(g);return {...row,label:g.title+' · '+info.count+'/'+info.target,done:info.done};});};
+ function bounds(d,kind){if(kind==='month'){const start=d.slice(0,7)+'-01',x=new Date(start+'T12:00:00Z');x.setUTCMonth(x.getUTCMonth()+1);x.setUTCDate(0);return [start,x.toISOString().slice(0,10)];}const offset=(new Date(d+'T12:00:00Z').getUTCDay()+6)%7;return [add(d,-offset),add(d,6-offset)];}
+ const make=(tag,cls,t)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(t!==undefined)n.textContent=t;return n;};
+ function openForm(){
+  const d=view==='calendar'&&dateOK(selected)?selected:today();
+  modal5('<div class="modalhead5"><h2>Dönem hedefi</h2><button type="button" onclick="close5()">×</button></div><form id="mx44-period-form"><label>Dönem<select name="period"><option value="week">Haftalık</option><option value="month">Aylık</option></select></label><label>Hedef türü<select name="kind"><option value="book">Bitirilen kitap</option><option value="vocab">Biliniyor işaretlenen kelime</option></select></label><label>Hedef adet<input name="amount" type="number" min="1" max="100000" required value="4"></label><label>Referans tarih<input type="date" name="date" required value="'+esc(d)+'"></label><label>Başlık (isteğe bağlı)<input name="title" maxlength="120"></label><button class="primary">Kaydet</button></form>');
+  const f=document.querySelector('#mx44-period-form');if(!f)return;f.onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(f)),amount=Number(data.amount);if(!dateOK(data.date)||!Number.isInteger(amount)||amount<1||amount>100000)return;const [start,end]=bounds(data.date,data.period),kind=data.kind==='vocab'?'vocab':'book',title=data.title.trim()||amount+(kind==='book'?' kitap bitir':' kelime öğren');v5().challenges.push({id:String(uid()),title,module:kind,target:'All',kind:'total',amount,start,end,rhythm:'all',time:'',alarm:'',unit:kind==='book'?'kitap':'kelime',mxPeriod44:kind,mxPeriodKind44:data.period});save();close5();render();};
+ }
+ function paint(){
+  if(!['home','calendar','goals','awards'].includes(view))return;const app=document.querySelector('#app');if(!app||app.querySelector('.mx44-period-goals'))return;
+  const ref=view==='calendar'&&dateOK(selected)?selected:today(),panel=make('section','card mx44-period-goals'),head=make('div','mx44-period-goals-head'),addButton=make('button','','＋');addButton.type='button';addButton.setAttribute('aria-label','Haftalık veya aylık hedef ekle');addButton.onclick=openForm;head.append(make('h3','','Haftalık / aylık hedefler'),addButton);panel.append(head);
+  const goals=v5().challenges.filter(g=>g.mxPeriod44&&(view==='goals'||g.start<=ref&&g.end>=ref));
+  if(!goals.length)panel.append(make('small','','Henüz bu dönem için hedef yok.'));
+  for(const g of goals){const rows=items(g),target=Number(g.amount)||1,done=rows.length>=target,line=make('div','mx44-period-goal'),top=make('div','mx44-period-goal-head'),details=make('details'),summary=make('summary','',g.title+' · '+rows.length+'/'+target),tick=make('span','mx44-period-tick',done?'✓':'○');tick.setAttribute('aria-label',done?'Tamamlandı':'Devam ediyor');details.append(summary);const bar=make('progress');bar.max=target;bar.value=Math.min(target,rows.length);const date=make('small','',g.start+' – '+g.end);details.append(date);const list=make('ul');for(const x of rows)list.append(make('li','','✓ '+x.title+' · '+x.date));if(!rows.length)list.append(make('li','','Henüz kayıt yok.'));details.append(list);const actions=make('div','mx44-period-actions'),open=make('button','','↗'),remove=make('button','','×');open.type=remove.type='button';open.setAttribute('aria-label','Kaynak ekranını aç');open.onclick=()=>go(g.mxPeriod44==='book'?'library':'flash');remove.setAttribute('aria-label','Hedefi kaldır');remove.onclick=()=>{if(!confirm('Yalnızca dönem hedefi kaldırılsın mı? Kayıtların korunur.'))return;v5().challenges=v5().challenges.filter(x=>x.id!==g.id);save();render();};actions.append(open,remove);line.append(tick,details,actions,bar);panel.append(line);}
+  app.prepend(panel);
+ }
+ const old=render;render=function(...args){const result=old.apply(this,args);paint();return result;};paint();
+}
+const mxPreviousPeriod44=installStudioP1;installStudioP1=function(){mxPreviousPeriod44();installR44PeriodGoals();};
