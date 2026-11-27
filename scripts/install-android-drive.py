@@ -20,6 +20,15 @@ if "registerPlugin(MusesDriveAuthPlugin.class)" not in s:
     if "registerPlugin(MusesDriveAuthPlugin.class)" not in s:
         raise SystemExit("Cannot register Drive plugin")
     activity.write_text(s)
+# Drive's embedded preview requires third-party cookies in Android WebView.
+# This affects this application's WebView only; keep HTTPS and mixed-content policy unchanged.
+s = activity.read_text()
+cookie = "android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(getBridge().getWebView(), true);"
+if cookie not in s:
+    s, count = re.subn(r"(super\.onCreate\([^;]+;)", lambda m: m.group(1) + "\n        " + cookie, s, count=1)
+    if count != 1:
+        raise SystemExit("Cannot configure Drive preview cookies")
+    activity.write_text(s)
 manifest = root / "app/src/main/AndroidManifest.xml"
 s = manifest.read_text()
 if "MusesDriveAuthActivity" not in s:

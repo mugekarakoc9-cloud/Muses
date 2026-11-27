@@ -1421,3 +1421,15 @@ body #mx-cat-panel .mx-cat-head{display:flex;align-items:center;justify-content:
 body #mx-cat-panel .mx-cat-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
 body #mx-cat-panel .mx-cat-grid button{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px!important;border:0!important;border-radius:10px!important;background:color-mix(in srgb,var(--accent) 8%,var(--paper))!important;color:var(--ink)!important}
 body #mx-cat-panel .mx-cat-grid button span{font-size:18px!important}body #mx-cat-panel .mx-cat-grid button small{font-size:10px!important;line-height:1.25;color:var(--ink)!important}
+
+/* R43: six icon-only orbit shortcuts; all other actions under settings. */
+body #mx-cat-panel.mx43-radial{width:154px!important;height:154px!important;max-width:calc(100vw - 20px)!important;padding:0!important;border:0!important;border-radius:50%!important;background:rgba(18,18,22,.66)!important;color:#fff!important;box-shadow:0 5px 25px #0003!important;overflow:visible!important;backdrop-filter:blur(9px)}
+body #mx-cat-panel.mx43-radial .mx-cat-grid{display:block!important;position:relative;width:100%;height:100%}
+body #mx-cat-panel.mx43-radial .mx-cat-grid button{position:absolute;left:50%;top:50%;width:36px!important;height:36px!important;min-height:36px!important;min-width:36px!important;max-width:36px!important;padding:7px!important;border:0!important;border-radius:50%!important;background:transparent!important;color:#fff!important;box-shadow:none!important}
+body #mx-cat-panel.mx43-radial .mx43-orbit{transform:translate(-50%,-50%) rotate(var(--angle)) translateX(53px) rotate(calc(-1 * var(--angle)));animation:mx43-orbit-in .16s ease-out}
+body #mx-cat-panel.mx43-radial .mx43-center{transform:translate(-50%,-50%);color:#ffffffb0!important;font-size:23px!important}
+body #mx-cat-panel.mx43-radial .mx43-orbit svg{width:21px;height:21px;flex:none;pointer-events:none}
+body #mx-cat-panel.mx43-radial .mx43-orbit:is(:hover,:focus-visible){background:#ffffff21!important}
+@keyframes mx43-orbit-in{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) rotate(var(--angle)) translateX(53px) rotate(calc(-1 * var(--angle)))}}
+@media(prefers-reduced-motion:reduce){body #mx-cat-panel.mx43-radial .mx43-orbit{animation:none!important}}
+body #dialog5 .mx-p90-media-stage iframe,body #dialog5 .mx-p90-media-stage video{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;border:0!important}

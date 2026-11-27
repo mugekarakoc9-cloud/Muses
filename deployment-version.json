@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Wider reader, exercise plan repetition fields, all-date agenda drag, compact atlas and Mimo menu",
-  "revision": 42
+  "purpose": "Six-icon radial Mimo menu, in-app Drive preview and native playback improvements",
+  "revision": 43
 }
