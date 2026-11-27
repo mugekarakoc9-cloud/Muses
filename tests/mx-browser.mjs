@@ -43,7 +43,7 @@ try{
  assert.equal(await page.getByRole('heading',{name:'12 DVD · Medya ve set stüdyosu',exact:true}).count(),0);
  assert.deepEqual(await page.locator('[data-p90-dvd]').evaluateAll(els=>els.map(el=>Number(el.dataset.p90Dvd))),[1,12]);
  await page.locator('[data-p90-dvd="1"] .mx-p90-dvd-open').click();
- await page.locator('#mx-training-workspace').waitFor();assert.match(await page.locator('#dialog5 h2').innerText(),/DVD 1/);
+ await page.locator('#mx-training-workspace').waitFor();assert.match(await page.locator('#dialog5 h2').innerText(),/Chest & Back/);
  const realVideo=page.locator('#mx-training-workspace video');await realVideo.waitFor();
  await realVideo.evaluate(async v=>{v.muted=true;await v.play();});
  await page.waitForFunction(()=>{const v=document.querySelector('#mx-training-workspace video');return v&&v.videoWidth>0&&v.currentTime>0.2&&!v.error;},{},{timeout:12000});
