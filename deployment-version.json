@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Habit tap counters, individual menus and four date scales with preserved R24 confirmation and existing entry controls",
-  "revision": 25
+  "purpose": "Habit progress quantities, interactive weekly monthly yearly heatmaps, target deletion controls",
+  "revision": 26
 }
