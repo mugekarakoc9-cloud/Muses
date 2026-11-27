@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Coherent Today progress, hard-word slideshow, Reader controls and pen notes, scroll-first agenda",
-  "revision": 40
+  "purpose": "Compact reader chrome, short-tap pronunciation, long-press highlights, colored sticky notes",
+  "revision": 41
 }
