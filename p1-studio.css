@@ -649,3 +649,8 @@ body[data-theme] #app .mx-task-check[aria-pressed=true]{background:#65399c!impor
 body[data-theme] :is(#app,#dialog5,.mx-bulk-tools) :is(button,a,input,textarea,select):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .mx-life-chart button i{min-height:0}
 @media(max-width:480px){.mx-life-metrics{gap:6px}.mx-life-metrics strong{font-size:21px}.mx-life-metrics button{min-width:0;overflow-wrap:anywhere}.mx-storage-status button{min-height:38px}}
+
+#mxv-root .mxv-sidebar .mxv-side-row[draggable=true]::before{content:none}
+#mxv-root .mxv-drag-handle{flex:none;display:inline-grid;place-items:center;width:25px;height:30px;color:var(--mxv-muted);cursor:grab;touch-action:none;user-select:none}
+#mxv-root .mxv-touch-dragging{outline:1px dashed var(--mxv-accent);opacity:.75}
+@media(pointer:coarse){#mxv-root .mxv-drag-handle{width:34px;height:38px}}
