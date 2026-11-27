@@ -29,7 +29,7 @@ try{
   recorder.start();for(let i=0;i<18;i++){ctx.fillStyle=i%2?'#285b72':'#794e86';ctx.fillRect(0,0,160,90);ctx.fillStyle='#fff';ctx.fillRect(i*5,30,20,20);await new Promise(r=>setTimeout(r,75));}
   recorder.stop();await stopped;stream.getTracks().forEach(t=>t.stop());
   const blob=new Blob(chunks,{type:'video/webm'});if(!blob.size)throw Error('Video fixture empty');
-  await put6('media','p90-1',blob);
+  await put6('media','p90-1',blob);window.mxTestVideoBlob=blob;
  });
  // P90X day navigation: no duplicate daily player; scheduled DVD opens the set workspace.
  await page.evaluate(()=>{pday=1;go('p90');});
@@ -47,6 +47,14 @@ try{
  assert.deepEqual(await page.locator('[data-p90-dvd]').evaluateAll(els=>els.map(el=>Number(el.dataset.p90Dvd))),[2]);
  await page.locator('[data-p90-dvd="2"] .mx-p90-dvd-open').click();
  await page.locator('#mx-training-workspace').waitFor();assert.match(await page.locator('#dialog5 h2').innerText(),/DVD 2/);
+ await page.evaluate(()=>{close5();mxTrainingSettings(2);});
+ const fixture=Buffer.from(await page.evaluate(async()=>Array.from(new Uint8Array(await window.mxTestVideoBlob.arrayBuffer()))));
+ await page.locator('#mx-training-file').setInputFiles({name:'02 - Plyometrics.webm',mimeType:'video/webm',buffer:fixture});
+ await page.locator('#mx-training-workspace video').waitFor({timeout:30000});
+ assert.equal(await page.evaluate(async()=> (await get6('media','p90-2')).size),fixture.length);
+ const imported=page.locator('#mx-training-workspace video');
+ await imported.evaluate(async v=>{v.muted=true;await v.play();});
+ await page.waitForFunction(()=>{const v=document.querySelector('#mx-training-workspace video');return v&&v.videoWidth>0&&v.currentTime>0.2&&!v.error;},{},{timeout:12000});
  await page.evaluate(()=>{close5();pday=1;go('home');});
  // Test actual nested resource navigation before unrelated calendar assertions.
  const nested=await page.evaluate(()=>{for(const r of resourceRows()){const tree=sourceTree(r);const group=tree.find(x=>x.children?.length);if(group)return {rid:r.id,id:group.id,children:group.children.map(x=>x.id)};}return null;});

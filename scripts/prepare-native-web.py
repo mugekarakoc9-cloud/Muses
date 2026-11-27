@@ -9,6 +9,22 @@ import sys
 root = pathlib.Path(sys.argv[1])
 index = root / "index.html"
 html = index.read_text(encoding="utf-8")
+# Private deployment only: never commit the personal manifest to the repository.
+private_manifest = os.environ.get("MUSES_PRIVATE_P90_MANIFEST", "")
+if private_manifest:
+    data = json.loads(private_manifest)
+    if data.get("format") != "muses-p90-drive-v1" or not isinstance(data.get("dvds"), list):
+        raise SystemExit("Invalid private P90X manifest")
+    seen = set()
+    for item in data["dvds"]:
+        dvd = item.get("dvd")
+        if type(dvd) is not int or not 1 <= dvd <= 12 or dvd in seen or not re.fullmatch(r"https://drive\.google\.com/file/d/[\w-]{10,200}/(?:view|preview)(?:\?[^#\s]*)?", item.get("url", "")):
+            raise SystemExit("Invalid private DVD entry")
+        seen.add(dvd)
+    (root / "mx-private-p90.js").write_text("window.MUSES_PRIVATE_P90_DRIVE = " + json.dumps(data).replace("<", "\\u003c") + ";\n", encoding="utf-8")
+    html, count = re.subn(r"(<head(?:\s[^>]*)?>)", lambda m: m.group(1) + '<script src="./mx-private-p90.js"></script>', html, count=1, flags=re.I)
+    if count != 1:
+        raise SystemExit("Native build: cannot find HTML head")
 # Preserve origin, application ID, localStorage, and IndexedDB.
 bootstrap = """<script src="./mx-native-offline.js"></script>"""
 html, count = re.subn(r"(<head(?:\s[^>]*)?>)", lambda m: m.group(1) + bootstrap, html, count=1, flags=re.I)

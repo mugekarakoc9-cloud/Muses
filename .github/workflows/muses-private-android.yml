@@ -43,6 +43,8 @@ jobs:
       - name: Verify updater and core application
         run: node tests/native-update.cjs && node tests/check.mjs && node tests/catalog-check.mjs && node tests/mx-regression.mjs && node tests/offline-worker.mjs
       - name: Prepare offline Android app
+        env:
+          MUSES_PRIVATE_P90_MANIFEST: ${{ secrets.MUSES_PRIVATE_P90_MANIFEST }}
         run: bash scripts/prepare-android.sh
       - uses: android-actions/setup-android@v3
         with:

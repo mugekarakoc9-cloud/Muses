@@ -1164,6 +1164,7 @@ function installTrainingWorkspaceMX(){
   for(const file of files){const id=chosen||dvdFileNumber(file);if(!DVD[id]||!isVideoFile(file)){errors.push(file.name+': geçersiz video');continue;}if(!by.has(id))by.set(id,[]);by.get(id).push(file);}
   for(const [id,list] of by){if(list.length!==1){errors.push('DVD '+id+': mükerrer');continue;}const file=list[0];status.textContent='DVD '+id+' hazırlanıyor · '+Math.round(file.size/1048576)+' MB';try{
     if(chosen&&dvdFileNumber(file)&&dvdFileNumber(file)!==chosen)throw Error('DVD numarası farklı.');
+    if(!chosen&&await get6('media','p90-'+id)){errors.push('DVD '+id+': zaten kayıtlı');continue;}
     await verifyVideoFile(file);
     await put6('media','p90-'+id,file);
     const stored=await get6('media','p90-'+id);
@@ -1174,6 +1175,7 @@ function installTrainingWorkspaceMX(){
  }
  function importDriveList(data){if(data.format!=='muses-p90-drive-v1'||!Array.isArray(data.dvds))throw Error('Geçersiz bağlantı listesi.');const links=new Map();for(const item of data.dvds){const id=Number(item.dvd),m=trainingMedia(item.url);if(!Number.isInteger(id)||!DVD[id]||m?.provider!=='Google Drive'||links.has(id))throw Error('Geçersiz DVD.');links.set(id,m.url);}for(const [id,url] of links)v6().videoLinks[id]=url;save();return links.size;}
  window.mxImportP90DriveManifest=importDriveList;
+ if(window.MUSES_PRIVATE_P90_DRIVE){try{importDriveList(window.MUSES_PRIVATE_P90_DRIVE);}catch(e){console.warn('P90X private manifest invalid');}}
  function trainingMedia(raw){
   const match=String(raw||'').trim().match(/^https:\/\/drive\.google\.com\/file\/d\/([\w-]{10,200})(?:\/(?:view|preview))?(?:\?[^#\s]*)?$/);
   if(match)return {kind:'embed',provider:'Google Drive',src:'https://drive.google.com/file/d/'+match[1]+'/preview',url:'https://drive.google.com/file/d/'+match[1]+'/view'};

@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "P90X private Drive links, live workout persistence, per-movement progress and Pomodoro controls",
-  "revision": 16
+  "purpose": "Verified local video archive and private DVD manifest provisioning",
+  "revision": 17
 }
