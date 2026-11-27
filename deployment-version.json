@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Shared compact nested menus, inline bulk tools, accessible folder colors and saved-state readback",
-  "revision": 36
+  "purpose": "Dedicated front-facing Mimo Path animation with offline cache and existing local import support",
+  "revision": 37
 }
