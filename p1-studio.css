@@ -1433,3 +1433,63 @@ body #mx-cat-panel.mx43-radial .mx43-orbit:is(:hover,:focus-visible){background:
 @keyframes mx43-orbit-in{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) rotate(var(--angle)) translateX(53px) rotate(calc(-1 * var(--angle)))}}
 @media(prefers-reduced-motion:reduce){body #mx-cat-panel.mx43-radial .mx43-orbit{animation:none!important}}
 body #dialog5 .mx-p90-media-stage iframe,body #dialog5 .mx-p90-media-stage video{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;border:0!important}
+
+/* R44: dense accessible vocabulary cards and responsive reading. */
+body #app #mxv-root .mxv-words{display:grid!important;gap:5px!important}
+body #app #mxv-root .mxv-word{display:grid!important;grid-template-columns:20px minmax(0,1.2fr) minmax(0,1.4fr) 26px!important;grid-template-areas:"check word meaning grade" ". pos due marks" ". outcomes outcomes marks";gap:3px 8px!important;align-items:center!important;padding:8px 9px!important;border:0!important;border-radius:8px!important;min-height:0!important;background:color-mix(in srgb,var(--mx44-grade,transparent) 15%,var(--mxv-surface,var(--paper)))!important;color:var(--mxv-text,var(--ink))!important;overflow:hidden}
+body #app #mxv-root .mxv-word[data-grade="1"]{--mx44-grade:#45b98b}
+body #app #mxv-root .mxv-word[data-grade="2"]{--mx44-grade:#82ba76}
+body #app #mxv-root .mxv-word[data-grade="3"]{--mx44-grade:#dbbc5b}
+body #app #mxv-root .mxv-word[data-grade="4"]{--mx44-grade:#df985b}
+body #app #mxv-root .mxv-word[data-grade="5"]{--mx44-grade:#b5485d}
+body #app #mxv-root .mxv-word.selected{outline:2px solid var(--accent)!important;outline-offset:-2px}
+body #app #mxv-root .mxv-word>input{grid-area:check!important;width:17px!important;min-width:0!important;margin:0!important}
+body #app #mxv-root .mxv-word>b{grid-area:word!important;font-size:14px!important;overflow-wrap:break-word}
+body #app #mxv-root .mxv-word>span{grid-area:meaning!important;font-size:13px!important;overflow-wrap:break-word}
+body #app #mxv-root .mxv-word>small{min-width:0!important;max-width:100%!important;white-space:normal!important;word-break:normal!important;overflow-wrap:break-word!important;font-size:11px!important;line-height:1.25!important;padding:0!important;border:0!important;background:transparent!important}
+body #app #mxv-root .mxv-word .mx44-pos{grid-area:pos!important}
+body #app #mxv-root .mxv-word .mx44-due{grid-area:due!important}
+body #app #mxv-root .mxv-word .mx44-outcomes{grid-area:outcomes!important;display:flex!important;gap:10px;white-space:nowrap!important}
+body #app #mxv-root .mxv-word .mx44-grade{grid-area:grade!important;display:grid!important;place-items:center!important;width:24px!important;height:24px!important;border-radius:50%!important;font-weight:700!important;background:color-mix(in srgb,var(--mx44-grade,#999) 35%,var(--mxv-surface,var(--paper)))!important}
+body #app #mxv-root .mxv-word .mx44-marks{grid-area:marks!important;font-size:12px!important;white-space:nowrap!important}
+body #app #mxv-root .mxv-metrics{grid-template-columns:repeat(auto-fit,minmax(min(112px,45%),1fr))!important;gap:7px!important;margin:8px 0!important}
+body #app #mxv-root .mxv-metrics :is(article,button){padding:9px!important;min-height:62px!important;border:0!important;border-radius:11px!important;box-shadow:none!important;text-align:start!important;min-width:0!important}
+body #app #mxv-root .mxv-metrics small{font-size:11px!important;line-height:1.25!important;overflow-wrap:normal!important}
+body #app #mxv-root .mxv-metrics strong{font-size:clamp(18px,4vw,25px)!important;line-height:1.2!important;margin:4px 0 0!important}
+body #app #mxv-root .mxv-metrics button:hover{outline:1px solid var(--accent)}
+body #app #mxv-root .mx44-period{position:relative;display:block!important;width:max-content;max-width:100%;margin:5px 0 8px auto!important}
+body #app #mxv-root .mx44-period summary{padding:5px 10px!important;cursor:pointer;list-style:none;border:0!important;border-radius:8px;background:var(--mxv-surface,var(--paper));font-size:12px}
+body #app #mxv-root .mx44-period>div{position:absolute;right:0;top:100%;z-index:20;display:grid;min-width:108px;padding:5px;background:var(--mxv-surface,var(--paper));border-radius:10px;box-shadow:0 7px 20px #0003}
+body #app #mxv-root .mx44-period button{font-size:12px!important;min-height:30px!important;padding:5px 8px!important;white-space:nowrap}
+body #app #mxv-root .mxv-map .mx-word-universe{grid-template-columns:repeat(auto-fill,minmax(15px,1fr))!important;gap:3px!important}
+body #app #mxv-root .mxv-map .mx-word-universe button{height:auto!important;aspect-ratio:1;min-height:0!important;padding:0!important;background:var(--cell)!important;border:2px solid transparent!important;border-radius:4px!important}
+body #app #mxv-root .mxv-map .mx-word-universe button:not([data-grade="0"]){border-color:var(--grade)!important}
+body #app #mxv-root .mxv-map .mx-word-universe button[aria-pressed=true]{outline:2px solid var(--accent)!important;outline-offset:1px}
+body #app #mxv-root .mx44-level-legend,body #app #mxv-root .mx44-grade-legend{font-size:10px!important;gap:5px 9px!important;display:flex!important;flex-wrap:wrap!important;margin:4px 0}
+body #app #mxv-root .mx44-grade-legend i,body #app #mxv-root .mx44-level-legend i{width:11px!important;height:11px!important;box-sizing:border-box}
+body #app #mxv-root.mxv-studying:not(.mxv-full-study){grid-template-columns:minmax(0,1fr)!important}
+body #app #mxv-root.mxv-studying:not(.mxv-full-study) .mxv-main{width:100%!important;max-width:720px!important;margin-inline:auto!important;padding-inline:4px!important}
+body #app #mxv-root.mxv-studying:not(.mxv-full-study) .mxv-card{width:100%!important;max-width:100%!important;margin-inline:auto!important;box-sizing:border-box!important}
+body #app #mxv-root .mxv-face .mxv-term{max-width:100%!important;font-size:clamp(26px,7vw,48px)!important;line-height:1.15!important;overflow-wrap:break-word!important}
+body #app #mxv-root .mxv-face .mxv-field:not(.mxv-term):not(.mxv-pos){font-size:clamp(14px,3.8vw,18px)!important;line-height:1.5!important;padding:8px 12px!important;max-width:100%!important;text-align:start!important;white-space:normal!important}
+body #app #mxv-root .mxv-ratings{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important}
+body #app #mxv-root .mxv-ratings button{min-width:0!important;min-height:40px!important;padding:4px 2px!important;font-size:clamp(10px,2.7vw,13px)!important;line-height:1.15!important;white-space:normal!important}
+body #app #mxv-root.mxv-full-study .mxv-face .mxv-term{font-size:clamp(22px,5vmin,40px)!important;flex-shrink:0}
+body #app #mxv-root.mxv-full-study .mxv-face{justify-content:safe center!important;min-height:0!important;overflow-y:auto!important}
+body #app #mxv-root .mxv-sidebar .mxv-side-row{min-width:0!important;gap:4px!important}
+body #app #mxv-root .mxv-sidebar .mxv-side-row button{min-width:0!important;overflow-wrap:break-word!important}
+body #app .mx44-reader-mode{display:grid;gap:4px;font-size:12px}
+body #app .mx44-plain-text{font-family:Georgia,serif;white-space:pre-wrap;overflow-wrap:break-word;text-align:start;line-height:1.65;font-size:var(--readerfont,20px);max-width:100%;margin-inline:auto}
+body #app .readerPage9.mx44-original{padding:0!important;width:100%!important;max-width:none!important}
+body #app .mx44-original #mx-original-page{width:100%;max-width:100%;margin:0}
+body #app .mx44-original canvas{display:block;max-width:100%;height:auto}
+body #app .mx-am-lanes31{display:none!important}
+body #app .mx-am-week31{margin:4px 0!important}
+@media(max-width:750px){
+ body #app #mxv-root .mxv-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body #app #mxv-root .mxv-word{grid-template-columns:18px minmax(0,1fr) minmax(0,1.2fr) 25px!important;gap:3px 5px!important}
+ body #app #mxv-root .mxv-word>small{font-size:10px!important}
+ body #app #mxv-root.mxv-studying:not(.mxv-full-study) .mxv-face{min-height:24dvh!important;padding:8px 2px!important}
+ body #app #mxv-root .mxv-card-top .mxv-flags{display:flex!important;gap:1px!important;min-width:0!important}
+ body #app #mxv-root .mxv-study-top{max-width:100%!important}
+}
