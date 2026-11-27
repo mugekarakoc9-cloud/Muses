@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Habit progress quantities, interactive weekly monthly yearly heatmaps, target deletion controls",
-  "revision": 26
+  "purpose": "Compact borderless SVG action icons, search and add split, tooltips, narrow collapsible sidebar, version display",
+  "revision": 27
 }
