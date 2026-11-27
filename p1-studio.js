@@ -1040,7 +1040,7 @@ function installDailyLearningMX(){
  const css=document.createElement('style');css.textContent=`
  .mx-learning-bar{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:10px 0}.mx-learning-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;margin:12px 0}.mx-learning-stats>div{border:1px solid var(--line);border-radius:12px;padding:10px}.mx-learning-stats b{display:block;font-size:1.4rem}.mx-word-universe{display:grid;grid-template-columns:repeat(auto-fill,minmax(21px,1fr));gap:4px;margin:12px 0}.mx-word-universe button{height:23px;min-height:0!important;min-width:0;padding:0!important;background:var(--cell)!important;border:1px solid #0001!important;border-radius:4px!important}.mx-word-universe button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}.mx-word-universe button[data-due=true]{box-shadow:inset 0 0 0 2px #403448!important}.mx-word-picker{max-height:45vh;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:8px}.mx-word-picker label{display:flex;gap:9px;align-items:flex-start;margin:6px 0}.mx-word-picker input{flex-shrink:0}.mx-word-picker small{display:block}.mx-word-legend{display:flex;flex-wrap:wrap;gap:8px;font-size:.76rem}.mx-word-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px}
  `;document.head.append(css);
- function dailyPanel(){const d=today(),a=db(),r=a.days[d]||{keys:[],learned:{}},n=count(d),target=a.target,wait=due().length;return `<section class="card"><small>DAILY WORD STUDIO</small><h3>Günün ${target} yeni kelimesi</h3><div class="mx-learning-stats"><div><b>${r.keys.length}/${target}</b>Seçildi</div><div><b>${n}/${target}</b>İlk hatırlama başarılı</div><div><b>${wait}</b>Vadesi gelen kart</div></div><div class="mx-learning-bar"><button class="primary" onclick="mxDailyPicker()">Kelimeleri seç</button><button onclick="mxDailyStart()">Yeni kelimeleri çalış</button><button onclick="mxDailyDue()">Tekrarları çalış</button><button onclick="mxWordUniverse()">Kelime haritası</button></div><small>Başarılı yazılı hatırlama ilk öğrenme kaydını oluşturur. Seçmek veya karta bakmak öğrenilmiş sayılmaz.</small></section>`;}
+ function dailyPanel(){const d=today(),a=db(),r=a.days[d]||{keys:[],learned:{}},n=count(d),target=a.target,wait=due().length;return '<section class="card mx-daily-compact30"><div class="mx-daily-head30"><h3>Günlük kelimeler</h3><button type="button" class="mx-compact-action30" onclick="mxWordUniverse()" title="Kelime haritası" aria-label="Kelime haritası">'+mxIcon27('path')+'</button></div><div class="mx-daily-metrics30">'+[['Seçilen',r.keys.length,target,'#ad8fdb'],['Öğrenilen',n,target,'#65ad95'],['Tekrar',wait,null,'#ad8fdb']].map(([label,value,goal,color])=>'<div><small>'+label+'</small><b>'+value+(goal===null?'':'<span>/'+goal+'</span>')+'</b>'+(goal===null?'':'<i style="--progress:'+Math.min(100,goal?100*value/goal:0)+'%;--progress-color:'+color+'"></i>')+'</div>').join('')+'</div><div class="mx-daily-actions30"><button type="button" onclick="mxDailyPicker()" title="Kelimeleri seç">'+mxIcon27('select')+'<span>Seç</span></button><button type="button" class="primary" onclick="mxDailyStart()" title="Yeni kelimeleri çalış">'+mxIcon27('book')+'<span>Çalış</span></button><button type="button" onclick="mxDailyDue()" title="Vadeleri gelen kartları çalış">'+mxIcon27('refresh')+'<span>Tekrar</span></button></div></section>';}
  window.mxDailyPicker=function(){
   const a=db(),r=day(today()),picked=new Set(r.keys),limit=a.target;
   modal5(`<div class="modalhead5"><h2>Günün kelimeleri</h2><button onclick="close5()">×</button></div><label>Günlük miktar<input type="number" id="mx-daily-target" min="1" max="100" value="${limit}"></label><label>Kelime veya anlam ara<input id="mx-daily-search" placeholder="İngilizce / Türkçe"></label><div class="mx-learning-bar"><button id="mx-daily-suggest">Uygun yeni kelimeleri seç</button><button id="mx-daily-clear">Seçimi temizle</button><b id="mx-daily-count"></b></div><div class="mx-word-picker" id="mx-daily-options"></div><label>Çalışma günleri</label><div class="mx-learning-bar">${['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'].map((x,i)=>`<label><input type="checkbox" data-weekday="${i}" ${a.daysOfWeek.includes(i)?'checked':''}>${x}</label>`).join('')}</div><button class="primary" id="mx-daily-save">Seçimi kaydet</button>`);
@@ -1513,7 +1513,7 @@ installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractio
 /* Live build indicator and manual update: no local record migration. */
 function installLiveBuildMX(){
  if(window.mxLiveBuildInstalled)return;window.mxLiveBuildInstalled=true;
- const version='0.16.11',revision=23,buildLabel=version+' R'+revision;
+ const version='0.16.11',revision=30,buildLabel=version+' R'+revision;
  const oldHome=home;
  const css=document.createElement('style');css.textContent=`
  .mx-home-banner{padding:clamp(16px,3vw,28px);border-radius:22px;background:linear-gradient(128deg,#e6dcef,#e3eddf);color:#3c3450;border:1px solid #b8abc83b}
@@ -2292,7 +2292,7 @@ function installModern1611MX() {
     const rows=agendaRows5(today()).filter(r=>r.kind!=='actual'&&!String(r.id).startsWith('time9:')),unique=[...new Map(rows.map(r=>[r.id,r])).values()],done=unique.filter(r=>r.done).length,total=unique.length,pct=total?Math.round(done/total*100):0;
     const routes=[['calendar','Ajanda','Gününü düzenle','calendar'],['resources','Öğren','Kaldığın yerden','book'],['p90','Hareket','Antrenman ve pole','move'],['habits','Yaşam','Rutinlerini takip et','leaf']];
     const icons={calendar:'<rect x="4" y="6" width="24" height="22" rx="5"/><path d="M10 3v6m12-6v6M4 13h24m-18 6h3m6 0h3m-12 5h3"/>',book:'<path d="M16 8c-5-4-10-3-12-2v20c5-2 9-1 12 1 3-2 7-3 12-1V6c-2-1-7-2-12 2Zm0 0v19"/>',move:'<path d="m8 24 16-16M4 17l11 11M17 4l11 11M3 23l6 6M23 3l6 6"/>',leaf:'<path d="M26 5C11 2 2 12 7 23c10 5 20-3 19-18ZM7 25l14-14m-8 8v-7m0 7h7"/>'};
-    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R29</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
+    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R30</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
     return h.slice(0,start)+banner+h.slice(end+10);
   };
   // Native assets are bundled: reloading localhost cannot install a new APK.
@@ -2308,7 +2308,7 @@ function installModern1611MX() {
         if(!response.ok)throw Error('source manifest unavailable');
         const remote=await response.json();
         if(!/^\d+\.\d+\.\d+$/.test(remote.release)||!Number.isSafeInteger(remote.revision)||remote.revision<0)throw Error('invalid metadata');
-        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??29;
+        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??30;
         const rv=remote.release.split('.').map(Number),iv=installedRelease.split('.').map(Number);
         const cmp=rv[0]-iv[0]||rv[1]-iv[1]||rv[2]-iv[2];
         const newer=cmp>0||(cmp===0&&remote.revision>installedRevision);
@@ -2368,7 +2368,7 @@ async function mxFlushStudyState(){
 }
 function installStudySafetyR10(){
  if(window.mxStudySafetyR10)return;window.mxStudySafetyR10=true;
- document.title='MUSES Life Studio · 0.16.11 R29';
+ document.title='MUSES Life Studio · 0.16.11 R30';
  window.mxVerifyStudySave=async()=>{const ok=await mxFlushStudyState();toast(ok?'Kayıt bu cihazda doğrulandı.':'Kayıt doğrulanamadı. JSON yedeğini hemen al.');return ok;};
  const previous=settings;settings=function(){return '<section class="card mx-storage-status"><h3>Kayıt güvenliği</h3><p>'+esc(dbStatus6)+' · Bu cihazın kayıtlarıdır, cihazlar arası eşitleme değildir.</p><button onclick="mxVerifyStudySave()">Kaydı doğrula</button> <button onclick="backup()">JSON yedeği al</button></section>'+previous();};
 }
@@ -2406,6 +2406,62 @@ function installCompactIcons27(){
  const old=render;render=function(){old();decorate();};let pending=false;const observer=new MutationObserver(()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;decorate();});});observer.observe(document.body,{childList:true,subtree:true});decorate();
 }
 const priorCompact27=installStudioP1;installStudioP1=function(){priorCompact27();installCompactIcons27();};
+
+/* R30: compose the existing dashboard once; hide only redundant shortcuts, keep unique actions. */
+function installHomeCompact30(){
+ if(window.mxHomeCompactReady30)return;window.mxHomeCompactReady30=true;
+ const oldHome=home;
+ function button(icon,label,action,primary=false){return '<button type="button" class="mx-compact-action30'+(primary?' mx-quick-primary30':'')+'" title="'+esc(label)+'" aria-label="'+esc(label)+'" onclick="'+action+'">'+mxIcon27(icon)+'</button>';}
+ function compactHome(){
+  const template=document.createElement('template');template.innerHTML=oldHome();const root=template.content;
+  const oldHero=root.querySelector('.mx-modern-hero');if(!oldHero)return template.innerHTML;
+  const progress=oldHero.querySelector('.mx-day-ring');if(!progress)return template.innerHTML;
+  const dashboard=document.createElement('section');dashboard.className='mx-modern-hero mx-dashboard30';
+  const shortcuts=[['path','Yol haritam',"go('english')"],['cards','Flashcard',"go('flash')"],['book','Kitaplık',"go('library')"],['target','Hedeflerim',"go('goals')"],['move','Pole',"go('atlas')"],['calendar','Ajanda',"go('calendar')"],['settings','Ayarlar',"go('settings')"],['expand','Tam ekran','fullscreenP1()']];
+  dashboard.innerHTML='<div class="mx-dashboard-main30"><div class="mx-dashboard-title30"><small>MUSES · 0.16.11 R30</small><h1>Bugün</h1><p>'+esc(dateLabel5(today()))+'</p></div><div class="mx-dashboard-ring30"></div></div><div class="mx-dashboard-actions30">'+button('search','Ara','openPaletteP1()')+button('plus','Görev ekle','mxHourlyCreate(today())',true)+button('clock','Odak modu','focusOpen7()')+button('target','Hedef ekle','mxHomeGoal30()')+'<details class="mx-dashboard-menu30"><summary title="Diğer işlemler" aria-label="Diğer işlemler">'+mxIcon27('more')+'</summary><div>'+shortcuts.map(([i,l,a])=>'<button type="button" onclick="'+a+'">'+mxIcon27(i)+'<span>'+l+'</span></button>').join('')+'</div></details>'+button('refresh','Güncellemeleri denetle','mxCheckUpdate()')+'</div>';
+  dashboard.querySelector('.mx-dashboard-ring30').append(progress);oldHero.remove();root.prepend(dashboard);
+  root.querySelectorAll('.mx-launch-grid,.mx-shortcuts,.p1-tools').forEach(el=>{if(el.matches('.p1-tools')&&[...el.querySelectorAll('button')].some(b=>!['openPaletteP1()','fullscreenP1()'].includes(b.getAttribute('onclick'))))return;el.remove();});
+  const titleText=h=>h.textContent.trim().replace(/\s+/g,' ').toLocaleLowerCase('tr');
+  for(const h of [...root.querySelectorAll('h1,h2,h3')]){
+   const text=titleText(h);
+   if(text==='bugün, bir adım.'||text==='bugün, bir adım'){const section=h.closest('section,.hero6');if(section&&!section.contains(dashboard))section.remove();continue;}
+   if(text==='bugünkü tekrarlar'){const section=h.closest('section,.card');if(section){section.classList.add('mx-compact-repeat30');const p=section.querySelector('p');if(p&&/^0 kaynak tekrarı\b/.test(p.textContent))section.classList.add('mx-zero-repeat30');}}
+   if(text==='öğrenme yolculuğu'){const section=h.closest('section,.card');if(section)section.classList.add('mx-learning-home30');}
+   if(text==='ilerlemen'||text==='12 haftalık aktivite haritası'){const section=h.closest('section,.card');if(section)section.classList.add('mx-insights-home30');}
+  }
+  const knownNav=/^\s*go\(['"](calendar|goals|flash|atlas|p90|library|resources|habits|english)['"]\)\s*;?\s*$/;
+  for(const section of [...root.querySelectorAll('section,.card')]){
+   if(section===dashboard||section.querySelector('h1,h2,h3,h4,input,textarea,select,form')||section.closest('.mx-dashboard30'))continue;
+   const bs=[...section.querySelectorAll('button')];if(bs.length>=4&&bs.every(b=>knownNav.test(b.getAttribute('onclick')||'')))section.remove();
+  }
+  for(const form of [...root.querySelectorAll('form')]){
+   const input=form.querySelector('input[placeholder]');if(!input||!/^Görev ekle/i.test(input.placeholder)||form.closest('details'))continue;
+   const details=document.createElement('details');details.className='mx-quick-draft30';const summary=document.createElement('summary');summary.innerHTML=mxIcon27('plus')+' Hızlı görev girişi';form.replaceWith(details);details.append(summary,form);
+  }
+  return template.innerHTML;
+ }
+ window.mxHomeGoal30=function(){modal5('<div class="modalhead5"><h2>Hedef ekle</h2><button onclick="close5()">×</button></div><div class="mx-goal-choices30"><button onclick="close5();mxFinishGoal(\'resource\')">'+mxIcon27('book')+' Kaynak</button><button onclick="close5();mxFinishGoal(\'book\')">'+mxIcon27('book')+' Kitap</button><button onclick="close5();mxHabitRangeGoal()">'+mxIcon27('leaf')+' Alışkanlık</button><button onclick="close5();go(\'goals\')">'+mxIcon27('target')+' Tüm hedef seçenekleri</button></div>');};
+ home=compactHome;
+ function decorate(){
+  const app=document.querySelector('#app');if(!app)return;app.classList.toggle('mx-home-compact30',view==='home');
+  for(const h of app.querySelectorAll('h2,h3,h4')){
+   if(!/^12 haftalık aktivite haritası$/i.test(h.textContent.trim()))continue;
+   const section=h.closest('section,.card');if(!section)continue;
+   for(const grid of section.querySelectorAll('div')){
+    const cells=[...grid.children];if(cells.length<7||cells.length>100||!cells.every(c=>c.matches('button')&&/^\d{1,2}$/.test(c.textContent.trim())))continue;
+    grid.classList.add('mx-activity-grid30');
+    for(const cell of cells){cell.classList.add('mx-activity-cell30');if(!cell.hasAttribute('title')&&cell.getAttribute('aria-label'))cell.title=cell.getAttribute('aria-label');}
+   }
+  }
+  if(view==='home'){
+   for(const section of app.querySelectorAll('.mx-learning-home30')){
+    for(const b of section.querySelectorAll('button'))if(b.querySelector('b,strong')||b.querySelector('small'))b.classList.add('mx-learning-row30');
+   }
+  }
+ }
+ const prior=render;render=function(){prior();decorate();};decorate();
+}
+const priorHomeCompact30=installStudioP1;installStudioP1=function(){priorHomeCompact30();installHomeCompact30();};
 function mxHabitDirection(name){return S.mxGoalControls?.habitUnits?.[name]?.direction||(/sigara|kahve/i.test(name)?'max':'min');}
 function mxHabitGoalMet(name,date,target,direction){
  const value=Number(actual5('habit',name,date));if(date>today()||!Number.isFinite(value)||!Number.isFinite(target))return false;
