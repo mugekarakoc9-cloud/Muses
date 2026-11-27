@@ -14,7 +14,7 @@ for name in ("MusesDriveAuthActivity", "MusesDriveAuthPlugin"):
     (activity.parent / (name + ".java")).write_text((source / (name + ".java")).read_text().replace("__PACKAGE__", package))
 if "registerPlugin(MusesDriveAuthPlugin.class)" not in s:
     if re.search(r"super\.onCreate\(", s):
-        s = re.sub(r"(super\.onCreate\([^;]+;)", r"\1\n        registerPlugin(MusesDriveAuthPlugin.class);", s, count=1)
+        s = re.sub(r"(super\.onCreate\([^;]+;)", r"registerPlugin(MusesDriveAuthPlugin.class);\n        \1", s, count=1)
     else:
         s = re.sub(r"(class MainActivity extends BridgeActivity\s*\{)", r"\1\n    @Override public void onCreate(android.os.Bundle state) {\n        registerPlugin(MusesDriveAuthPlugin.class);\n        super.onCreate(state);\n    }\n", s, count=1)
     if "registerPlugin(MusesDriveAuthPlugin.class)" not in s:

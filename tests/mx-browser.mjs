@@ -253,5 +253,27 @@ try{
  assert.equal(await page.evaluate(()=>Number(v2().p90[String(v2().p90Run)+'-1']?.moves?.['1-0']?.right)),7);
  assert.equal(errors.length,0,errors.join('; '));
  console.log('PASS: real browser startup, navigation, bundled Mimo, P90 record persistence and mobile render');
+ // Mock only Google's responses: verify a real settings action pins owner A and rejects owner B.
+ let account='owner-a';
+ await page.route('https://www.googleapis.com/drive/v3/**',route=>{
+  const url=new URL(route.request().url()),p=url.pathname;
+  const json=p.endsWith('/about')?{user:{permissionId:account,emailAddress:'fixture@example.invalid'}}:p.endsWith('/files/fixture_folder_123')?{id:'fixture_folder_123',mimeType:'application/vnd.google-apps.folder',ownedByMe:true}:p.endsWith('/files')?{files:[]}:null;
+  return route.fulfill({status:json?200:404,contentType:'application/json',body:JSON.stringify(json||{})});
+ });
+ await page.evaluate(()=>{window.google={accounts:{oauth2:{initTokenClient:cfg=>({requestAccessToken:()=>cfg.callback({access_token:'fixture-token',expires_in:600})})}}};mxDriveSettings();});
+ await page.locator('[data-drive-client]').fill('123456-test.apps.googleusercontent.com');
+ await page.locator('[data-drive-folder]').fill('fixture_folder_123');
+ page.once('dialog',d=>d.accept());
+ await page.locator('[data-drive-connect]').click();
+ await page.waitForFunction(()=>document.querySelector('[data-drive-status]')?.textContent==='Bağlı · 0 DVD');
+ const pin=await page.evaluate(()=>JSON.parse(localStorage.getItem('muses.drive.owner.v1')));
+ assert.equal(pin.owner,'owner-a');assert(!JSON.stringify(pin).includes('fixture-token'));
+ await page.locator('[data-drive-disconnect]').click();
+ account='owner-b';
+ await page.locator('[data-drive-connect]').click();
+ await page.waitForFunction(()=>document.querySelector('[data-drive-status]')?.textContent.includes('MUSES sahibi değil'));
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('muses.drive.owner.v1')).owner),'owner-a');
+ assert(await page.locator('[data-drive-sync]').isDisabled());
+ console.log('PASS: mocked Drive account owner pin, mismatch rejection and token excluded from persistent profile (not real Google OAuth)');
  await context.close();
 }finally{await browser?.close();await new Promise(r=>server.close(r));}
