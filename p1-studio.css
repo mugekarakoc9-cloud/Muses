@@ -771,3 +771,67 @@ body #app .mx-palace .mx-path-walker{width:62px;height:62px}
 body #app .mx-palace .mx-palace-tools:has(button[onclick="mxPathCurrent()"]){background:transparent!important;box-shadow:none!important;border:0!important;gap:5px!important}
 body #app .mx-palace .mx-palace-tools button[onclick="mxPathCurrent()"]{font-size:11px!important;padding:4px 6px!important;border:0!important;background:transparent!important}
 @media(max-width:720px){body #app .mx-palace .mx-stop{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)!important;min-height:112px!important;gap:4px!important}body #app .mx-palace .mx-stop .mx-node{transform:translateX(calc(var(--mx-shift,0px)*.55))!important;width:44px!important;height:44px!important;min-height:44px!important}body #app .mx-palace .mx-stop-label b{font-size:11px!important}body #app .mx-palace .mx-stop-label{padding:2px 0!important}body #app .mx-palace .mx-path-walker{width:52px;height:52px}}
+
+/* R30: compact dashboard, theme-safe cards and non-overlapping activity cells. */
+body #app .mx-dashboard30{display:grid!important;gap:7px!important;padding:14px 15px!important;overflow:visible!important;margin-bottom:10px!important;min-width:0;isolation:isolate}
+.mx-dashboard-main30{display:flex;justify-content:space-between;align-items:center;gap:10px;min-width:0}
+.mx-dashboard-title30{min-width:0}.mx-dashboard-title30 small{font-size:9px;letter-spacing:.06em;font-weight:600;opacity:.8}
+body #app .mx-dashboard30 h1{font-family:inherit!important;font-size:clamp(21px,4vw,28px)!important;font-weight:650!important;letter-spacing:-.035em;margin:3px 0!important}
+body #app .mx-dashboard30 p{font-size:12px;margin:2px 0!important}
+body #app .mx-dashboard-ring30 .mx-day-ring{width:82px!important;height:82px!important;min-width:82px!important;flex-basis:82px!important}
+body #app .mx-dashboard-ring30 .mx-day-ring b{top:23px!important;font-size:18px!important}
+body #app .mx-dashboard-ring30 .mx-day-ring b small{font-size:12px!important}
+body #app .mx-dashboard-ring30 .mx-day-ring>span{top:49px!important;font-size:8px!important;line-height:1.2!important;white-space:normal}
+.mx-dashboard-actions30{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+body #app .mx-compact-action30,body #app .mx-dashboard-menu30>summary{display:inline-flex!important;align-items:center;justify-content:center;width:36px!important;min-width:36px!important;height:36px!important;min-height:36px!important;padding:5px!important;box-shadow:none!important;border:0!important;background:transparent!important;border-radius:9px!important;color:inherit!important;list-style:none;cursor:pointer}
+body #app .mx-compact-action30 svg,.mx-dashboard-menu30 svg{width:19px;height:19px;flex-shrink:0}
+body #app .mx-quick-primary30{background:color-mix(in srgb,var(--accent) 19%,transparent)!important;color:var(--accent)!important}
+.mx-dashboard-menu30{position:relative}.mx-dashboard-menu30>summary::-webkit-details-marker{display:none}.mx-dashboard-menu30>summary::marker{content:""}
+.mx-dashboard-menu30>div{position:absolute;top:calc(100% + 5px);right:0;width:min(210px,calc(100vw - 44px));display:grid;padding:6px;gap:2px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:13px;z-index:55;box-shadow:0 8px 25px #0003}
+body #app .mx-dashboard-menu30 button,.mx-goal-choices30 button{display:flex;align-items:center;gap:9px;font-size:13px;min-height:40px;padding:7px 9px!important;background:transparent!important;border:0!important;color:inherit!important;text-align:left}
+.mx-dashboard-menu30 button:hover,.mx-goal-choices30 button:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)!important}
+.mx-goal-choices30{display:grid;gap:4px}
+body #app .mx-daily-compact30{padding:12px!important;min-width:0}
+.mx-daily-head30{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mx-daily-head30 h3{font-size:15px!important;margin:0!important}
+.mx-daily-metrics30{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:8px 0 11px}
+.mx-daily-metrics30>div{min-width:0;display:grid;gap:4px;padding:0 4px}
+.mx-daily-metrics30>div+div{border-inline-start:1px solid var(--line);padding-inline-start:9px}
+.mx-daily-metrics30 small{font-size:11px;color:var(--muted)}
+.mx-daily-metrics30 b{font-size:22px;line-height:1.15;font-variant-numeric:tabular-nums}
+.mx-daily-metrics30 b span{font-size:12px;font-weight:500;color:var(--muted)}
+.mx-daily-metrics30 i{height:4px;background:var(--line);border-radius:6px;overflow:hidden;position:relative;display:block}
+.mx-daily-metrics30 i:after{content:"";display:block;height:100%;width:var(--progress);background:var(--progress-color);border-radius:6px}
+.mx-daily-actions30{display:flex;gap:5px;flex-wrap:wrap}
+body #app .mx-daily-actions30 button{display:inline-flex!important;align-items:center;justify-content:center;gap:5px;min-height:34px!important;padding:5px 9px!important;font-size:12px!important;border:0!important;border-radius:8px}
+.mx-daily-actions30 svg{width:15px;height:15px}
+body #app.mx-home-compact30 .card{padding:12px!important;border:0!important;box-shadow:none!important;min-width:0;max-width:100%;box-sizing:border-box}
+body #app.mx-home-compact30 .card :is(h2,h3){font-size:clamp(15px,3vw,19px)!important;margin-block:3px 8px!important}
+body #app.mx-home-compact30 .card :is(small,.muted){font-size:11px;line-height:1.4}
+body #app.mx-home-compact30 .card button:not(.mx-daily-actions30 button):not(.mx-activity-cell30):not(.mx-life-chart button):not(.mx-task-check):not(.mx-icon27):not(.mx-compact-action30){min-width:0;max-width:100%;box-sizing:border-box}
+body #app .mx-compact-repeat30{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+body #app .mx-compact-repeat30 h3,body #app .mx-compact-repeat30 p{margin:0!important;font-size:12px!important}
+body #app .mx-compact-repeat30 button{font-size:11px!important;padding:5px 7px!important;min-height:30px!important}
+.mx-zero-repeat30{opacity:.8}
+.mx-quick-draft30{margin:6px 0}.mx-quick-draft30 summary{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:var(--muted)}
+.mx-quick-draft30 summary svg{width:15px;height:15px}
+body #app .mx-learning-home30 .mx-learning-row30{background:var(--paper)!important;color:var(--ink)!important;border:0!important;box-shadow:none!important;font-size:12px!important;min-width:0}
+body #app .mx-learning-home30 .mx-learning-row30 :is(b,strong){color:var(--ink)!important;font-size:13px!important;overflow-wrap:anywhere}
+body #app .mx-learning-home30 .mx-learning-row30 small{color:var(--muted)!important}
+body #app .mx-life-overview{padding:12px!important;min-width:0}
+body #app .mx-life-period{gap:4px;margin:7px 0}
+body #app .mx-life-period button{border:0!important;box-shadow:none!important;padding:5px!important;min-height:30px!important;font-size:11px}
+body #app .mx-life-metrics{gap:5px;margin:7px 0}
+body #app .mx-life-metrics button{padding:7px!important;gap:2px;min-height:0!important;border:0!important;box-shadow:none!important;background:color-mix(in srgb,var(--accent) 7%,var(--paper))!important}
+body #app .mx-life-period button[aria-pressed=true],body #app .mx-life-metrics button[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 16%,var(--paper))!important}
+body #app .mx-life-metrics strong{font-size:21px!important}
+body #app .mx-life-metrics small,body #app .mx-life-metrics span{font-size:11px!important}
+body #app .mx-life-chart{height:100px}
+body #app .mx-life-chart button{min-width:4px!important;min-height:0!important;padding:0!important}
+body #app .mx-life-foot{font-size:10px!important}
+body #app .mx-insights-home30 :is(.metric6,.statusgrid6){gap:5px!important}
+body #app .mx-insights-home30 :is(.metric6,.statusgrid6) button{padding:7px!important;min-height:0!important;font-size:11px!important}
+body #app .mx-insights-home30 :is(.metric6,.statusgrid6) b{font-size:18px!important}
+body #app .mx-activity-grid30{display:grid!important;grid-template-columns:repeat(14,minmax(0,1fr))!important;grid-auto-rows:auto!important;gap:3px!important;width:100%!important;min-width:0!important;max-width:100%!important;overflow:visible!important}
+body #app .mx-activity-grid30>.mx-activity-cell30{box-sizing:border-box!important;min-width:0!important;width:100%!important;max-width:100%!important;min-height:0!important;height:auto!important;aspect-ratio:1;display:grid!important;place-items:center;padding:0!important;margin:0!important;line-height:1!important;font-size:clamp(7px,1.9vw,11px)!important;border:0!important;border-radius:3px!important;box-shadow:none!important;transform:none!important}
+@media(max-width:420px){body #app .mx-dashboard-actions30{gap:2px}body #app .mx-daily-metrics30{gap:4px}.mx-daily-metrics30>div+div{padding-inline-start:5px}body #app .mx-daily-metrics30 b{font-size:20px}}
