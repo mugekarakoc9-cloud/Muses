@@ -1,4 +1,4 @@
-name: MUSES Private Android
+name: MUSES Signed Android
 on:
   push:
     branches: [fix/reader-import-goal-controls]
@@ -10,7 +10,6 @@ concurrency:
   cancel-in-progress: true
 jobs:
   apk:
-    if: ${{ github.event.repository.private == true }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -44,7 +43,7 @@ jobs:
         run: node tests/native-update.cjs && node tests/check.mjs && node tests/catalog-check.mjs && node tests/mx-regression.mjs && node tests/offline-worker.mjs
       - name: Prepare offline Android app
         env:
-          MUSES_PRIVATE_P90_MANIFEST: ${{ secrets.MUSES_PRIVATE_P90_MANIFEST }}
+          MUSES_PRIVATE_P90_MANIFEST: ${{ github.event.repository.private && secrets.MUSES_PRIVATE_P90_MANIFEST || '' }}
         run: bash scripts/prepare-android.sh
       - uses: android-actions/setup-android@v3
         with:
@@ -79,19 +78,18 @@ jobs:
           (cd dist-android && sha256sum MUSES.apk > MUSES.apk.sha256)
       - uses: actions/upload-artifact@v4
         with:
-          name: MUSES-private-android
+          name: MUSES-signed-android
           path: |
             dist-android/MUSES.apk
             dist-android/MUSES.apk.sha256
           retention-days: 14
           if-no-files-found: error
-      - name: Publish signed APK to private releases
+      - name: Publish signed APK release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          test "$(gh repo view "$GITHUB_REPOSITORY" --json isPrivate --jq .isPrivate)" = true || { echo "Refusing public release"; exit 1; }
           tag="android-$MUSES_BUILD_CODE-$GITHUB_RUN_ATTEMPT"
           export MUSES_TAG="$tag"
           export MUSES_DOWNLOAD="https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/MUSES.apk"
           node -e 'const fs=require("fs"),e=process.env,v=JSON.parse(fs.readFileSync("deployment-version.json"));fs.writeFileSync("dist-android/android-update.json",JSON.stringify({version:v.release,revision:v.revision,buildCode:Number(e.MUSES_BUILD_CODE),appId:e.MUSES_APP_ID,certificateSHA256:e.MUSES_CERT_SHA256,downloadUrl:e.MUSES_DOWNLOAD},null,2))'
-          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "MUSES Android $MUSES_BUILD_CODE" --notes "Signed private Android update. Export a backup before installing. Install over the existing app; do not uninstall." --latest dist-android/MUSES.apk dist-android/MUSES.apk.sha256 dist-android/android-update.json
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "MUSES Android $MUSES_BUILD_CODE" --notes "Signed Android update. Export a backup before installing. Install over the existing app; do not uninstall." --latest dist-android/MUSES.apk dist-android/MUSES.apk.sha256 dist-android/android-update.json
