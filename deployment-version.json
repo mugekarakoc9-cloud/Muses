@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Calendar modes, tags, priorities, compact activity maps and restored flashcard sidebar",
-  "revision": 35
+  "purpose": "Shared compact nested menus, inline bulk tools, accessible folder colors and saved-state readback",
+  "revision": 36
 }
