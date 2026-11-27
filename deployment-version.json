@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Compact borderless controls, goal remainders, calendar progress and drag improvements",
-  "revision": 34
+  "purpose": "Calendar modes, tags, priorities, compact activity maps and restored flashcard sidebar",
+  "revision": 35
 }
