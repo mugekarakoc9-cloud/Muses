@@ -567,7 +567,7 @@ installActivityP1=function(){previousActivityInstallerMX();installFocusSessionsM
 
 /* R12: presentation only + additive, independent flashcard archive.
    No mutation of existing SRS grades, flags, tasks, sessions or storage schema. */
-const MX_UI_RELEASE='0.16.11',MX_UI_REVISION=21;
+const MX_UI_RELEASE='0.16.11',MX_UI_REVISION=22;
 function mxLifetimeEntries(state){
  const groups=[['action',state?.mxVocabularyV2?.actions],['session',state?.mxFocus?.flashHistory],['review',state?.reviews]];
  return groups.flatMap(([kind,rows])=>Array.isArray(rows)?rows.filter(x=>x&&typeof x==='object').map((row,i)=>({kind,id:kind+':'+String(row.id??(JSON.stringify(row)+':'+i)),date:String(row.date??''),row})):[]);

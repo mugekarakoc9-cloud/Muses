@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Fetch authorized Drive media directly into local video player; no Drive preview or external download screen",
-  "revision": 21
+  "purpose": "P90X Drive media progress, playback despite cache quota failures, verified movement save, revision 22",
+  "revision": 22
 }

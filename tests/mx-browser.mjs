@@ -79,7 +79,13 @@ try{
  await page.locator('#mx-training-link-open').click();
  await page.waitForSelector('#mx-training-workspace [data-player] button');
  assert.equal(await page.locator('#mx-training-workspace [data-player] iframe').count(),0);
- assert.match(await page.locator('[data-training-status]').innerText(),/Google Drive yetkisi gerekli/);
+ assert.match(await page.locator('[data-media-status]').innerText(),/Google Drive yetkisi gerekli/);
+ // Movement entry is usable and saved even when the DVD has no authorized media.
+ const noMediaSet=page.locator('#mx-training-workspace .mx-training-set').first();
+ await noMediaSet.locator('[data-field="reps"]').fill('9');
+ await page.locator('[data-training-save]').click();
+ await page.waitForFunction(()=>document.querySelector('[data-record-status]')?.textContent==='Kaydedildi ✓');
+ assert.equal(await page.evaluate(()=>Number(v2().p90[v2().p90Run+'-'+pday].moves['3-0'].reps)),9);
  await page.evaluate(()=>{close5();pday=1;go('home');});
  // Test actual nested resource navigation before unrelated calendar assertions.
  const nested=await page.evaluate(()=>{for(const r of resourceRows()){const tree=sourceTree(r);const group=tree.find(x=>x.children?.length);if(group)return {rid:r.id,id:group.id,children:group.children.map(x=>x.id)};}return null;});
@@ -296,12 +302,21 @@ try{
  assert.equal(pin.owner,'owner-a');assert(!JSON.stringify(pin).includes('fixture-token'));
  await page.evaluate(()=>{close5();playDVD6(3);});
  const driveVideo=page.locator('#mx-training-workspace [data-player] video');
- try{await driveVideo.waitFor({timeout:30000});}catch(e){throw Error('Drive fixture playback: '+await page.locator('[data-training-status]').textContent()+' / '+await page.locator('[data-player]').textContent(),{cause:e});}
+ try{await driveVideo.waitFor({timeout:30000});}catch(e){throw Error('Drive fixture playback: '+await page.locator('[data-media-status]').textContent()+' / '+await page.locator('[data-player]').textContent(),{cause:e});}
  assert.equal(await page.locator('#mx-training-workspace [data-player] iframe').count(),0);
  await driveVideo.evaluate(async v=>{v.muted=true;await v.play();});
  await page.waitForFunction(()=>{const v=document.querySelector('#mx-training-workspace [data-player] video');return v&&v.videoWidth>0&&v.currentTime>0.2&&!v.error;},{},{timeout:12000});
  assert.equal(await page.evaluate(async()=> (await get6('media','p90-3')).size),fixture.length);
  console.log('PASS: authorized Drive API response is decoded in the real app video player; Google responses mocked, real owner footage not tested');
+ // Simulate a full cache while importing another DVD: validated media still plays.
+ await page.evaluate(()=>{close5();v6().videoLinks[4]='https://drive.google.com/file/d/fixture_drive_video_04/view';save();window.mxOriginalPut6=put6;put6=async function(store,key,value){if(store==='media'&&key==='p90-4')throw Error('quota');return window.mxOriginalPut6(store,key,value);};});
+ await page.route('https://www.googleapis.com/drive/v3/files/fixture_drive_video_04*',route=>{const url=new URL(route.request().url()),headers={'access-control-allow-origin':origin,'access-control-allow-methods':'GET, OPTIONS','access-control-allow-headers':'authorization, x-goog-drive-resource-keys'};if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers});return url.searchParams.get('alt')==='media'?route.fulfill({status:200,headers,contentType:'video/webm',body:fixture}):route.fulfill({status:200,headers,contentType:'application/json',body:JSON.stringify({id:'fixture_drive_video_04',name:'04 - fixture.webm',mimeType:'video/webm',size:String(fixture.length),ownedByMe:true,capabilities:{canDownload:true}})});});
+ await page.evaluate(()=>playDVD6(4));const quotaVideo=page.locator('#mx-training-workspace [data-player] video');await quotaVideo.waitFor({timeout:30000});
+ await quotaVideo.evaluate(async v=>{v.muted=true;await v.play();});
+ await page.waitForFunction(()=>{const v=document.querySelector('#mx-training-workspace [data-player] video');return v&&v.videoWidth>0&&v.currentTime>0.2&&!v.error;});
+ assert.match(await page.locator('[data-media-status]').innerText(),/çevrimdışı kopya kaydedilemedi/);
+ await page.evaluate(()=>{put6=window.mxOriginalPut6;delete window.mxOriginalPut6;});
+ await page.unroute('https://www.googleapis.com/drive/v3/files/fixture_drive_video_04*');
  await page.evaluate(()=>{close5();mxDriveSettings();});
  await page.locator('[data-drive-disconnect]').click();
  account='owner-b';
