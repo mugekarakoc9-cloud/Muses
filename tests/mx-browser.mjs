@@ -194,6 +194,22 @@ try{
  assert(!(await set.locator('[data-field="right"]').isVisible()));
  await set.locator('[data-field="reps"]').fill('12');await set.locator('[data-field="reps"]').blur();
  assert.equal(await page.evaluate(()=>Number(p90entry(pday).moves['1-0'].reps)),12);
+ // Live persistence before blur and same-DVD history across days.
+ await set.locator('[data-field="kg"]').fill('4.5');
+ assert.equal(await page.evaluate(()=>Number(p90entry(pday).moves['1-0'].kg)),4.5);
+ await page.evaluate(()=>{const run=v2().p90Run;const entry=v2().p90[run+'-8']??={};(entry.moves??={})['1-0']={reps:14,kg:6,date:today()};save();});
+ await training.locator('[data-training-progress] summary').first().click();
+ await training.locator('[data-history-metric]').selectOption('kg');
+ assert.equal(await training.locator('[data-history-chart] svg circle').count(),2);
+ assert.match(await training.locator('[data-history-chart]').innerText(),/6/);
+ await training.locator('[data-training-start]').click();
+ await page.waitForTimeout(1200);
+ assert.match(await training.locator('[data-training-clock]').innerText(),/Çalışma/);
+ await training.locator('[data-training-stop]').click();
+ assert.match(await training.locator('[data-training-status]').innerText(),/Süre kaydedildi/);
+ assert(await page.evaluate(()=>S.mxFocus.history.some(x=>x.module==='p90'&&x.target===String(pday)&&x.seconds>0)));
+ assert.equal(await training.locator('[data-player] a').count(),0);
+
  assert(await set.evaluate(el=>el.scrollWidth<=el.clientWidth+2),'Compact P90X row must not overflow');
  await set.locator('summary').click();
  const field=set.locator('[data-field="right"]');await field.fill('7');await field.blur();
