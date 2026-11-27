@@ -495,11 +495,13 @@ function pathStatusMX(rows,strict=true){
  return rows.map((x,i)=>({...x,state:x.done?'done':x.skipped?'skipped':!strict||i<=frontier+1?'open':'locked'}));
 }
 function pathCurrentMX(rows){
- const active=rows.findIndex(x=>x.active&&!x.done&&!x.skipped);if(active>=0)return active;
- let last=-1;rows.forEach((x,i)=>{if(x.done||x.skipped||x.started||x.unlocked)last=i;});
+ if(!rows.length)return -1;
+ let last=-1,active=-1;rows.forEach((x,i)=>{if(x.done||x.skipped||x.started)last=i;if(x.active&&!x.done&&!x.skipped)active=i;});
+ if(active>=0&&active>=last)return active;
  if(last>=0&&!rows[last].done&&!rows[last].skipped)return last;
  const next=rows.findIndex((x,i)=>i>last&&!x.done&&!x.skipped);
- const first=rows.findIndex(x=>!x.done&&!x.skipped);return next>=0?next:first>=0?first:rows.length-1;
+ // Earlier unresolved gaps stay accessible, but do not move Mimo backwards automatically.
+ return next>=0?next:Math.max(0,last);
 }
 function pathVideoMX(raw){
  const m=String(raw||'').trim().match(/^https:\/\/([a-z0-9.-]+)(?::443)?(\/[^?#\s]*)?(?:\?([^#\s]*))?(?:#[^\s]*)?$/i);
@@ -610,7 +612,7 @@ function installPalaceMX(){
    return t;
  }
  function pathNext(r,n){
-   const ordered=pathLeaves(r),last=pathLeaves(r,n).at(-1),i=ordered.findIndex(x=>x.id===last?.id),next=ordered.slice(i+1).find(x=>!pathResolved(r,x))||ordered.find(x=>!pathResolved(r,x));
+   const ordered=pathLeaves(r),last=pathLeaves(r,n).at(-1),i=ordered.findIndex(x=>x.id===last?.id),next=ordered.slice(i+1).find(x=>!pathResolved(r,x));
    (P().activeStops??={})[r.id]=next?.id||'';
    const chain=lineage(sourceTree(r),n.id),parent=chain.at(-2);
    if(select(r.id,parent?.id||'')){
@@ -644,7 +646,7 @@ function installPalaceMX(){
  window.mxBulkPathComplete=function(entries){
    const byResource=new Map(),seen=new Set();let count=0;
    for(const e of entries){const {r,n}=node(e.rid,e.nid);if(!r||!n)continue;for(const leaf of pathLeaves(r,n)){const key=target(r,leaf);if(seen.has(key))continue;seen.add(key);if(pathMarkLeaf(r,leaf,today(),'complete',!n.children?.length)){count++;byResource.set(r.id,{r,n:leaf});}}}
-   for(const {r,n} of byResource.values()){const ordered=pathLeaves(r),i=ordered.findIndex(x=>x.id===n.id);(P().activeStops??={})[r.id]=ordered.slice(i+1).find(x=>!pathResolved(r,x))?.id||ordered.find(x=>!pathResolved(r,x))?.id||'';}
+   for(const {r,n} of byResource.values()){const ordered=pathLeaves(r),i=ordered.findIndex(x=>x.id===n.id);(P().activeStops??={})[r.id]=ordered.slice(i+1).find(x=>!pathResolved(r,x))?.id||'';}
    return count;
  };
 
@@ -702,7 +704,7 @@ function installPalaceMX(){
  window.mxCompleteResourceLeaf=(rid,nid,d=today(),stay=true)=>{
    const {r,n}=node(rid,nid);if(!r||!n||n.children?.length)return false;
    if(leafDone(n))return true;
-   pathMarkLeaf(r,n,d,'complete');if(!stay)pathNext(r,n);else{const ordered=pathLeaves(r),i=ordered.findIndex(x=>x.id===n.id);(P().activeStops??={})[r.id]=ordered.slice(i+1).find(x=>!pathResolved(r,x))?.id||ordered.find(x=>!pathResolved(r,x))?.id||'';}
+   pathMarkLeaf(r,n,d,'complete');if(!stay)pathNext(r,n);else{const ordered=pathLeaves(r),i=ordered.findIndex(x=>x.id===n.id);(P().activeStops??={})[r.id]=ordered.slice(i+1).find(x=>!pathResolved(r,x))?.id||'';}
    save();close5();render();meow('win');return true;
  };
  window.mxPalaceComplete=(rk,nk)=>window.mxCompleteResourceLeaf(D(rk),D(nk),today(),false);
@@ -735,7 +737,7 @@ function installPalaceMX(){
      if(rows){const [color,i]=tone(branch),sorted=rows.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.time||'').localeCompare(String(b.time||''))),label=tag5(branch)[0]||branch;
        return `<div class="mx-palace"><div class="mx-crumb"><button onclick="mxJourneyBranch('')">‹ Tüm yollar</button></div>${hero(label,'Ajandadaki gerçek görevlerin · tamamlanan duraklar yeşil')}${tools}${road(sorted.map(t=>({id:t.id,bulkTask:t.id,title:t.title,sub:dateLabel5(t.date),done:taskDone5(t),started:false,icon:i})),color,x=>{const t=sorted.find(t=>t.id===x.id);return "showQuick5('"+t.date+"','"+K(t.id)+"')";},false)}</div>`;
      }
-     return `<div class="mx-palace">${hero('Benim Yolum','Planlarından doğan canlı yollar. Bir dal seç, gerçek çalışmana geç.')}${tools}<div class="mx-palace-grid">${gs.map(g=>{const [c,i]=tone(g.module),s=challengeInfo5(g);return tile(g.title,`${s.count}/${s.target} · ${tag5(g.module)[0]}`,c,i,`mxJourneyGoal('${K(g.id)}')`,s.count,s.target);}).join('')}${[...groups].map(([m,ts])=>{const [c,i]=tone(m),done=ts.filter(taskDone5).length;return tile(tag5(m)[0]||m,`${done}/${ts.length} görev · Ajanda yolu`,c,i,`mxJourneyBranch('${K(m)}')`,done,ts.length);}).join('')}${!gs.length&&!groups.size?'<p>Bu dönemde planlanmış çalışma yok.</p>':''}</div></div>`;
+     return `<div class="mx-palace">${hero('Hayat Yolum','Planlarından doğan canlı yollar. Bir dal seç, gerçek çalışmana geç.')}${tools}<div class="mx-palace-grid">${gs.map(g=>{const [c,i]=tone(g.module),s=challengeInfo5(g);return tile(g.title,`${s.count}/${s.target} · ${tag5(g.module)[0]}`,c,i,`mxJourneyGoal('${K(g.id)}')`,s.count,s.target);}).join('')}${[...groups].map(([m,ts])=>{const [c,i]=tone(m),done=ts.filter(taskDone5).length;return tile(tag5(m)[0]||m,`${done}/${ts.length} görev · Ajanda yolu`,c,i,`mxJourneyBranch('${K(m)}')`,done,ts.length);}).join('')}${!gs.length&&!groups.size?'<p>Bu dönemde planlanmış çalışma yok.</p>':''}</div></div>`;
    }
    const [c,i]=tone(g.module),plan=schedule9(g),dates=Object.keys(plan.dates).filter(d=>d>=from&&d<=to).sort(),d=P().day,st=dates.includes(d)?planStat9(g,d):null;
    const crumb=`<div class="mx-crumb"><button onclick="mxJourneyGoal('')">‹ Benim Yolum</button><button onclick="mxJourneyGoal('${K(g.id)}')">${H(g.title)}</button></div>`;
