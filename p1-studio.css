@@ -1493,3 +1493,18 @@ body #app .mx-am-week31{margin:4px 0!important}
  body #app #mxv-root .mxv-card-top .mxv-flags{display:flex!important;gap:1px!important;min-width:0!important}
  body #app #mxv-root .mxv-study-top{max-width:100%!important}
 }
+
+/* R44 period goals: compact checklist and shared progress. */
+body #app .mx44-period-goals{padding:12px!important;border:0!important;border-radius:14px!important}
+body #app .mx44-period-goals-head{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:8px}
+body #app .mx44-period-goals-head h3{margin:0;font-size:15px}
+body #app .mx44-period-goals-head button,body #app .mx44-period-actions button{border:0!important;box-shadow:none!important;background:transparent!important;padding:4px!important;width:28px!important;min-width:28px!important;min-height:28px!important}
+body #app .mx44-period-goal{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:start;gap:4px 7px;padding:8px 0;border-bottom:1px solid var(--line)}
+body #app .mx44-period-goal details{min-width:0;font-size:12px;border:0!important;padding:0!important;margin:0!important}
+body #app .mx44-period-goal summary{font-size:13px;cursor:pointer;overflow-wrap:break-word;min-height:24px}
+body #app .mx44-period-goal ul{max-height:180px;overflow:auto;padding-inline-start:14px;font-size:11px}
+body #app .mx44-period-tick{color:var(--accent);font-size:19px;font-weight:700;line-height:24px}
+body #app .mx44-period-actions{display:flex;gap:0}
+body #app .mx44-period-goal progress{grid-column:2/-1;width:100%;height:5px;accent-color:var(--accent);border:0}
+body #app .mx44-period-goal progress::-webkit-progress-bar{background:var(--line);border-radius:4px}
+body #app .mx44-period-goal progress::-webkit-progress-value{background:var(--accent);border-radius:4px}
