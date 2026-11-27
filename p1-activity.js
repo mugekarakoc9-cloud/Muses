@@ -592,7 +592,7 @@ function installLifetimeAppearanceMX(){
   const arrays=[S?.mxVocabularyV2?.actions,S?.mxFocus?.flashHistory,S?.reviews];
   const lengths=arrays.map(x=>x?.length||0).join(':');
   if(!force&&S===lastState&&lengths===lastLengths&&arrays.every((a,i)=>a===lastArrays[i]))return queue;
-  const same=S===lastState;const sizes=arrays.map(x=>x?.length||0);
+  const same=!force&&S===lastState;const sizes=arrays.map(x=>x?.length||0);
   const all=mxLifetimeEntries({mxVocabularyV2:{actions:same&&arrays[0]===lastArrays[0]&&sizes[0]>=lastSizes[0]?arrays[0]?.slice(lastSizes[0]):arrays[0]},mxFocus:{flashHistory:same&&arrays[1]===lastArrays[1]&&sizes[1]>=lastSizes[1]?arrays[1]?.slice(lastSizes[1]):arrays[1]},reviews:same&&arrays[2]===lastArrays[2]&&sizes[2]===lastSizes[2]?[]:arrays[2]});
   const entries=typeof structuredClone==='function'?structuredClone(all):JSON.parse(JSON.stringify(all));
   lastState=S;lastLengths=lengths;lastArrays=arrays;lastSizes=sizes;
@@ -607,6 +607,7 @@ function installLifetimeAppearanceMX(){
  }
  function saveArchiveFile(rows){const payload={format:'muses-flashcard-lifetime-v1',exportedAt:new Date().toISOString(),entries:rows};const url=URL.createObjectURL(new Blob([JSON.stringify(payload)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='MUSES-flashcard-gecmisi-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}
  window.mxLifetimeExport=async()=>{try{saveArchiveFile(await query());}catch{toast('Arşiv dışa aktarılamadı.');}};
+ window.mxLifetimeImport=()=>{const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.onchange=async()=>{try{const file=input.files?.[0];if(!file)return;const data=JSON.parse(await file.text());if(data.format!=='muses-flashcard-lifetime-v1'||!Array.isArray(data.entries)||!data.entries.every(x=>x&&['action','session','review'].includes(x.kind)&&typeof x.id==='string'&&x.id.startsWith(x.kind+':')&&typeof x.date==='string'&&x.row&&typeof x.row==='object'))throw Error('Invalid archive');if(!confirm(data.entries.length+' arşiv kaydı eklensin mi? Mevcut kayıtlar silinmez.'))return;await archive(true);const db=await openArchive();for(let i=0;i<data.entries.length;i+=1000)await transaction(db,'readwrite',store=>{for(const entry of data.entries.slice(i,i+1000)){const req=store.add(entry);req.onerror=e=>{if(req.error?.name==='ConstraintError'){e.preventDefault();e.stopPropagation();}};}});count=await transaction(db,'readonly',store=>store.count());status(count.toLocaleString('tr-TR')+' arşiv kaydı · Süre sınırı yok');toast('Arşiv birleştirildi; mevcut çalışma planı değiştirilmedi.');}catch{toast('Arşiv içe aktarılamadı.');}};input.click();};
  window.mxLifetimePersist=async()=>{try{const granted=await navigator.storage?.persist?.();toast(granted?'Kalıcı cihaz depolaması etkin.':'Cihaz kalıcılık izni vermedi. Yedeklerini sakla.');}catch{toast('Depolama izni alınamadı.');}};
  window.mxLifetimeHistory=()=>{
   modal5('<div class="modalhead5"><h2>Flashcard arşivi</h2><button onclick="close5()" aria-label="Kapat">×</button></div><div class="card mx-lifetime-panel"><label>Tarih <input type="date" id="mx-lifetime-date" value="'+H(today())+'"></label><button id="mx-lifetime-show">Göster</button> <button onclick="mxLifetimeExport()">Tüm geçmişi indir</button><p data-mx-lifetime-status role="status">'+H(archiveStatus)+'</p><div id="mx-lifetime-results"></div></div>');
@@ -615,11 +616,11 @@ function installLifetimeAppearanceMX(){
   document.querySelector('#mx-lifetime-show').onclick=show;date.onchange=show;show();
  };
  // Keep a second independent copy whenever existing application save() runs.
- try{const previousSave=save;save=function(...args){const result=previousSave.apply(this,args);archive();return result;};}catch{}
+ try{const previousSave=save;save=function(...args){const result=previousSave.apply(this,args);try{archive();}catch{status('Arşiv kaydı doğrulanamadı. JSON yedeği al.');}return result;};}catch{}
  window.addEventListener('pagehide',()=>archive());document.addEventListener('visibilitychange',()=>{if(document.hidden)archive();});
  setInterval(()=>archive(),15000);archive();
  const previousSettings=settings;
- settings=function(){return '<section class="card mx-release-card"><div><strong>MUSES</strong><small>Kurulu sürüm</small></div><b class="mx-release-value">'+H(installed())+'</b><button onclick="mxCheckUpdate()">Güncellemeler ↻</button></section><section class="card mx-lifetime-settings"><h3>Flashcard arşivi</h3><p data-mx-lifetime-status role="status">'+H(archiveStatus)+'</p><div class="flex"><button onclick="mxLifetimeHistory()">Günlük geçmiş</button><button onclick="mxLifetimeExport()">Tüm geçmişi indir</button><button onclick="mxLifetimePersist()">Kalıcı depolama</button></div></section>'+previousSettings();};
+ settings=function(){return '<section class="card mx-release-card"><div><strong>MUSES</strong><small>Kurulu sürüm</small></div><b class="mx-release-value">'+H(installed())+'</b><button onclick="mxCheckUpdate()">Güncellemeler ↻</button></section><section class="card mx-lifetime-settings"><h3>Flashcard arşivi</h3><p data-mx-lifetime-status role="status">'+H(archiveStatus)+'</p><div class="flex"><button onclick="mxLifetimeHistory()">Günlük geçmiş</button><button onclick="mxLifetimeExport()">Tüm geçmişi indir</button><button onclick="mxLifetimeImport()">Arşivi içe aktar</button><button onclick="mxLifetimePersist()">Kalıcı depolama</button></div></section>'+previousSettings();};
  function grade(el){const text=el.textContent.trim(),match=text.match(/^([1-5])\s*·\s*(?:Çok zor|Zor|Orta|Kolay|Çok kolay)/);if(match)el.dataset.mxDifficulty=match[1];}
  function polish(){
   document.title='MUSES · '+version;
