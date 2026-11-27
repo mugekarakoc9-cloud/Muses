@@ -85,7 +85,7 @@ assert.equal(ink('#ffffff'),'#000000');
 assert.equal(ink('rgb(22, 24, 32)'),'#ffffff');
 assert.equal(ink('#f1abd3'),'#000000');
 assert.equal(measure(1,'bulmaca','ders'),null);
-const habitCode=studio.slice(studio.indexOf('function mxHabitGoalMet('));
+const habitCode=studio.slice(studio.indexOf('function mxHabitGoalMet('),studio.indexOf('/* R33:',studio.indexOf('function mxHabitGoalMet(')));
 const habitFactory=new Function('actual5','today','hasValue5','v5',habitCode+';return mxHabitGoalMet');
 const h=(value,exists,closed)=>habitFactory(()=>value,()=> '2026-11-27',()=>exists,()=>({closed:{'2026-11-27':closed}}));
 assert.equal(h(5,true,false)('Sigara','2026-11-26',15,'max'),true);
