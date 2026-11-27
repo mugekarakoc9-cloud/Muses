@@ -64,10 +64,10 @@ try{
  await page.evaluate(()=>{close5();mxTrainingSettings(3);});
  const linkInput=page.locator('#mx-training-link input[name=url]'),saveLink=page.locator('#mx-training-link-save');
  assert(await linkInput.isVisible());assert(await saveLink.isVisible());
- const fakeDrive='https://drive.google.com/open?id=fixture_drive_video_03';
+ const fakeDrive='https://drive.google.com/open?id=fixture_drive_video_03&resourcekey=0-testkey';
  await linkInput.fill(fakeDrive);await saveLink.click();
  await page.waitForFunction(()=>document.querySelector('#mx-training-drive-status')?.textContent.includes('Bağlantı kaydedildi'));
- const canonicalDrive='https://drive.google.com/file/d/fixture_drive_video_03/view';
+ const canonicalDrive='https://drive.google.com/file/d/fixture_drive_video_03/view?resourcekey=0-testkey';
  assert.equal(await page.evaluate(()=>v6().videoLinks[3]),canonicalDrive);
  await page.evaluate(()=>{close5();mxTrainingSettings(3);});
  assert.equal(await page.locator('#mx-training-link input[name=url]').inputValue(),canonicalDrive);
@@ -75,10 +75,17 @@ try{
  await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.mxTrainingWorkspace,{},{timeout:30000});
  await page.evaluate(()=>mxTrainingSettings(3));
  assert.equal(await page.locator('#mx-training-link input[name=url]').inputValue(),canonicalDrive);
+ // The preview request is intercepted only in CI; the video itself really decodes.
+ const preview='https://drive.google.com/file/d/fixture_drive_video_03/preview?resourcekey=0-testkey';
+ await page.route('https://drive.google.com/file/d/fixture_drive_video_03/preview*',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><video controls muted playsinline src="data:video/webm;base64,'+fixture.toString('base64')+'"></video>'}));
  await page.locator('#mx-training-link-open').click();
- await page.waitForSelector('#mx-training-workspace');
- assert.equal(await page.locator('#mx-training-workspace [data-player] iframe').count(),0);
- assert.match(await page.locator('[data-training-status]').innerText(),/Google Drive bağlantısı gerekli/);
+ const iframe=page.locator('#mx-training-workspace [data-player] iframe');
+ await iframe.waitFor();assert.equal(await iframe.getAttribute('src'),preview);
+ const previewVideo=page.frameLocator('#mx-training-workspace [data-player] iframe').locator('video');
+ await previewVideo.waitFor();await previewVideo.evaluate(async v=>{await v.play();});
+ await previewVideo.evaluate(v=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Preview playback did not advance')),12000);const check=()=>{if(v.videoWidth>0&&v.currentTime>0.2&&!v.error){clearTimeout(timer);v.removeEventListener('timeupdate',check);resolve();}};v.addEventListener('timeupdate',check);check();}));
+ console.log('PASS: saved Drive URL creates in-app preview without OAuth and plays real fixture frames; live Google response not tested');
+ await page.unroute('https://drive.google.com/file/d/fixture_drive_video_03/preview*');
  await page.evaluate(()=>{delete v6().videoLinks[3];save();close5();pday=1;go('home');});
  // Test actual nested resource navigation before unrelated calendar assertions.
  const nested=await page.evaluate(()=>{for(const r of resourceRows()){const tree=sourceTree(r);const group=tree.find(x=>x.children?.length);if(group)return {rid:r.id,id:group.id,children:group.children.map(x=>x.id)};}return null;});

@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "P90X verified persistent link save, owner-authorized playback, revision-aware updates",
-  "revision": 19
+  "purpose": "Restore in-app Google Drive preview for saved shared links; keep owner-only authenticated local download",
+  "revision": 20
 }
