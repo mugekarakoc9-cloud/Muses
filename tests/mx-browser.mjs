@@ -18,6 +18,16 @@ try{
  await page.waitForFunction(()=>window.mxRootInteraction&&window.mxTrainingWorkspace&&window.mxMimoRewardsInstalled&&window.mxDailyLearningReady,{},{timeout:30000});
  await page.waitForFunction(()=>document.querySelector('img.mx-real-cat'),{},{timeout:30000});
  assert.equal(await page.locator('img.mx-real-cat').count()>0,true);
+ await page.waitForFunction(()=>window.mxR39Studio);
+ await page.evaluate(()=>{go('home');mxHourlyCreate(today());});
+ assert.equal(await page.locator('#quick5 .mx39-time').count(),1);
+ assert.equal(await page.locator('#quick5 .mx39-unit').count(),1);
+ await page.locator('#quick5 [name=repeat]').selectOption('custom39');
+ assert.equal(await page.locator('#quick5 .mx39-days button').count(),7);
+ await page.evaluate(()=>{close5();go('home');});
+ assert.equal(await page.locator('.mx39-today-metrics button').count(),6);
+ console.log('PASS: R39 themed time and unit controls, first-entry weekday selector, daily metrics');
+
 
  // Generate a real, short local video in the test browser. No private media is published.
  await page.evaluate(async()=>{
@@ -213,7 +223,7 @@ try{
  await page.locator('#mxv-root.mxv-full-study').waitFor();
  const cardBox=await page.locator('#mxv-root .mxv-card').boundingBox();
  assert(cardBox.y>=0&&cardBox.y+cardBox.height<=641,'Card stays within phone viewport');
- assert.equal(await page.locator('#mxv-root .mxv-flag').count(),4);
+ assert.equal(await page.locator('#mxv-root .mxv-flag').count(),5);
  await page.locator('#mxv-root [data-act="flip"]').click();
  await page.locator('#mxv-root [data-act="rate2"]').click();
  await page.locator('#mxv-root .mxv-recap').waitFor();

@@ -1280,3 +1280,19 @@ body #mx-cat-panel .mx-cat-grid button{min-height:40px!important;padding:3px!imp
 body #mx-cat-panel .mx-cat-grid button span{font-size:16px!important}body #mx-cat-panel .mx-cat-grid button small{font-size:10px!important}
 body.mx39-cat-hidden :is(.mx-floating-cat,.mx-next-cat){display:none!important}#mx39-cat-return{position:fixed;bottom:calc(76px + env(safe-area-inset-bottom));left:8px;z-index:80;background:var(--paper)!important}#mx39-cat-return[hidden]{display:none!important}
 @media(max-width:600px){body .mx-floating-cat,body .mx-next-cat{max-width:80px!important;max-height:86px!important}body .mx-floating-cat img,body .mx-next-cat img{max-width:80px!important;max-height:86px!important;object-fit:contain;scale:1!important}body #app .mx39-today-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}body #dialog5 .formgrid5{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px!important}body #dialog5 :is(input,select,textarea){max-width:100%;box-sizing:border-box}}
+
+/* R39 verification adjustments */
+body #app .mx39-goal-card:not(.mx39-expanded) .mx39-goal-stage{display:none!important}
+body #app .mx39-goal-card.mx39-expanded .mx39-goal-stage{display:flex!important}
+.mx39-wheel{padding-bottom:0!important;box-sizing:border-box}
+.mx39-wheel:after{content:'';display:block;height:128px;pointer-events:none}
+body #app .mx-learning-row30 .journeyIcon7{background:transparent!important;box-shadow:none!important;border:0!important;font-size:20px!important;filter:none}
+body #app .mx-learning-row30 .journeyTrack7{height:6px!important;background:color-mix(in srgb,var(--mx39-color,var(--accent)) 15%,var(--paper))!important}
+body #app .mx-learning-row30 .journeyTrack7>i{background:var(--mx39-color,var(--accent))!important}
+body #app .mx-learning-row30>strong{color:color-mix(in srgb,var(--mx39-color,var(--accent)) 75%,var(--ink))!important}
+.mx39-habit-more{position:relative;flex:none}.mx39-habit-more>summary{list-style:none;display:grid;place-items:center;cursor:pointer;width:30px;height:30px;font-size:18px}.mx39-habit-more>summary::-webkit-details-marker{display:none}.mx39-habit-more[open]>button{position:absolute;z-index:8;top:100%;left:0;background:var(--paper)!important;white-space:nowrap;box-shadow:0 4px 16px #0003!important}
+body #app .mx-grip35{min-width:32px!important;width:32px!important;min-height:36px!important}
+body #app .mx-month-grid [data-p1-task]{touch-action:none!important;user-select:none!important;-webkit-user-select:none!important}
+body #app .mx-agenda-switch button.mx39-calendar-mode,body #app .mx39-calendar-mode{font-size:11px!important;line-height:1.2!important;min-height:29px!important;padding:4px 5px!important;box-shadow:none!important}
+body #dialog5 .mx39-days button{min-height:34px!important}
+body #dialog5 .mx39-picker summary{outline-offset:2px}
