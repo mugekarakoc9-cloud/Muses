@@ -1059,3 +1059,65 @@ body #app .mx-matrixgrid35 .mx-grip35{width:15px!important;min-width:15px!import
 body #app .mx-am31 .mx-am-head31{flex-wrap:nowrap!important;gap:3px!important}.mx-am-head31 h3{margin-right:auto!important}.mx-am-head31>small{white-space:nowrap;font-size:9px!important}.mx-am-head31 .mx-cal-nav33{margin-left:0!important}
 body #app .mx-monthbar35+.calendar5 .mx-agenda-switch{display:none!important}
 body #app .mx-life-overview .mx-life-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px!important}body #app .mx-life-overview .mx-life-metrics button{padding:5px!important;min-width:0!important}body #app .mx-life-overview .mx-life-metrics strong{font-size:16px!important}body #app .mx-life-overview .mx-life-metrics small{font-size:9px!important;overflow-wrap:anywhere}
+
+/* R36: one compact design system for screens, dialogs, nested menus and editors. */
+:root{--mx-purple36:#9473ca;--mx-blue36:#4581b4;--mx-green36:#38917d;--mx-orange36:#d28643;--mx-rose36:#ce6887;--mx-teal36:#739ca7}
+body #app,body #dialog5{font-size:13px;line-height:1.42}
+body #app :is(h1,h2,h3,h4),body #dialog5 :is(h1,h2,h3,h4){line-height:1.28;overflow-wrap:anywhere}
+body #app h1{font-size:clamp(18px,3.5vw,24px)!important}
+body #app h2,body #dialog5 h2{font-size:clamp(15px,3vw,19px)!important}
+body #app h3,body #dialog5 h3{font-size:clamp(13px,2.6vw,16px)!important}
+body #app h4,body #dialog5 h4{font-size:13px!important}
+body #app :is(.card,.event5,.mx-goal-hub,.mx-storage-status,.mx-palace-tools),body #dialog5 :is(.card,.mx-training-set,.mx-training-player){box-shadow:none!important;border:0!important}
+body #app :is(.card,.mx-goal-hub),body #dialog5 .card{padding:9px!important;margin-block:5px!important}
+body #app :is(.muted,small),body #dialog5 :is(.muted,small){line-height:1.35}
+body #app :is(button,a[role=button]),body #dialog5 button{font-size:12px;box-shadow:none}
+body #dialog5 .modalhead5{display:flex;align-items:flex-start;gap:8px;justify-content:space-between;padding:4px 0 8px!important;margin:0!important}
+body #dialog5 .modalhead5 h2{font-size:16px!important;line-height:1.25!important;margin:0!important;min-width:0}
+body #dialog5 :is(p,ul){font-size:13px;margin-block:6px}
+body #dialog5 ul{padding-inline-start:16px}
+body #dialog5 .modalhead5 button,body #app .mx-sharedicon36,body #dialog5 .mx-sharedicon36,body #mx-bulk-tools .mx-sharedicon36,body #mx-cat-panel .mx-sharedicon36{display:inline-grid!important;place-items:center;min-width:30px!important;width:30px!important;height:32px!important;min-height:32px!important;max-width:100%;padding:3px!important;border:0!important;box-shadow:none!important;border-radius:6px!important;background:transparent!important;color:var(--ink)!important;flex:none;font-size:18px!important;text-decoration:none}
+.mx-sharedicon36 svg{width:18px;height:18px;display:block}
+body #app .mx-sharedicon36.primary,body #dialog5 .mx-sharedicon36.primary{color:var(--accent)!important;background:color-mix(in srgb,var(--accent) 12%,var(--paper))!important}
+body #app .mx-sharedicon36[disabled],body #dialog5 .mx-sharedicon36[disabled]{opacity:.4!important}
+body #app .mx-sharedicon36:focus-visible,body #dialog5 .mx-sharedicon36:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+body #dialog5 :is(form,.mx-edit-grid,.mx-training-fields){gap:6px!important;min-width:0}
+body #dialog5 label{font-size:12px!important;line-height:1.25}
+body #dialog5 :is(input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range]),select,textarea){font-size:13px!important;min-height:32px!important;padding:5px 7px!important;border:0!important;border-radius:6px!important;background:color-mix(in srgb,var(--accent) 7%,var(--paper))!important;color:var(--ink)!important;max-width:100%;box-sizing:border-box}
+body #dialog5 :is(input[type=checkbox],input[type=radio]){accent-color:var(--accent)}
+body #dialog5 button:not(.mx-sharedicon36):not(.primary):not(.mx-task-check):not([data-map-key]):not([data-key]){border:0!important;box-shadow:none!important;padding:5px 7px!important;min-height:30px!important;font-size:12px!important}
+body #dialog5 .mx-training-row-main{gap:4px!important;min-width:0;align-items:center}
+body #dialog5 .mx-training-name{font-size:12px!important;line-height:1.3!important;overflow-wrap:anywhere}
+body #dialog5 .mx-training-name small{font-size:10px!important}
+body #dialog5 .mx-training-fields{grid-template-columns:repeat(auto-fit,minmax(52px,1fr))!important}
+body #dialog5 .mx-training-set{padding:5px!important;margin:2px 0!important;border-bottom:1px solid color-mix(in srgb,var(--line) 45%,transparent)!important}
+body #dialog5 .mx-training-set input[type=number]{min-width:0!important;text-align:center;padding:4px!important;font-variant-numeric:tabular-nums;background:color-mix(in srgb,var(--mx-green36) 10%,var(--paper))!important}
+body #dialog5 .mx-training-details summary{font-size:11px!important}
+body #dialog5 .mx-training-check input{width:17px;height:17px}
+body #app #mx-bulk-tools{position:static!important;transform:none!important;inset:auto!important;z-index:auto!important;display:flex;justify-content:flex-end;align-items:center;width:100%!important;max-width:100%!important;box-sizing:border-box;padding:0 2px!important;gap:3px!important;border:0!important;background:transparent!important;box-shadow:none!important;margin:0!important;min-height:0!important;max-height:none!important;overflow:visible!important}
+body #app #mx-bulk-tools[hidden]{display:none!important}
+body #app #mx-bulk-tools.mx-bulk-active36{background:color-mix(in srgb,var(--accent) 8%,var(--paper))!important;justify-content:flex-start;padding:3px!important;flex-wrap:wrap}
+body #app #mx-bulk-tools strong{font-size:11px!important;margin-right:auto;padding:2px!important}
+body #app #mx-bulk-tools button{min-width:30px!important;min-height:32px!important;padding:3px!important;border:0!important;background:transparent!important;box-shadow:none!important;font-size:12px!important}
+body #app #mxv-root .mxv-sidebar summary{font-size:12px;gap:4px;padding:3px 2px}
+.mx-folder36{display:inline-flex;flex:none;align-items:center}.mx-folder36 svg{width:17px;height:17px;fill:currentColor;fill-opacity:.16;stroke-width:1.6}
+body #app #mxv-root .mxv-side-row{min-width:0;gap:3px;padding:2px!important}
+body #app #mxv-root .mxv-side-row button{font-size:12px!important;padding:3px!important;border:0!important;min-width:0;text-align:left;box-shadow:none!important}
+body #app #mxv-root .mxv-side-head{gap:4px}
+body #app #mxv-root .mxv-side-foot{display:flex;flex-wrap:wrap;align-items:center;gap:3px;font-size:10px}
+.mx-palette36{display:flex;flex-wrap:wrap;gap:6px;margin:3px 0 7px}
+body #app .mx-palette36 button{width:24px!important;height:24px!important;min-width:24px!important;min-height:24px!important;border-radius:50%!important;padding:0!important;background:var(--swatch)!important;border:0!important;box-shadow:none!important}
+body #app .mx-palette36 button[aria-pressed=true]{outline:2px solid var(--ink);outline-offset:2px}
+body #app .mx-life-metrics button{background:color-mix(in srgb,var(--mx-series36,var(--accent)) 12%,var(--paper))!important;border:0!important}
+body #app .mx-life-metrics button[aria-pressed=true]{background:color-mix(in srgb,var(--mx-series36,var(--accent)) 25%,var(--paper))!important}
+body #app .mx-life-metrics strong{color:color-mix(in srgb,var(--mx-series36,var(--accent)) 76%,var(--ink))!important}
+body #app .mx-life-chart button i{background:var(--mx-series36,var(--accent))!important}
+body #app .mx-pole-donut33{background:conic-gradient(var(--mx-series36,var(--accent)) var(--pct),var(--line) 0)!important}
+body #app :is(.metric6,.statusgrid6)>*{border:0!important;box-shadow:none!important;background:color-mix(in srgb,var(--mx-series36,var(--accent)) 10%,var(--paper))!important}
+body #app :is(.metric6,.statusgrid6)>* :is(b,strong){color:color-mix(in srgb,var(--mx-series36,var(--accent)) 70%,var(--ink))!important}
+body #app .mx-life-period button{font-size:11px!important;min-height:28px!important;border:0!important;padding:4px!important}
+body #app .mx-life-overview .mx-life-chart{height:85px!important}
+body #app .mx-life-overview .mx-life-foot{font-size:10px!important}
+body #nav button[hidden]{display:none!important}
+@media(max-width:600px){body #dialog5{max-width:100vw!important;box-sizing:border-box}body #dialog5 .modalhead5 h2{font-size:15px!important}body #app .mx-life-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(prefers-reduced-motion:no-preference){.mx-sharedicon36:active{transform:scale(.9);transition:transform .12s ease}}
