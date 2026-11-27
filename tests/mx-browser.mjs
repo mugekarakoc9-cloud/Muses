@@ -75,18 +75,12 @@ try{
  await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.mxTrainingWorkspace,{},{timeout:30000});
  await page.evaluate(()=>mxTrainingSettings(3));
  assert.equal(await page.locator('#mx-training-link input[name=url]').inputValue(),canonicalDrive);
- // The preview request is intercepted only in CI; the video itself really decodes.
- const preview='https://drive.google.com/file/d/fixture_drive_video_03/preview?resourcekey=0-testkey';
- await page.route('https://drive.google.com/file/d/fixture_drive_video_03/preview*',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><video controls muted playsinline src="data:video/webm;base64,'+fixture.toString('base64')+'"></video>'}));
+ // An unconnected Drive URL never opens the browser download or preview page.
  await page.locator('#mx-training-link-open').click();
- const iframe=page.locator('#mx-training-workspace [data-player] iframe');
- await iframe.waitFor();assert.equal(await iframe.getAttribute('src'),preview);
- const previewVideo=page.frameLocator('#mx-training-workspace [data-player] iframe').locator('video');
- await previewVideo.waitFor();await previewVideo.evaluate(async v=>{await v.play();});
- await previewVideo.evaluate(v=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Preview playback did not advance')),12000);const check=()=>{if(v.videoWidth>0&&v.currentTime>0.2&&!v.error){clearTimeout(timer);v.removeEventListener('timeupdate',check);resolve();}};v.addEventListener('timeupdate',check);check();}));
- console.log('PASS: saved Drive URL creates in-app preview without OAuth and plays real fixture frames; live Google response not tested');
- await page.unroute('https://drive.google.com/file/d/fixture_drive_video_03/preview*');
- await page.evaluate(()=>{delete v6().videoLinks[3];save();close5();pday=1;go('home');});
+ await page.waitForSelector('#mx-training-workspace [data-player] button');
+ assert.equal(await page.locator('#mx-training-workspace [data-player] iframe').count(),0);
+ assert.match(await page.locator('[data-training-status]').innerText(),/Google Drive yetkisi gerekli/);
+ await page.evaluate(()=>{close5();pday=1;go('home');});
  // Test actual nested resource navigation before unrelated calendar assertions.
  const nested=await page.evaluate(()=>{for(const r of resourceRows()){const tree=sourceTree(r);const group=tree.find(x=>x.children?.length);if(group)return {rid:r.id,id:group.id,children:group.children.map(x=>x.id)};}return null;});
  assert(nested,'A nested resource must exist');await page.evaluate(r=>mxPalaceOpen(enc5(r)),nested.rid);
@@ -282,7 +276,12 @@ try{
  let account='owner-a';
  await page.route('https://www.googleapis.com/drive/v3/**',route=>{
   const url=new URL(route.request().url()),p=url.pathname;
-  const json=p.endsWith('/about')?{user:{permissionId:account,emailAddress:'fixture@example.invalid'}}:p.endsWith('/files/fixture_folder_123')?{id:'fixture_folder_123',mimeType:'application/vnd.google-apps.folder',ownedByMe:true}:p.endsWith('/files')?{files:[]}:null;
+  if(p.endsWith('/files/fixture_drive_video_03')&&url.searchParams.get('alt')==='media'){
+   assert.equal(route.request().headers()['authorization'],'Bearer fixture-token');
+   assert.equal(route.request().headers()['x-goog-drive-resource-keys'],'fixture_drive_video_03/0-testkey');
+   return route.fulfill({status:200,contentType:'video/webm',body:fixture});
+  }
+  const json=p.endsWith('/about')?{user:{permissionId:account,emailAddress:'fixture@example.invalid'}}:p.endsWith('/files/fixture_folder_123')?{id:'fixture_folder_123',mimeType:'application/vnd.google-apps.folder',ownedByMe:true}:p.endsWith('/files/fixture_drive_video_03')?{id:'fixture_drive_video_03',name:'03 - fixture.webm',mimeType:'video/webm',size:String(fixture.length),ownedByMe:true,capabilities:{canDownload:true}}:p.endsWith('/files')?{files:[]}:null;
   return route.fulfill({status:json?200:404,contentType:'application/json',body:JSON.stringify(json||{})});
  });
  await page.evaluate(()=>{window.google={accounts:{oauth2:{initTokenClient:cfg=>({requestAccessToken:()=>cfg.callback({access_token:'fixture-token',expires_in:600})})}}};mxDriveSettings();});
@@ -293,6 +292,15 @@ try{
  await page.waitForFunction(()=>document.querySelector('[data-drive-status]')?.textContent==='Bağlı · 0 DVD');
  const pin=await page.evaluate(()=>JSON.parse(localStorage.getItem('muses.drive.owner.v1')));
  assert.equal(pin.owner,'owner-a');assert(!JSON.stringify(pin).includes('fixture-token'));
+ await page.evaluate(()=>{close5();playDVD6(3);});
+ const driveVideo=page.locator('#mx-training-workspace [data-player] video');
+ await driveVideo.waitFor({timeout:30000});
+ assert.equal(await page.locator('#mx-training-workspace [data-player] iframe').count(),0);
+ await driveVideo.evaluate(async v=>{v.muted=true;await v.play();});
+ await page.waitForFunction(()=>{const v=document.querySelector('#mx-training-workspace [data-player] video');return v&&v.videoWidth>0&&v.currentTime>0.2&&!v.error;},{},{timeout:12000});
+ assert.equal(await page.evaluate(async()=> (await get6('media','p90-3')).size),fixture.length);
+ console.log('PASS: authorized Drive API response is decoded in the real app video player; Google responses mocked, real owner footage not tested');
+ await page.evaluate(()=>{close5();mxDriveSettings();});
  await page.locator('[data-drive-disconnect]').click();
  account='owner-b';
  await page.locator('[data-drive-connect]').click();

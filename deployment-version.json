@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Restore in-app Google Drive preview for saved shared links; keep owner-only authenticated local download",
-  "revision": 20
+  "purpose": "Fetch authorized Drive media directly into local video player; no Drive preview or external download screen",
+  "revision": 21
 }

@@ -1196,10 +1196,11 @@ function installTrainingWorkspaceMX(){
  function driveIdentityMatches(expected,actual){return typeof actual==='string'&&actual.length>0&&(!expected||expected===actual);}
  function driveConnected(){return !!driveSession&&Date.now()<driveSession.expires;}
  function clearDriveSession(){driveGeneration++;driveSession=null;driveIndex.clear();}
- async function driveApi(path,params={},token=driveSession?.token,signal){
+ async function driveApi(path,params={},token=driveSession?.token,signal,resourceKey){
   if(!token)throw Error('Google hesabı bağlı değil.');
   const url=new URL('https://www.googleapis.com/drive/v3/'+path);for(const [k,v] of Object.entries(params))url.searchParams.set(k,String(v));
-  const response=await fetch(url,{headers:{Authorization:'Bearer '+token},cache:'no-store',signal});
+  const headers={Authorization:'Bearer '+token};if(resourceKey)headers['X-Goog-Drive-Resource-Keys']=resourceKey;
+  const response=await fetch(url,{headers,cache:'no-store',signal});
   if(response.status===401){if(token===driveSession?.token)clearDriveSession();throw Error('Google oturumu sona erdi.');}
   if(!response.ok)throw Error(response.status===403?'Drive erişim izni yok.':'Drive bağlantısı kurulamadı.');
   return response;
@@ -1250,32 +1251,34 @@ function installTrainingWorkspaceMX(){
   }catch(e){if(generation===driveGeneration)clearDriveSession();throw e;}finally{drivePending=null;}})();return drivePending;
  }
  function folderId(raw){const s=String(raw||'').trim();if(/^[\w-]{10,200}$/.test(s))return s;return s.match(/^https:\/\/drive\.google\.com\/drive\/(?:u\/\d+\/)?folders\/([\w-]{10,200})(?:[/?#].*)?$/)?.[1]||'';}
- window.mxDriveSettings=function(){
+ window.mxDriveSettings=function(returnDVD){
   modal5('<div class="modalhead5"><h2>Google Drive</h2><button onclick="close5()">×</button></div><section class="card"><b data-drive-status role="status">'+(driveConnected()?'Bağlı · '+driveIndex.size+' DVD':driveProfile.owner?'Sahip hesabı kayıtlı':'Bağlı değil')+'</b><label>P90X klasörü<input data-drive-folder value="'+H(driveProfile.folder||'')+'" placeholder="Drive klasör bağlantısı"></label>'+(!window.Capacitor?.isNativePlatform?.()?'<label>Google OAuth istemci kimliği<input data-drive-client value="'+H(driveProfile.clientId||'')+'"></label>':'')+'<div class="flex"><button class="primary" data-drive-connect>Google ile bağlan</button><button data-drive-sync '+(driveConnected()?'':'disabled')+'>Eşitle</button><button data-drive-disconnect '+(driveProfile.owner?'':'disabled')+'>Bağlantıyı kes</button></div><small>Yalnız okuma · Sahip hesabı</small></section>');
   const root=document.querySelector('#dialog5'),status=root.querySelector('[data-drive-status]'),connect=root.querySelector('[data-drive-connect]'),sync=root.querySelector('[data-drive-sync]');
   function config(){const raw=root.querySelector('[data-drive-folder]').value.trim(),id=folderId(raw);if(raw&&!id)throw Error('Geçersiz klasör bağlantısı.');return {id,client:root.querySelector('[data-drive-client]')?.value.trim()||''};}
-  connect.onclick=async()=>{connect.disabled=sync.disabled=true;try{const {id,client}=config();status.textContent='Google bağlantısı kuruluyor…';const count=await connectDrive(true,client,id);status.textContent=driveProfile.folder?'Bağlı · '+count+' DVD':'Bağlı · Klasör seç';root.querySelector('[data-drive-folder]').value=driveProfile.folder;sync.disabled=false;root.querySelector('[data-drive-disconnect]').disabled=false;}catch(e){status.textContent=e.message;}finally{connect.disabled=false;}};
+  connect.onclick=async()=>{connect.disabled=sync.disabled=true;try{const {id,client}=config();status.textContent='Google bağlantısı kuruluyor…';const count=await connectDrive(true,client,id);status.textContent=driveProfile.folder?'Bağlı · '+count+' DVD':'Bağlı · Klasör seç';root.querySelector('[data-drive-folder]').value=driveProfile.folder;sync.disabled=false;root.querySelector('[data-drive-disconnect]').disabled=false;if(DVD[returnDVD]&&root.querySelector('[data-drive-status]')===status)await playDVD6(returnDVD);}catch(e){status.textContent=e.message;}finally{connect.disabled=false;}};
   sync.onclick=async()=>{sync.disabled=true;try{const {id}=config();if(!id)throw Error('Klasör seç.');const generation=driveGeneration,index=await listDriveFolder(id);if(generation!==driveGeneration)throw Error('Bağlantı iptal edildi.');driveProfile.folder=id;saveDriveProfile();driveIndex=index;status.textContent='Bağlı · '+index.size+' DVD';}catch(e){status.textContent=e.message;}finally{sync.disabled=!driveConnected();}};
   root.querySelector('[data-drive-disconnect]').onclick=()=>{clearDriveSession();driveProfile.enabled=false;saveDriveProfile();status.textContent='Bağlantı kesildi';sync.disabled=true;};
  };
  const oldDriveSettings=settings;settings=function(){return '<section class="card"><h3>Google Drive</h3><button onclick="mxDriveSettings()">Google Drive · '+(driveConnected()?'Bağlı':'Bağlan')+'</button></section>'+oldDriveSettings();};
  // Native authorization may renew silently, but only for the previously approved owner.
  if(driveProfile.enabled&&driveProfile.owner&&nativeDrive())connectDrive(false).catch(()=>{});
- async function downloadDriveDVD(d,status,linkedId){
+ async function downloadDriveDVD(d,status,linkedId,signal,resourceKey){
   if(!driveConnected())throw Error('Google hesabı bağlı değil.');
   const generation=driveGeneration,session=driveSession;
   let file=driveIndex.get(d);
-  if(linkedId&&file?.id!==linkedId){file=await(await driveApi('files/'+encodeURIComponent(linkedId),{fields:'id,name,mimeType,size,ownedByMe,capabilities(canDownload)'},session.token)).json();}
+  const keyHeader=linkedId&&resourceKey?linkedId+'/'+resourceKey:undefined;
+  if(linkedId&&file?.id!==linkedId){file=await(await driveApi('files/'+encodeURIComponent(linkedId),{fields:'id,name,mimeType,size,ownedByMe,capabilities(canDownload)'},session.token,signal,keyHeader)).json();}
   if(!file)throw Error('DVD Drive’da bulunamadı.');
   if(file.ownedByMe!==true||file.capabilities?.canDownload===false||!/^video\//.test(file.mimeType||'')||!Number(file.size))throw Error('Video için sahip hesabı erişimi gerekli.');
   if(dvdFileNumber(file)&&dvdFileNumber(file)!==d)throw Error('DVD numarası farklı.');
   status.textContent='DVD '+d+' indiriliyor · '+Math.round(Number(file.size)/1048576)+' MB';
-  const response=await driveApi('files/'+encodeURIComponent(file.id),{alt:'media'},session.token);
+  const response=await driveApi('files/'+encodeURIComponent(file.id),{alt:'media'},session.token,signal,keyHeader);
+  if(/(?:text\/html|application\/json)/i.test(response.headers.get('content-type')||''))throw Error('Drive video yerine bir web sayfası gönderdi.');
   const blob=await response.blob();
   if(generation!==driveGeneration||session!==driveSession)throw Error('Bağlantı iptal edildi.');
   if(blob.size!==Number(file.size))throw Error('Video eksik indirildi.');
   const local=new File([blob],file.name,{type:file.mimeType});await verifyVideoFile(local);
-  if(generation!==driveGeneration||session!==driveSession)throw Error('Bağlantı iptal edildi.');
+  if(signal?.aborted||generation!==driveGeneration||session!==driveSession)throw Error('Bağlantı iptal edildi.');
   await put6('media','p90-'+d,local);const stored=await get6('media','p90-'+d);
   if(!(stored instanceof Blob)||stored.size!==local.size)throw Error('Video kaydedilemedi.');
   v6().mediaNames[d]=file.name;save();status.textContent='Video kaydedildi.';return stored;
@@ -1289,7 +1292,7 @@ function installTrainingWorkspaceMX(){
    const id=u.pathname.match(/^\/file\/d\/([\w-]{10,200})(?:\/(?:view|preview|edit))?\/?$/)?.[1]||(/^\/(?:open|uc)\/?$/.test(u.pathname)?u.searchParams.get('id'):'');
    if(!/^[\w-]{10,200}$/.test(id||''))return null;
    const key=u.searchParams.get('resourcekey');const suffix=key&&/^[\w-]{1,300}$/.test(key)?'?resourcekey='+encodeURIComponent(key):'';
-   return {kind:'drive',provider:'Google Drive',id,src:'https://drive.google.com/file/d/'+id+'/preview'+suffix,url:'https://drive.google.com/file/d/'+id+'/view'+suffix};
+   return {kind:'drive',provider:'Google Drive',id,resourceKey:suffix?key:undefined,url:'https://drive.google.com/file/d/'+id+'/view'+suffix};
   }
   return pathVideoMX(value);
  }
@@ -1342,7 +1345,7 @@ function installTrainingWorkspaceMX(){
  @media(max-width:360px){.mx-training-row-main{grid-template-columns:22px minmax(0,1fr) 48px 48px;gap:4px}.mx-training-name{font-size:12px}}
  `;document.head.append(style);
  let localURL=null,workspace=null,trainingInterval=null;
- function clearMedia(){clearInterval(trainingInterval);trainingInterval=null;if(workspace?.video){workspace.video.pause();remember();}if(localURL){URL.revokeObjectURL(localURL);localURL=null;}workspace=null;}
+ function clearMedia(){clearInterval(trainingInterval);trainingInterval=null;workspace?.mediaAbort?.abort();if(workspace?.video){workspace.video.pause();remember();}if(localURL){URL.revokeObjectURL(localURL);localURL=null;}workspace=null;}
  function remember(){if(!workspace?.video)return;const t=workspace.video.currentTime;if(Number.isFinite(t)){db().positions[workspace.key]=t;save();}}
  function stableEntry(run,day){return v2().p90[String(run)+'-'+day]??={};}
  function values(d,n){return (P90_MOVES[d]||[]).map((name,i)=>({name,key:d+'-'+i,index:i}));}
@@ -1373,7 +1376,7 @@ function installTrainingWorkspaceMX(){
   if(!DVD[d])return;clearMedia();
   const n=pday,run=v2().p90Run,key=String(run)+'-'+n+'-'+d;
   modal5(`<div class="modalhead5"><div><small>P90X · TUR ${run} · GÜN ${n}</small><h2>DVD ${d} · ${H(DVD[d])}</h2></div><button onclick="close5()">×</button></div><div class="mx-training-workspace" id="mx-training-workspace"><section class="mx-training-player card"><div data-player><p>Medya yükleniyor…</p></div><div class="mx-palace-tools"><span data-training-clock role="status">Pomodoro hazır</span><button data-training-start>Başlat</button><button data-training-stop disabled>Kaydet ve bitir</button><button onclick="mxTrainingSettings(${d})">Medya ayarları</button></div><p data-training-status role="status"></p></section><section class="mx-training-rows" aria-label="Antrenman kayıtları"><details class="card" data-training-progress><summary>Gelişim grafiği</summary><label>Hareket<select data-history-move>${values(d,n).map(x=>'<option value="'+H(x.key)+'">'+H((x.index+1)+'. '+x.name)+'</option>').join('')}</select></label><label>Ölçüm<select data-history-metric>${fields.map(([k,t])=>'<option value="'+H(k)+'">'+H(t)+'</option>').join('')}</select></label><div data-history-chart></div></details>${rows(d,n,run)}</section></div>`);
-  const host=document.querySelector('#mx-training-workspace');workspace={host,key,d,n,run,video:null};
+  const host=document.querySelector('#mx-training-workspace');workspace={host,key,d,n,run,video:null,mediaAbort:new AbortController()};
   const state=workspace,player=host.querySelector('[data-player]'),status=host.querySelector('[data-training-status]');
   host.querySelector('[data-training-start]').onclick=()=>{const a=S.mxFocus?.active;if(a?.module==='p90'&&String(a.target)===String(n)&&a.status==='running'){host.querySelector('[data-training-clock]').textContent='Duraklatılıyor';const dock=document.querySelector('.mx-focus-dock [data-pause]');dock?.click();}else if(!window.mxStartLinkedFocus?.('p90',String(n))){status.textContent='Pomodoro başlatılmadı.';}else status.textContent='Pomodoro başlatıldı.';paintTrainingTimer(state);};
   host.querySelector('[data-training-stop]').onclick=()=>{const a=S.mxFocus?.active;if(!a||a.module!=='p90'||String(a.target)!==String(n)){status.textContent='Bu gün için çalışan Pomodoro yok.';return;}const id=a.id;if(!window.mxStopLinkedFocus?.('p90',String(n))){status.textContent='Süre kaydedilemedi.';return;}const saved=S.mxFocus?.history?.find(x=>x.id===id);status.textContent=saved?'Süre kaydedildi · '+fmtTime9(saved.seconds||0):'Pomodoro bitirildi.';paintTrainingTimer(state);};
@@ -1383,24 +1386,25 @@ function installTrainingWorkspaceMX(){
   host.querySelector('.mx-training-rows').addEventListener('click',e=>{const stamp=e.target.closest('[data-stamp]'),seek=e.target.closest('[data-seek]');if(stamp){if(!state.video)return toast('Zaman eşleştirme yerel/doğrudan videoda kullanılabilir.');const v=Math.floor(state.video.currentTime);(db().chapters[d]??={})[stamp.dataset.stamp]=v;save();const btn=stamp.nextElementSibling;btn.disabled=false;btn.textContent=Math.floor(v/60)+':'+String(v%60).padStart(2,'0')+' · Git';}if(seek&&state.video){const t=db().chapters[d]?.[seek.dataset.seek];if(Number.isFinite(t))state.video.currentTime=t;}});
   let blob;try{blob=await get6('media','p90-'+d);}catch{}
   const m=trainingMedia(v6().videoLinks[d]||p90SourceMX(d));
-  if(!(blob instanceof Blob)&&m?.kind!=='drive'&&!driveConnected()&&driveProfile.enabled&&driveProfile.owner&&nativeDrive()){try{await connectDrive(false);}catch{}}
+  if(!(blob instanceof Blob)&&!driveConnected()&&driveProfile.enabled&&driveProfile.owner&&nativeDrive()){try{await connectDrive(false);}catch{}}
   if(workspace!==state||!host.isConnected)return;
-  if(!(blob instanceof Blob)&&m?.kind!=='drive'&&driveConnected()&&driveIndex.has(d)){try{blob=await downloadDriveDVD(d,status);}catch(e){status.textContent=e.message;}}
+  if(!(blob instanceof Blob)&&driveConnected()&&(m?.kind==='drive'||(!m&&driveIndex.has(d)))){
+   try{blob=await downloadDriveDVD(d,status,m?.kind==='drive'?m.id:undefined,state.mediaAbort.signal,m?.resourceKey);}
+   catch(e){if(!state.mediaAbort.signal.aborted)status.textContent=e.message||'Video alınamadı.';}
+  }
   if(workspace!==state||!host.isConnected)return;
   if(blob instanceof Blob||m?.kind==='video'){
    const v=document.createElement('video');v.controls=true;v.playsInline=true;v.preload='metadata';if(blob instanceof Blob){localURL=URL.createObjectURL(blob);v.src=localURL;}else v.src=m.src;state.video=v;player.replaceChildren(v);
-   v.onloadedmetadata=()=>{const t=db().positions[key];if(Number.isFinite(t)&&t<v.duration)v.currentTime=t;};let last=0;v.ontimeupdate=()=>{if(Date.now()-last>10000){last=Date.now();remember();}};v.onpause=remember;v.onerror=()=>{status.textContent='Video açılamadı.';};
-  }else if(m?.kind==='drive'||m?.kind==='embed'){
-   // The Drive preview is Google's own in-app player. It enforces sharing permissions.
-   // Public links must work without an OAuth token; private downloads retain owner checks.
-   const frame=document.createElement('iframe');frame.src=m.src;frame.title=DVD[d];frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';frame.loading='eager';
-   frame.setAttribute('data-video-provider',m.provider||'');status.textContent='';player.replaceChildren(frame);
-   if(m.kind==='drive'&&driveConnected()){
-    const download=document.createElement('button');download.type='button';download.className='mx-p90-offline';download.textContent='Cihaza kaydet';
-    download.onclick=async()=>{download.disabled=true;try{await downloadDriveDVD(d,status,m.id);if(workspace===state&&host.isConnected)await playDVD6(d);}catch(e){status.textContent=e.message;download.disabled=false;}};
-    player.append(download);
-   }
-   frame.addEventListener('error',()=>{if(workspace===state)status.textContent='Video açılamadı.';},{once:true});
+   v.onloadedmetadata=()=>{const t=db().positions[key];if(Number.isFinite(t)&&t<v.duration)v.currentTime=t;};v.addEventListener('loadeddata',()=>{if(workspace===state)status.textContent='';},{once:true});let last=0;v.ontimeupdate=()=>{if(Date.now()-last>10000){last=Date.now();remember();}};v.onpause=remember;v.onerror=()=>{status.textContent='Video açılamadı.';};
+  }else if(m?.kind==='drive'){
+   // Never navigate the webview to Drive's preview/download page.
+   const button=document.createElement('button');button.type='button';button.className='primary';
+   button.textContent=driveConnected()?'Tekrar dene':'Google Drive ile bağlan';
+   button.onclick=()=>driveConnected()?playDVD6(d):mxDriveSettings(d);
+   player.replaceChildren(button);
+   if(!status.textContent)status.textContent=driveConnected()?'Video alınamadı.':'Google Drive yetkisi gerekli.';
+  }else if(m?.kind==='embed'){
+   const frame=document.createElement('iframe');frame.src=m.src;frame.title=DVD[d];frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';frame.allowFullscreen=true;frame.referrerPolicy='strict-origin-when-cross-origin';frame.loading='eager';player.replaceChildren(frame);
   }
   else player.innerHTML='<div class="flex"><button onclick="mxDriveSettings()">Google Drive</button><button onclick="mxTrainingSettings('+d+')">Video ekle</button></div>';
  };
@@ -1482,7 +1486,7 @@ installStudioP1=function(){previousStudioInstallerRootMX();installRootInteractio
 /* Live build indicator and manual update: no local record migration. */
 function installLiveBuildMX(){
  if(window.mxLiveBuildInstalled)return;window.mxLiveBuildInstalled=true;
- const version='0.16.11',revision=20,buildLabel=version+' R'+revision;
+ const version='0.16.11',revision=21,buildLabel=version+' R'+revision;
  const oldHome=home;
  const css=document.createElement('style');css.textContent=`
  .mx-home-banner{padding:clamp(16px,3vw,28px);border-radius:22px;background:linear-gradient(128deg,#e6dcef,#e3eddf);color:#3c3450;border:1px solid #b8abc83b}
@@ -2204,7 +2208,7 @@ function installModern1611MX() {
     const rows=agendaRows5(today()).filter(r=>r.kind!=='actual'&&!String(r.id).startsWith('time9:')),unique=[...new Map(rows.map(r=>[r.id,r])).values()],done=unique.filter(r=>r.done).length,total=unique.length,pct=total?Math.round(done/total*100):0;
     const routes=[['calendar','Ajanda','Gününü düzenle','calendar'],['resources','Öğren','Kaldığın yerden','book'],['p90','Hareket','Antrenman ve pole','move'],['habits','Yaşam','Rutinlerini takip et','leaf']];
     const icons={calendar:'<rect x="4" y="6" width="24" height="22" rx="5"/><path d="M10 3v6m12-6v6M4 13h24m-18 6h3m6 0h3m-12 5h3"/>',book:'<path d="M16 8c-5-4-10-3-12-2v20c5-2 9-1 12 1 3-2 7-3 12-1V6c-2-1-7-2-12 2Zm0 0v19"/>',move:'<path d="m8 24 16-16M4 17l11 11M17 4l11 11M3 23l6 6M23 3l6 6"/>',leaf:'<path d="M26 5C11 2 2 12 7 23c10 5 20-3 19-18ZM7 25l14-14m-8 8v-7m0 7h7"/>'};
-    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R20</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
+    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R21</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
     return h.slice(0,start)+banner+h.slice(end+10);
   };
   // Native assets are bundled: reloading localhost cannot install a new APK.
@@ -2220,7 +2224,7 @@ function installModern1611MX() {
         if(!response.ok)throw Error('source manifest unavailable');
         const remote=await response.json();
         if(!/^\d+\.\d+\.\d+$/.test(remote.release)||!Number.isSafeInteger(remote.revision)||remote.revision<0)throw Error('invalid metadata');
-        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??20;
+        const installedRelease=window.MUSES_NATIVE_BUILD?.version||'0.16.11',installedRevision=window.MUSES_NATIVE_BUILD?.revision??21;
         const rv=remote.release.split('.').map(Number),iv=installedRelease.split('.').map(Number);
         const cmp=rv[0]-iv[0]||rv[1]-iv[1]||rv[2]-iv[2];
         const newer=cmp>0||(cmp===0&&remote.revision>installedRevision);
@@ -2280,7 +2284,7 @@ async function mxFlushStudyState(){
 }
 function installStudySafetyR10(){
  if(window.mxStudySafetyR10)return;window.mxStudySafetyR10=true;
- document.title='MUSES Life Studio · 0.16.11 R20';
+ document.title='MUSES Life Studio · 0.16.11 R21';
  window.mxVerifyStudySave=async()=>{const ok=await mxFlushStudyState();toast(ok?'Kayıt bu cihazda doğrulandı.':'Kayıt doğrulanamadı. JSON yedeğini hemen al.');return ok;};
  const previous=settings;settings=function(){return '<section class="card mx-storage-status"><h3>Kayıt güvenliği</h3><p>'+esc(dbStatus6)+' · Bu cihazın kayıtlarıdır, cihazlar arası eşitleme değildir.</p><button onclick="mxVerifyStudySave()">Kaydı doğrula</button> <button onclick="backup()">JSON yedeği al</button></section>'+previous();};
 }
