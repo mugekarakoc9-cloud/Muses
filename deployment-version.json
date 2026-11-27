@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Six-icon radial Mimo menu, in-app Drive preview and native playback improvements",
-  "revision": 43
+  "purpose": "Compact vocabulary and calendar, CEFR map, original PDF reader, weekly/monthly goals",
+  "revision": 44
 }
