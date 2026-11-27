@@ -991,3 +991,63 @@ body #app .mx-month-grid .mx-hour-dragging{opacity:.35}
 body #app .mx-month-grid .mx-drop-hover{background:color-mix(in srgb,var(--accent) 17%,var(--paper))!important;outline:1px solid var(--accent)}
 body #app :is(.focus-list,.focusList7,.mx-focus-list){min-width:0!important;max-width:100%!important;overflow-wrap:anywhere}
 body .mx-focus-dock{border:0!important;box-shadow:none!important;max-width:calc(100vw - 12px)!important;flex-wrap:wrap!important}
+
+/* R35 calendar and activity: minimal surfaces, visible dates, no oversized chrome */
+body #app :is(.mx-year35,.mx-list35,.mx-matrix35){min-width:0;width:100%;box-sizing:border-box;color:var(--ink)}
+body #app .mx-agendahead35{display:flex;gap:3px;align-items:center;margin:2px 0 10px;min-width:0}
+.mx-agendahead35>b{font-size:19px;margin-right:auto;min-width:0}
+body #app .mx-icon35,body #dialog5 .mx-icon35,body #app .mx-agendahead35>button{display:inline-grid!important;place-items:center;min-width:28px!important;width:28px!important;min-height:30px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;color:var(--ink)!important;font-size:18px!important}
+.mx-viewmenu35,.mx-mapmenu35,.mx-goalmenu35{position:relative;flex:none}
+.mx-viewmenu35>summary,.mx-mapmenu35>summary,.mx-goalmenu35>summary{list-style:none;cursor:pointer;font-size:22px;width:30px;height:30px;display:grid;place-items:center}
+.mx-viewmenu35>summary::-webkit-details-marker,.mx-mapmenu35>summary::-webkit-details-marker,.mx-goalmenu35>summary::-webkit-details-marker{display:none}
+.mx-viewmenu35>div,.mx-mapmenu35>form,.mx-goalmenu35>div{position:absolute;top:100%;right:0;z-index:100;background:var(--paper);color:var(--ink);box-shadow:0 10px 28px #0004;border-radius:13px;padding:8px;width:min(210px,75vw);display:grid;gap:3px}
+body #app :is(.mx-viewmenu35,.mx-goalmenu35) button{display:flex!important;align-items:center;gap:10px;background:transparent!important;color:var(--ink)!important;border:0!important;box-shadow:none!important;text-align:left;font-size:12px!important;padding:7px!important;min-height:32px!important;width:100%}
+.mx-viewmenu35 button span{width:20px;text-align:center}.mx-viewmenu35 button b{margin-left:auto;color:var(--accent)}
+.mx-viewmenu35 label,.mx-mapmenu35 label{display:grid;gap:3px;font-size:11px}
+.mx-viewmenu35 input,.mx-mapmenu35 input{width:100%;min-width:0;box-sizing:border-box}
+.mx-presets35{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
+body #app .mx-presets35 button{padding:3px!important;font-size:11px!important;min-width:0!important;min-height:28px!important}
+.mx-yeargrid35{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px 7px;align-items:start}
+.mx-yeargrid35>section{min-width:0}
+body #app .mx-monthname35{display:block;text-align:left;border:0!important;background:transparent!important;box-shadow:none!important;font-size:15px!important;font-weight:700;padding:0!important;min-height:30px!important}
+.mx-yearmonth35{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;text-align:center;align-items:center}
+.mx-yearmonth35 small{font-size:clamp(7px,1.7vw,10px);color:var(--muted)}
+body #app .mx-yearmonth35 button{min-width:0!important;width:100%!important;min-height:0!important;aspect-ratio:1;padding:0!important;margin:0!important;border:0!important;box-shadow:none!important;border-radius:2px!important;background:color-mix(in srgb,var(--accent) calc(var(--heat)*68%),var(--paper))!important;color:var(--ink)!important;font-size:clamp(8px,1.7vw,13px)!important;line-height:1!important;font-variant-numeric:tabular-nums}
+body #app .mx-yearmonth35 button.today{outline:1px solid var(--accent);outline-offset:-1px;font-weight:800}
+.mx-weekstrip35{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;margin:0 0 12px}
+body #app .mx-weekstrip35 button{display:grid!important;gap:4px;place-items:center;min-width:0!important;min-height:45px!important;padding:3px!important;background:transparent!important;border:0!important;box-shadow:none!important;font-size:12px!important;color:var(--ink)!important}
+.mx-weekstrip35 small{font-size:10px;color:var(--muted)}
+body #app .mx-weekstrip35 button[aria-pressed=true] b{display:grid;place-items:center;border-radius:50%;background:var(--accent);color:#fff;min-width:27px;min-height:27px}
+.mx-listrow35{display:flex;align-items:center;gap:5px;min-width:0;padding:3px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 40%,transparent)}
+body #app .mx-listrow35 .mx-listtitle35{flex:1;display:grid!important;text-align:left;gap:2px;padding:6px!important;min-width:0!important;border:0!important;box-shadow:none!important;background:color-mix(in srgb,var(--accent) 7%,var(--paper))!important;color:var(--ink)!important;white-space:normal!important}
+.mx-listtitle35 b{font-size:12px;overflow-wrap:anywhere}
+.mx-listtitle35>small{font-size:10px;color:var(--muted)}
+.mx-listrow35.done b{text-decoration:line-through;color:var(--muted)}
+.mx-tags35{display:flex;flex-wrap:wrap;gap:3px}
+.mx-tags35:empty{display:none}
+.mx-tags35 small{font-size:10px!important;padding:2px 5px;background:color-mix(in srgb,var(--accent) 17%,var(--paper));color:var(--ink);border-radius:5px}
+.mx-matrixgrid35{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.mx-matrixgrid35>section{min-width:0;max-height:50dvh;min-height:130px;overflow:auto;background:color-mix(in srgb,var(--accent) 5%,var(--paper));padding:7px;border-radius:12px}
+.mx-matrixgrid35>section h3{font-size:12px!important;margin:0 0 6px!important;color:var(--muted)}
+.mx-matrixgrid35>section:nth-child(1) h3{color:#c85679}.mx-matrixgrid35>section:nth-child(2) h3{color:#bd8a35}.mx-matrixgrid35>section:nth-child(3) h3{color:#5989cf}
+body #app .mx-matrixgrid35 .mx-listtitle35{padding:3px!important;background:transparent!important}
+body #app .mx-matrixgrid35 .mx-listrow35{gap:1px}
+body #app .mx-matrixgrid35 .mx-icon35{width:21px!important;min-width:21px!important}
+body #app .mx-matrixgrid35 .mx-task-check{width:23px!important;min-width:23px!important}
+body #app .mx-am31{overflow:visible!important;gap:3px!important;padding:7px!important}
+body #app .mx-am31 .mx-am-week31{gap:2px!important}
+body #app .mx-am31 .mx-am-cell31{background:color-mix(in srgb,var(--accent) 12%,var(--paper))!important;color:var(--ink)!important;height:clamp(25px,7vw,37px)!important;box-shadow:inset 0 -2px 0 #0000000c!important}
+body #app .mx-am31 .mx-am-cell31.planned{background:color-mix(in srgb,var(--accent) 22%,var(--paper))!important}
+body #app .mx-am31 .mx-am-cell31.low{background:#dbcaef!important;color:#37234f!important}
+body #app .mx-am31 .mx-am-cell31.mid{background:#bba1e5!important;color:#2a1942!important}
+body #app .mx-am31 .mx-am-cell31.high{background:#9b79ce!important;color:#211238!important}
+body #app .mx-am31 .mx-am-cell31.complete{background:#7250ad!important;color:#fff!important}
+body #app .mx-am31 .mx-am-cell31.actual{background:#368372!important;color:#fff!important}
+.mx-am-month35{font-size:7px!important;font-weight:500;display:inline;margin-left:2px;color:inherit}
+.mx-goals34>h3{display:flex;justify-content:space-between;align-items:center}
+body #app .mx-life-overview>button.mx-mini34{float:right}
+body #app .mx-life-overview .mx-life-head button{border:0!important;box-shadow:none!important;padding:3px!important;font-size:11px!important;min-height:24px!important}
+body #app .mx-road-view .mx-node{box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 50%,transparent),0 5px 12px #0001!important}
+@media(prefers-reduced-motion:no-preference){.mx-road-view .mx-node{transition:transform .18s ease,filter .18s ease}.mx-road-view .mx-node:active{transform:translateY(2px) scale(.96)}.mx-road-view .mx-stop[data-current=yes] .mx-node{animation:mxCurrent35 3s ease-in-out infinite}}
+@keyframes mxCurrent35{0%,100%{filter:brightness(1)}50%{filter:brightness(1.16)}}
+@media(max-width:750px){body #app #mxv-root:has(.mx-flash-tools31):not(.mx-sidebar-folded31):not(.mxv-studying) .mxv-sidebar{display:block!important;max-height:50dvh!important;overflow:auto!important}body #app .mx-hour-grid{grid-template-columns:32px repeat(var(--days),minmax(76px,1fr))!important;min-width:calc(32px + var(--days)*76px)!important}body #app .mx-hour-grid[style*="--days:1"]{grid-template-columns:32px minmax(0,1fr)!important;min-width:0!important}}
