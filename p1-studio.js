@@ -1154,6 +1154,13 @@ function installTrainingWorkspaceMX(){
  const db=()=>S.mxTrainingWorkspace??={positions:{},chapters:{}};
  const style=document.createElement('style');style.textContent=`
 
+ .mx-p90-day-dvd{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px;padding:8px!important}
+ .mx-p90-dvd-open{display:flex;align-items:center;gap:10px;text-align:left;min-width:0;width:100%;min-height:52px;background:transparent!important;border:0!important;padding:4px!important;color:var(--ink)}
+ .mx-p90-disc{flex:none;width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:var(--accent);color:var(--paper);font-weight:750}
+ .mx-p90-dvd-text{min-width:0;flex:1;display:grid;gap:4px;overflow-wrap:anywhere}.mx-p90-dvd-text b{font-size:14px;line-height:1.3}.mx-p90-dvd-text small{font-size:11px;color:var(--muted)}
+ .mx-p90-play{color:var(--accent);font-size:18px;flex:none}.mx-p90-media-settings{width:36px;min-width:36px;min-height:36px;padding:3px!important}
+ .mx-p90-day-dvd>.mx-p90-legacy-sets{grid-column:1/-1;margin:0!important;padding:4px 8px!important;border:0!important;background:transparent!important;box-shadow:none!important;min-width:0}
+ .mx-p90-legacy-sets summary{font-size:12px;color:var(--muted);cursor:pointer}
  .mx-training-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px;align-items:start;min-width:0}
  .mx-training-player{position:sticky;top:0;min-width:0}
  .mx-training-player video,.mx-training-player iframe{width:100%;aspect-ratio:16/9;display:block;border:0;border-radius:12px;background:#20202a}
@@ -1188,10 +1195,15 @@ function installTrainingWorkspaceMX(){
   return values(d,n).map(x=>{const a=stableEntry(run,n).moves?.[x.key]||{},p=previous(run,n,x.key),stamp=db().chapters[d]?.[x.key],prev=p?fields.filter(([k])=>p[k]!==undefined&&p[k]!=='').map(([k,t])=>H(t+': '+p[k])).join(' · '):'';
    return `<article class="mx-training-set" data-occurrence="${H(x.key)}"><div class="mx-training-row-main"><label class="mx-training-check" title="Tamamlandı"><input type="checkbox" aria-label="${H(x.name)} tamamlandı" data-field="done" ${a.done?'checked':''}></label><div class="mx-training-name">${x.index+1}. ${H(x.name)}${prev?`<small>Önceki: ${prev}</small>`:''}</div>${primaryKeys.map(k=>input(fields.find(f=>f[0]===k),a,true)).join('')}</div><details class="mx-training-details"><summary>Ayrıntılar${a.note?' · not':''}</summary><div class="mx-training-fields">${fields.filter(([k])=>!primaryKeys.includes(k)).map(f=>input(f,a)).join('')}</div><label>Not / değişiklik<textarea data-field="note" rows="2" maxlength="1000">${H(a.note||'')}</textarea></label><div class="mx-palace-tools"><button data-stamp="${H(x.key)}">Video zamanı kaydet</button><button data-seek="${H(x.key)}" ${Number.isFinite(stamp)?'':'disabled'}>${Number.isFinite(stamp)?Math.floor(stamp/60)+':'+String(Math.floor(stamp%60)).padStart(2,'0')+' · Git':'Zaman yok'}</button></div></details></article>`;}).join('')||'<p>Bu DVD için hareket verisi yok.</p>';
  }
- window.mxTrainingSettings=function(d){if(!DVD[d])return;clearMedia();modal5(`<div class="modalhead5"><h2>DVD ${d} · ${H(DVD[d])}</h2><button onclick="close5()">×</button></div><form id="mx-training-link"><label>YouTube / Dailymotion / HTTPS MP4<input name="url" type="url" value="${H(v6().videoLinks[d]||p90SourceMX(d))}"></label>${d===1?'<small>Gönderdiğin birleşik Chest & Back + Ab Ripper X bağlantısı: <button type="button" id="mx-training-suggest">Adresini kullan</button></small>':''}<p class="muted">Gömme izni olan yayınları veya yetkili yerel dosyalarını kullan. Yerel dosya varsa önceliklidir.</p><button class="primary">Bağlantıyı kaydet</button></form><label>Yerel video <input type="file" id="mx-training-file" accept="video/*,.mp4,.webm"></label><button onclick="removeLocalVideo6(${d})">Yerel videoyu kaldır</button>`);
+ window.mxTrainingSettings=function(d){if(!DVD[d])return;clearMedia();modal5(`<div class="modalhead5"><h2>DVD ${d} · ${H(DVD[d])}</h2><button onclick="close5()">×</button></div><form id="mx-training-link"><label>YouTube / Dailymotion / HTTPS MP4<input name="url" type="url" value="${H(v6().videoLinks[d]||p90SourceMX(d))}"></label>${d===1?'<small>Gönderdiğin birleşik Chest & Back + Ab Ripper X bağlantısı: <button type="button" id="mx-training-suggest">Adresini kullan</button></small>':''}<p class="muted">Gömme izni olan yayınları veya yetkili yerel dosyalarını kullan. Yerel dosya varsa önceliklidir.</p><button class="primary">Bağlantıyı kaydet</button></form><label>Yerel video <input type="file" id="mx-training-file" accept="video/*,.mp4,.webm"></label><button onclick="removeLocalVideo6(${d})">Yerel videoyu kaldır</button><details><summary>DVD 01–12 toplu yerel video aktarımı</summary><label>Numaralı video dosyalarını seç<input type="file" id="mx-training-batch" multiple accept="video/*,.mp4,.webm,.mkv,.mov,.m4v"></label><small>01–12 veya o1–o9 ile başlayan dosyalar kendi DVD numarasına aktarılır. Mevcut yerel videolar değiştirilmez.</small><p id="mx-training-batch-status" role="status"></p></details>`);
  const f=document.querySelector('#mx-training-link'),suggest=document.querySelector('#mx-training-suggest');if(suggest)suggest.onclick=()=>{f.elements.url.value='https://www.dailymotion.com/video/x941iya';};
  f.onsubmit=e=>{e.preventDefault();const raw=f.elements.url.value.trim(),m=raw?pathVideoMX(raw):null;if(raw&&(!m||m.kind==='audio'))return toast('Geçerli video adresi gir.');if(m)v6().videoLinks[d]=raw;else delete v6().videoLinks[d];save();close5();render();};
- document.querySelector('#mx-training-file').onchange=e=>{const f=e.target.files[0];if(f)saveLocalVideo6(f,d);};};
+ document.querySelector('#mx-training-file').onchange=e=>{const f=e.target.files[0];if(f)saveLocalVideo6(f,d);};
+ const batch=document.querySelector('#mx-training-batch'),out=document.querySelector('#mx-training-batch-status');
+ batch.onchange=async()=>{const files=Array.from(batch.files||[]),by=new Map(),skipped=[];let saved=0;batch.disabled=true;
+  for(const file of files){const match=/^(?:0|o)?([1-9]|1[0-2])(?=[ ._–—-]|$)/i.exec(file.name);const id=Number(match?.[1]);if(!DVD[id]||!file.size||!(/^(video\/)/i.test(file.type)||/\.(mp4|webm|mkv|mov|m4v)$/i.test(file.name))){skipped.push(file.name);continue;}if(!by.has(id))by.set(id,[]);by.get(id).push(file);}
+  try{for(const [id,list] of by){if(list.length!==1){skipped.push('DVD '+id+' (birden fazla dosya)');continue;}try{if(await get6('media','p90-'+id)){skipped.push('DVD '+id+' (zaten kayıtlı)');continue;}await put6('media','p90-'+id,list[0]);v6().mediaNames[id]=list[0].name;save();saved++;}catch{skipped.push('DVD '+id+' (depolama hatası)');}out.textContent=saved+' DVD kaydedildi…';}}finally{batch.disabled=false;batch.value='';out.textContent=saved+' DVD kaydedildi.'+(skipped.length?' Atlanan: '+skipped.join(', '):'');}
+ };};
  setDVD6=function(d){return window.mxTrainingSettings(d);};
  playDVD6=async function(d){
   if(!DVD[d])return;clearMedia();
@@ -1211,7 +1223,22 @@ function installTrainingWorkspaceMX(){
   else player.innerHTML='<p>Bu DVD için doğrulanmış video adresi yok.</p><a href="https://shop.bodi.com/products/p90x" target="_blank" rel="noopener noreferrer">Resmî P90X serisi</a> <button onclick="mxTrainingSettings('+d+')">Video ekle</button>';
  };
  document.querySelector('#dialog5')?.addEventListener('close',clearMedia);window.addEventListener('pagehide',remember);
- const oldP90=p90View;p90View=function(){return `<section class="card"><h3>12 DVD · Medya ve set stüdyosu</h3><div class="mx-palace-tools">${Array.from({length:12},(_,i)=>i+1).map(d=>`<button onclick="playDVD6(${d})" title="${H(DVD[d])}">DVD ${d} ${v6().mediaNames[d]||v6().videoLinks[d]||p90SourceMX(d)?'· video':'· ekle'}</button>`).join('')}</div><small>Kaynak sırasındaki setleri oynatıcıyla birlikte kaydet. Video sağlanmamışsa kayıt alanı yine kullanılabilir.</small></section>`+oldP90();};
+ // The day schedule owns DVD navigation; retain the legacy set details as a secondary disclosure.
+ const originalDVD=p90dvd;
+ p90dvd=function(d,n){
+  const raw=originalDVD(d,n),template=document.createElement('template');template.innerHTML=raw;
+  const detail=template.content.querySelector('details'),summary=detail?.querySelector('summary');
+  if(detail&&summary){detail.open=false;detail.classList.add('mx-p90-legacy-sets');summary.textContent='Hareket listesi ve tek hareket medyası';}
+  const arr=P90_MOVES[d]||[],moves=p90entry(n).moves||{},done=arr.filter((_,i)=>moves[d+'-'+i]?.done).length;
+  const ready=v6().mediaNames[d]?'Yerel video':v6().videoLinks[d]?'Kayıtlı bağlantı':p90SourceMX(d)?'Kaynak bağlantısı':'Video ekle';
+  return `<section class="card mx-p90-day-dvd" data-p90-dvd="${d}"><button type="button" class="mx-p90-dvd-open" onclick="playDVD6(${d})"><span class="mx-p90-disc">${String(d).padStart(2,'0')}</span><span class="mx-p90-dvd-text"><b>DVD ${String(d).padStart(2,'0')} · ${H(DVD[d])}</b><small>${done}/${arr.length} hareket · ${H(ready)}</small></span><span aria-hidden="true" class="mx-p90-play">▶</span></button><button type="button" class="mx-p90-media-settings" onclick="mxTrainingSettings(${d})" aria-label="DVD ${d} video ayarları">⚙</button>${template.innerHTML}</section>`;
+ };
+ const oldP90=p90View;
+ p90View=function(){
+  const template=document.createElement('template');template.innerHTML=oldP90();
+  for(const heading of template.content.querySelectorAll('h2'))if(heading.textContent.trim()==='Günün video oynatıcısı'){const panel=heading.parentElement;if(panel?.classList.contains('card')&&panel.querySelector('.vidrow6'))panel.remove();}
+  return template.innerHTML;
+ };
 }
 const previousStudioInstallerTrainingMX=installStudioP1;
 installStudioP1=function(){previousStudioInstallerTrainingMX();installTrainingWorkspaceMX();};
@@ -1995,7 +2022,7 @@ function installModern1611MX() {
     const rows=agendaRows5(today()).filter(r=>r.kind!=='actual'&&!String(r.id).startsWith('time9:')),unique=[...new Map(rows.map(r=>[r.id,r])).values()],done=unique.filter(r=>r.done).length,total=unique.length,pct=total?Math.round(done/total*100):0;
     const routes=[['calendar','Ajanda','Gününü düzenle','calendar'],['resources','Öğren','Kaldığın yerden','book'],['p90','Hareket','Antrenman ve pole','move'],['habits','Yaşam','Rutinlerini takip et','leaf']];
     const icons={calendar:'<rect x="4" y="6" width="24" height="22" rx="5"/><path d="M10 3v6m12-6v6M4 13h24m-18 6h3m6 0h3m-12 5h3"/>',book:'<path d="M16 8c-5-4-10-3-12-2v20c5-2 9-1 12 1 3-2 7-3 12-1V6c-2-1-7-2-12 2Zm0 0v19"/>',move:'<path d="m8 24 16-16M4 17l11 11M17 4l11 11M3 23l6 6M23 3l6 6"/>',leaf:'<path d="M26 5C11 2 2 12 7 23c10 5 20-3 19-18ZM7 25l14-14m-8 8v-7m0 7h7"/>'};
-    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R14</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
+    const banner='<section class="mx-modern-hero"><div><span class="mx-eyebrow">MUSES · 0.16.11 R15</span><h1>Bugün, senin ritmin.</h1><p>'+esc(dateLabel5(today()))+'</p><button onclick="openPaletteP1()" class="mx-quick-entry">Ara veya görev ekle <kbd>⌘ / Ctrl K</kbd></button></div><button class="mx-day-ring" onclick="go(\'calendar\')" aria-label="Bugünün görevleri: '+done+' / '+total+'"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" class="mx-ring-track"/><circle cx="60" cy="60" r="50" class="mx-ring-value" pathLength="100" stroke-dasharray="'+pct+' 100"/></svg><b>'+done+'<small>/ '+total+'</small></b><span>görev tamamlandı</span></button><button class="mx-hero-update" onclick="mxCheckUpdate()" aria-label="Güncellemeleri denetle">↻</button></section><div class="mx-launch-grid">'+routes.map(([id,label,sub,icon])=>'<button onclick="go(\''+id+'\')"><svg viewBox="0 0 32 32" aria-hidden="true">'+icons[icon]+'</svg><div><b>'+label+'</b><small>'+sub+'</small></div></button>').join('')+'</div><div class="mx-shortcuts"><button onclick="go(\'english\')">Yol haritam</button><button onclick="go(\'flash\')">Flashcard</button><button onclick="go(\'library\')">Kitaplık</button><button onclick="go(\'atlas\')">Pole</button></div>';
     return h.slice(0,start)+banner+h.slice(end+10);
   };
   // Native assets are bundled: reloading localhost cannot install a new APK.
@@ -2011,7 +2038,7 @@ function installModern1611MX() {
         if(!response.ok)throw Error('source manifest unavailable');
         const remote=await response.json();
         if(!/^\d+\.\d+\.\d+$/.test(remote.release)||!Number.isSafeInteger(remote.revision)||remote.revision<0)throw Error('invalid metadata');
-        const installedRelease='0.16.11',installedRevision=14;
+        const installedRelease='0.16.11',installedRevision=15;
         const rv=remote.release.split('.').map(Number),iv=installedRelease.split('.').map(Number);
         const cmp=rv[0]-iv[0]||rv[1]-iv[1]||rv[2]-iv[2];
         const newer=cmp>0||(cmp===0&&remote.revision>installedRevision);
@@ -2071,7 +2098,7 @@ async function mxFlushStudyState(){
 }
 function installStudySafetyR10(){
  if(window.mxStudySafetyR10)return;window.mxStudySafetyR10=true;
- document.title='MUSES Life Studio · 0.16.11 R14';
+ document.title='MUSES Life Studio · 0.16.11 R15';
  window.mxVerifyStudySave=async()=>{const ok=await mxFlushStudyState();toast(ok?'Kayıt bu cihazda doğrulandı.':'Kayıt doğrulanamadı. JSON yedeğini hemen al.');return ok;};
  const previous=settings;settings=function(){return '<section class="card mx-storage-status"><h3>Kayıt güvenliği</h3><p>'+esc(dbStatus6)+' · Bu cihazın kayıtlarıdır, cihazlar arası eşitleme değildir.</p><button onclick="mxVerifyStudySave()">Kaydı doğrula</button> <button onclick="backup()">JSON yedeği al</button></section>'+previous();};
 }

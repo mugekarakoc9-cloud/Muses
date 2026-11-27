@@ -19,6 +19,18 @@ try{
  await page.waitForFunction(()=>document.querySelector('img.mx-real-cat'),{},{timeout:30000});
  assert.equal(await page.locator('img.mx-real-cat').count()>0,true);
 
+ // P90X day navigation: no duplicate daily player; scheduled DVD opens the set workspace.
+ await page.evaluate(()=>{pday=1;go('p90');});
+ assert.equal(await page.getByRole('heading',{name:'Günün video oynatıcısı',exact:true}).count(),0);
+ assert.equal(await page.getByRole('heading',{name:'12 DVD · Medya ve set stüdyosu',exact:true}).count(),0);
+ assert.deepEqual(await page.locator('[data-p90-dvd]').evaluateAll(els=>els.map(el=>Number(el.dataset.p90Dvd))),[1,12]);
+ await page.locator('[data-p90-dvd="1"] .mx-p90-dvd-open').click();
+ await page.locator('#mx-training-workspace').waitFor();assert.match(await page.locator('#dialog5 h2').innerText(),/DVD 1/);
+ await page.evaluate(()=>{close5();pday=2;render();});
+ assert.deepEqual(await page.locator('[data-p90-dvd]').evaluateAll(els=>els.map(el=>Number(el.dataset.p90Dvd))),[2]);
+ await page.locator('[data-p90-dvd="2"] .mx-p90-dvd-open').click();
+ await page.locator('#mx-training-workspace').waitFor();assert.match(await page.locator('#dialog5 h2').innerText(),/DVD 2/);
+ await page.evaluate(()=>{close5();pday=1;go('home');});
  // Test actual nested resource navigation before unrelated calendar assertions.
  const nested=await page.evaluate(()=>{for(const r of resourceRows()){const tree=sourceTree(r);const group=tree.find(x=>x.children?.length);if(group)return {rid:r.id,id:group.id,children:group.children.map(x=>x.id)};}return null;});
  assert(nested,'A nested resource must exist');await page.evaluate(r=>mxPalaceOpen(enc5(r)),nested.rid);

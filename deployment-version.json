@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Compact responsive P90X set workspace; preserves records, media and nested paths",
-  "revision": 14
+  "purpose": "P90X day DVD direct playback, compact set workspace, private numbered local batch import",
+  "revision": 15
 }
