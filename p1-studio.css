@@ -567,3 +567,34 @@ body[data-theme=dark] .mx-modern-hero{background:linear-gradient(115deg,#32283f,
 
 .readerWord10:not(.mx-reader-fill):not(.mx-reader-line){background:transparent!important}
 .mx-road-view{max-height:72dvh;overflow:auto;overscroll-behavior:contain}
+
+/* v0.16.11 r5: compact folder tree and activity dashboard, using theme tokens. */
+#mxv-root .mxv-sidebar{background:var(--paper);color:var(--ink);border-color:var(--line)}
+#mxv-root .mxv-sidebar details details{margin-inline-start:10px;border-inline-start:1px solid var(--line);padding-inline-start:6px}
+#mxv-root .mxv-sidebar summary{color:var(--ink);background:var(--paper);border-radius:6px;gap:5px;padding:5px;overflow-wrap:anywhere}
+#mxv-root .mxv-sidebar .mxv-side-row{padding:2px 0;gap:4px}
+#mxv-root .mxv-sidebar .mxv-side-row[draggable=true]::before{content:"⠿";color:var(--muted);font-size:12px}
+#mxv-root .mxv-sidebar .mxv-side-row small{color:var(--muted);white-space:nowrap;font-size:11px}
+#mxv-root .mxv-sidebar .mxv-drop{outline:2px dashed var(--accent);outline-offset:-2px}
+#mxv-root .mxv-face .mxv-term{color:var(--accent)!important}
+#mxv-root .mxv-face .mxv-field small{color:var(--muted)}
+#mxv-root .mxv-metrics article{padding:12px;background:var(--paper);border-color:var(--line)}
+#mxv-root .mxv-metrics strong{font-size:clamp(19px,3vw,25px)}
+.mx-life-overview{color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px;margin-block:14px}
+.mx-life-head,.mx-life-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.mx-life-head h3{margin:0;font-size:16px}
+.mx-life-period,.mx-life-metrics{display:grid;gap:8px;margin:12px 0}
+.mx-life-period{grid-template-columns:repeat(4,minmax(0,1fr))}
+.mx-life-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mx-life-period button,.mx-life-metrics button,.mx-life-head button{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:10px;min-height:34px;padding:7px 9px;font-size:13px}
+.mx-life-period button[aria-pressed=true],.mx-life-metrics button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.mx-life-metrics button{text-align:start;display:grid;gap:4px}
+.mx-life-metrics strong{font-size:25px;color:var(--accent);font-variant-numeric:tabular-nums}
+.mx-life-metrics small,.mx-life-metrics span,.mx-life-foot small{color:var(--muted)}
+.mx-life-chart{display:flex;align-items:stretch;gap:3px;height:125px;overflow-x:auto;padding:7px 2px;border-bottom:1px solid var(--line);background:repeating-linear-gradient(to top,transparent 0,transparent 30px,var(--line) 30px,var(--line) 31px)}
+.mx-life-chart button{display:flex;align-items:end;justify-content:center;flex:1 0 8px;min-width:8px;min-height:0;padding:0;background:none;border:0;border-radius:3px}
+.mx-life-chart button i{width:100%;max-width:28px;display:block;border-radius:4px 4px 1px 1px;background:var(--accent);opacity:.6}
+.mx-life-chart button[aria-pressed=true] i{opacity:1}
+.mx-life-foot{margin-top:9px;font-size:12px}
+.mx-life-overview button:focus-visible,#mxv-root .mxv-sidebar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:600px){.mx-life-overview{padding:11px}.mx-life-period{gap:4px}.mx-life-period button{font-size:11px;padding:5px}.mx-life-chart{gap:2px}}
