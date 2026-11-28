@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Swim drills and linked logs; agenda time ranges; combo workout; local movement media",
-  "revision": 45
+  "purpose": "Editable resource paths, Studio period goals, SRS agenda links, generic resource and attachment import",
+  "revision": 46
 }
