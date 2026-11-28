@@ -1,6 +1,6 @@
 {
   "release": "0.16.11",
   "branch": "fix/reader-import-goal-controls",
-  "purpose": "Compact vocabulary and calendar, CEFR map, original PDF reader, weekly/monthly goals",
-  "revision": 44
+  "purpose": "Swim drills and linked logs; agenda time ranges; combo workout; local movement media",
+  "revision": 45
 }

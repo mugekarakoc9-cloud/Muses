@@ -1508,3 +1508,27 @@ body #app .mx44-period-actions{display:flex;gap:0}
 body #app .mx44-period-goal progress{grid-column:2/-1;width:100%;height:5px;accent-color:var(--accent);border:0}
 body #app .mx44-period-goal progress::-webkit-progress-bar{background:var(--line);border-radius:4px}
 body #app .mx44-period-goal progress::-webkit-progress-value{background:var(--accent);border-radius:4px}
+
+/* R45: compact swim studio, guided workout and agenda range controls */
+.mx45-swim>header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mx45-swim>header h2{margin:0}.mx45-swim>header input{max-width:150px}
+.mx45-swim-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0}
+.mx45-swim-stats>div{background:color-mix(in srgb,#5ca9c4 12%,var(--paper));border-radius:10px;padding:9px}
+.mx45-swim-stats small,.mx45-swim-stats b,.mx45-drills small,.mx45-linked small,.mx45-last-swim{display:block}
+.mx45-swim-stats b{font-size:clamp(14px,4vw,20px);margin-top:3px}
+.mx45-styles{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0}
+.mx45-styles button,.mx45-drills button,.mx45-combo-results button{min-height:34px!important;padding:6px!important;border:0!important;box-shadow:none!important;color:var(--ink)!important;background:color-mix(in srgb,var(--accent) 8%,var(--paper))!important}
+.mx45-styles button[aria-pressed=true],.mx45-drills button[aria-pressed=true],.mx45-combo-results button[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 28%,var(--paper))!important}
+.mx45-drills{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:5px;margin:8px 0}
+.mx45-drills button{text-align:left;display:grid;gap:4px;font-size:12px!important}.mx45-drills small{font-size:10px!important;color:var(--muted)!important;line-height:1.3}
+.mx45-swim-form{margin-top:10px}.mx45-swim-fields,.mx45-time-range{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.mx45-swim-fields input,.mx45-swim-fields select,.mx45-time-range input,.mx45-time-range select{width:100%;min-width:0;box-sizing:border-box}
+.mx45-linked{display:grid;grid-template-columns:1fr auto;gap:4px;background:color-mix(in srgb,var(--accent) 12%,var(--paper));border-radius:8px;padding:8px}.mx45-linked small{grid-row:2}.mx45-linked button{grid-column:2;grid-row:1/3}
+.mx45-combo-picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:6px}.mx45-combo-results{display:grid;gap:3px;max-height:30dvh;overflow:auto;margin:7px 0}.mx45-search-line{display:flex;gap:4px}.mx45-search-line input{min-width:0;flex:1}
+.mx45-countdown,.mx45-timer-circle{display:grid;place-items:center;width:104px;height:104px;border:4px solid var(--accent);border-radius:50%;font-size:44px;font-weight:600;margin:15px auto;font-variant-numeric:tabular-nums}.mx45-timer-circle{font-size:25px;width:90px;height:90px}.mx45-combo-step{text-align:center}.mx45-combo-step progress{width:100%;accent-color:var(--accent)}.mx45-combo-step .media-thumb{max-height:24dvh}.mx45-combo-step .media-thumb img{max-height:24dvh;object-fit:contain}
+body #app .mx-hour-entry{position:relative;padding-bottom:12px}body #app .mx45-resize{position:absolute;right:1px;bottom:0;min-height:12px!important;height:12px!important;min-width:28px!important;padding:0!important;line-height:10px;font-size:10px!important;touch-action:none!important;cursor:ns-resize;background:transparent!important;color:var(--muted)!important}
+body #app .mx-hour-task.mx45-ranged{min-height:clamp(28px,calc(var(--mx45-duration)*.4px),100px)!important;flex-wrap:wrap}
+.mx45-event-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin:9px 3px;flex:none}
+.mx45-watch-dock{position:fixed;z-index:8000;bottom:80px;right:10px;display:flex;gap:8px;align-items:center;border-radius:12px;background:var(--paper);color:var(--ink);padding:6px;box-shadow:0 3px 15px #0003;font-size:12px}.mx45-watch-dock span{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mx45-task-menu{display:grid;gap:6px}.mx45-pole-x{position:absolute;right:2px;top:1px;font-size:12px;font-style:normal;color:inherit;pointer-events:none;animation:mx45-cross .35s ease-out both}
+@keyframes mx45-cross{0%{opacity:0;transform:scale(.3) rotate(-30deg)}70%{transform:scale(1.2)}100%{opacity:.85;transform:scale(1)}}@media(prefers-reduced-motion:reduce){.mx45-pole-x{animation:none}}
