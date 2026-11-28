@@ -1532,3 +1532,5 @@ body #app .mx-hour-task.mx45-ranged{min-height:clamp(28px,calc(var(--mx45-durati
 .mx45-watch-dock{position:fixed;z-index:8000;bottom:80px;right:10px;display:flex;gap:8px;align-items:center;border-radius:12px;background:var(--paper);color:var(--ink);padding:6px;box-shadow:0 3px 15px #0003;font-size:12px}.mx45-watch-dock span{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mx45-task-menu{display:grid;gap:6px}.mx45-pole-x{position:absolute;right:2px;top:1px;font-size:12px;font-style:normal;color:inherit;pointer-events:none;animation:mx45-cross .35s ease-out both}
 @keyframes mx45-cross{0%{opacity:0;transform:scale(.3) rotate(-30deg)}70%{transform:scale(1.2)}100%{opacity:.85;transform:scale(1)}}@media(prefers-reduced-motion:reduce){.mx45-pole-x{animation:none}}
+
+.mx45-time-range{grid-column:1/-1}.mx45-combo-summary .line small{text-transform:capitalize}

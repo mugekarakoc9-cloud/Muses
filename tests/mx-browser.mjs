@@ -27,6 +27,22 @@ try{
  await page.evaluate(()=>{close5();go('home');});
  assert.equal(await page.locator('.mx39-today-metrics button').count(),6);
  console.log('PASS: R39 themed time and unit controls, first-entry weekday selector, daily metrics');
+ await page.waitForFunction(()=>window.mxR45Life);
+ await page.evaluate(()=>{const d=today();S.tasks.push({id:'mx-test-swim45',title:'Test swim R45',date:d,module:'swim',target:'back:kick',amount:500,time:'',done:false});window.mxTaskCheck(enc5('mx-test-swim45'));});
+ await page.locator('.mx45-swim-form [name=distance]').fill('0.5');
+ await page.locator('.mx45-swim-form [name=unit]').selectOption('km');
+ await page.locator('.mx45-swim-form button.primary').click();
+ assert.equal(await page.evaluate(()=>v2().swim.find(x=>x.mxTask45==='mx-test-swim45')?.distance),500);
+ assert.equal(await page.evaluate(()=>taskDone5(S.tasks.find(t=>t.id==='mx-test-swim45'))),true);
+ assert.equal(await page.evaluate(()=>metricRows5(today()).swim),await page.evaluate(()=>v2().swim.filter(x=>x.date===today()).reduce((n,x)=>n+Number(x.distance||0),0)));
+ await page.evaluate(()=>{S.tasks=S.tasks.filter(t=>t.id!=='mx-test-swim45');v2().swim=v2().swim.filter(x=>x.mxTask45!=='mx-test-swim45');save();go('calendar');mxHourlyCreate(today(),'10:00');});
+ await page.locator('#quick5 [name=title]').fill('Test range R45');
+ await page.locator('#quick5 [name=mxEnd45]').fill('11:30');
+ await page.locator('#quick5 button[type=submit],#quick5 button.primary').last().click();
+ await page.waitForFunction(()=>S.tasks.some(x=>x.title==='Test range R45'&&x.mxDuration45===90));
+ await page.evaluate(()=>{S.tasks=S.tasks.filter(t=>t.title!=='Test range R45');save();go('home');});
+ console.log('PASS: swim km to metres, task completion, daily metric and agenda duration');
+
 
 
  // Generate a real, short local video in the test browser. No private media is published.
