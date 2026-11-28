@@ -3037,7 +3037,7 @@ function installR44PeriodGoals(){
   const f=document.querySelector('#mx44-period-form');if(!f)return;f.onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(f)),amount=Number(data.amount);if(!dateOK(data.date)||!Number.isInteger(amount)||amount<1||amount>100000)return;const [start,end]=bounds(data.date,data.period),kind=data.kind==='vocab'?'vocab':'book',title=data.title.trim()||amount+(kind==='book'?' kitap bitir':' kelime öğren');v5().challenges.push({id:String(uid()),title,module:kind,target:'All',kind:'total',amount,start,end,rhythm:'all',time:'',alarm:'',unit:kind==='book'?'kitap':'kelime',mxPeriod44:kind,mxPeriodKind44:data.period});save();close5();render();};
  }
  function paint(){
-  if(!['home','calendar','goals','awards'].includes(view))return;const app=document.querySelector('#app');if(!app||app.querySelector('.mx44-period-goals'))return;
+  if(!['goals','studio'].includes(view))return;const app=document.querySelector('#app');if(!app||app.querySelector('.mx44-period-goals'))return;
   const ref=view==='calendar'&&dateOK(selected)?selected:today(),panel=make('section','card mx44-period-goals'),head=make('div','mx44-period-goals-head'),addButton=make('button','','＋');addButton.type='button';addButton.setAttribute('aria-label','Haftalık veya aylık hedef ekle');addButton.onclick=openForm;head.append(make('h3','','Haftalık / aylık hedefler'),addButton);panel.append(head);
   const goals=v5().challenges.filter(g=>g.mxPeriod44&&(view==='goals'||g.start<=ref&&g.end>=ref));
   if(!goals.length)panel.append(make('small','','Henüz bu dönem için hedef yok.'));
@@ -3136,3 +3136,81 @@ function installR45Life(){
  const oldRender=render;render=function(...args){const r=oldRender.apply(this,args);decorate();return r;};decorate();
 }
 const mxPreviousR45=installStudioP1;installStudioP1=function(){mxPreviousR45();installR45Life();};
+
+/* R46 — universal resource outline and local-first attachments. */
+function mxOutline46(raw,idFactory){
+ const roots=[],stack=[],levels=[];
+ for(const line of String(raw||'').split(/\r?\n/)){
+  if(!line.trim())continue;
+  const prefix=(line.match(/^[ \t]*/)||[''])[0],indent=prefix.replace(/\t/g,'    ').length;
+  const title=line.trim().replace(/^(?:[-*•]\s+|\d+[.)]\s+)/,'').trim();
+  if(!title)continue;
+  if(title.length>300)throw Error('Bölüm başlığı en fazla 300 karakter olabilir.');
+  while(levels.length&&indent<=levels.at(-1)){levels.pop();stack.pop();}
+  const node={id:idFactory(),title,children:[],amount:1,unit:'bölüm'};
+  (stack.length?stack.at(-1).children:roots).push(node);stack.push(node);levels.push(indent);
+ }
+ if(!roots.length)throw Error('En az bir bölüm yaz.');
+ return roots;
+}
+function installR46Resources(){
+ if(window.mxR46Resources)return;window.mxR46Resources=true;
+ const P=()=>S.mxResources46??={resources:[],names:{},children:{},attachments:{},comments:{}};
+ const H=x=>esc(String(x??'')),K=x=>enc5(String(x??'')),D=x=>dec5(String(x??''));
+ const make=(tag,cls,t)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(t!==undefined)e.textContent=t;return e;};
+ const key=(r,n='')=>r+(n?'~'+n:'');
+ const oldRows=resourceRows,oldTree=sourceTree;
+ resourceRows=function(...args){return [...oldRows.apply(this,args),...P().resources].map(r=>P().names[r.id]?{...r,title:P().names[r.id]}:r);};
+ sourceTree=function(r){const data=P(),base=data.resources.some(x=>x.id===r.id)?[]:oldTree(r);
+  function walk(nodes,parent){return [...(Array.isArray(nodes)?nodes:[]),...(data.children[key(r.id,parent)]||[])].map(n=>({...n,title:data.names[key(r.id,n.id)]||n.title,children:walk(n.children,n.id)}));}
+  return walk(base,'');
+ };
+ function scope(rid,nid=''){const r=resourceRows().find(x=>x.id===rid);return {r,n:r&&nid?mxPathScope(sourceTree(r),nid).node:null};}
+ function modal(title,body){modal5('<div class="modalhead5"><h2>'+H(title)+'</h2><button type="button" onclick="close5()">×</button></div>'+body);}
+ function addButton(host,label,fn){if(!host)return;const b=make('button','mx46-action',label);b.type='button';b.onclick=fn;host.append(b);return b;}
+ function openOutline(rid='',nid=''){
+  const {r,n}=scope(rid,nid);if(rid&&!r||nid&&!n)return;
+  modal('Kaynak / içerik aktar','<form id="mx46-outline">'+(!r?'<label>Kaynak adı<input name="title" required maxlength="300"></label><label>Kategori<input name="type" value="Diğer" maxlength="80" required></label>':'<p>'+H(n?.title||r.title)+'</p>')+'<label>İçindekiler<textarea name="outline" rows="9" placeholder="Bölüm 1&#10; Alt bölüm 1A&#10;  Konu 1&#10;Bölüm 2"></textarea></label><label>veya TXT dosyası<input name="file" type="file" accept=".txt,text/plain"></label><p class="muted">Boşluk veya Tab ile girinti ver. Daha derin girinti alt bölüm oluşturur.</p><div id="mx46-preview"></div><button type="button" id="mx46-check">Önizle</button> <button class="primary">Kaydet</button><p role="status"></p></form>');
+  const f=document.querySelector('#mx46-outline'),status=f.querySelector('[role=status]'),preview=f.querySelector('#mx46-preview');
+  f.elements.file.onchange=async()=>{try{const file=f.elements.file.files[0];if(file){if(file.size>1e6)throw Error('TXT dosyası 1 MB sınırını aşıyor.');f.elements.outline.value=await file.text();}}catch(e){status.textContent=e.message;}};
+  function parse(){let count=0;const raw=f.elements.outline.value;if(raw.length>100000)throw Error('En fazla 100.000 karakter.');return raw.trim()?mxOutline46(raw,()=>{if(++count>2000)throw Error('En fazla 2000 bölüm.');return 'mx46-'+uid();}):[];}
+  f.querySelector('#mx46-check').onclick=()=>{try{const tree=parse();const listing=make('ul');function show(nodes,host){for(const x of nodes){const li=make('li','',x.title);host.append(li);if(x.children.length){const ul=make('ul');li.append(ul);show(x.children,ul);}}}show(tree,listing);preview.replaceChildren(listing);status.textContent='';}catch(e){status.textContent=e.message;}};
+  f.onsubmit=e=>{e.preventDefault();try{const tree=parse();let id=rid;if(!r){const title=f.elements.title.value.trim(),type=f.elements.type.value.trim();if(!title||!type)throw Error('Kaynak adı ve kategori gerekli.');id='mx46-r-'+uid();P().resources.push({id,title,type,method:'',chapters:[],units:[]});}else if(!tree.length)throw Error('En az bir bölüm yaz.');const dest=(P().children[key(id,nid)]??=[]);dest.push(...tree);save();close5();window.mxPalaceOpen(K(id),K(nid),false);toast('Kaynak içeriği kaydedildi.');}catch(err){status.textContent=err.message;}};
+ }
+ window.mxOutlineImport46=(rk='',nk='')=>openOutline(D(rk),D(nk));
+ function edit(rid,nid){const {r,n}=scope(rid,nid);if(!r||nid&&!n)return;const k=key(rid,nid);modal('Başlığı düzenle','<form id="mx46-rename"><label>Başlık<input name="title" required maxlength="300" value="'+H(n?.title||r.title)+'"></label><button class="primary">Kaydet</button></form>');const f=document.querySelector('#mx46-rename');f.onsubmit=e=>{e.preventDefault();const title=f.elements.title.value.trim();if(!title)return;P().names[k]=title;save();close5();render();};}
+ function review(rid,nid){const {r,n}=scope(rid,nid);if(!r||nid&&!n)return;const k=key(rid,nid);modal('Ders tekrarı · SRS','<form id="mx46-review"><label>Kaç gün sonra?<input name="days" type="number" min="1" max="3650" value="30" required></label><label>Tarih<input name="date" type="date" required value="'+H(add(today(),30))+'"></label><button class="primary">Ajandaya ekle</button></form>');const f=document.querySelector('#mx46-review');f.elements.days.oninput=()=>{const d=Number(f.elements.days.value);if(Number.isInteger(d)&&d>0&&d<=3650)f.elements.date.value=add(today(),d);};f.onsubmit=e=>{e.preventDefault();const date=f.elements.date.value;if(!date||date<=today())return toast('Gelecekte bir tarih seç.');if(!S.tasks.some(t=>t.mxReview46===k&&t.date===date)){S.tasks.push({id:uid(),title:'Tekrar · '+(n?.title||r.title),module:'general',target:'',date,time:'',amount:1,unit:'bölüm',priority:'normal',done:false,note:r.title,mxReview46:k});save();}close5();render();toast('Tekrar ajandaya eklendi: '+date);};}
+ function comments(rid,nid){const {r,n}=scope(rid,nid);if(!r||nid&&!n)return;const k=key(rid,nid),p=S.mxPalace??={};p.notes??={};modal('Ders notu / yorum','<form id="mx46-note"><label>Not<textarea name="note" rows="6">'+H(p.notes[k]||'')+'</textarea></label><label>Yorum<textarea name="comment" rows="4">'+H(P().comments[k]||'')+'</textarea></label><button class="primary">Kaydet</button></form>');const f=document.querySelector('#mx46-note');f.onsubmit=e=>{e.preventDefault();p.notes[k]=f.elements.note.value;P().comments[k]=f.elements.comment.value;save();close5();render();};}
+ const safeURL=raw=>{try{const u=new URL(raw);return ['https:','http:'].includes(u.protocol)&&!u.username&&!u.password?u:null;}catch{return null;}};
+ function mediaKind(u){const p=u.pathname.toLowerCase();return /\.(png|jpe?g|webp|gif|avif)$/.test(p)?'image':/\.(mp4|webm|ogv|mov|m4v)$/.test(p)?'video':/\.(mp3|wav|m4a|ogg)$/.test(p)?'audio':'link';}
+ function mediaOpen(item,host){host.replaceChildren();const show=(kind,src)=>{if(!host.isConnected){if(src.startsWith('blob:'))URL.revokeObjectURL(src);return;}const el=make(kind==='image'?'img':kind==='audio'?'audio':'video','mx46-media');if(kind==='image')el.alt=item.name;else{el.controls=true;el.playsInline=true;el.preload='metadata';}el.src=src;host.append(el);if(src.startsWith('blob:')){const observer=new MutationObserver(()=>{if(!el.isConnected){URL.revokeObjectURL(src);observer.disconnect();}});observer.observe(document.body,{childList:true,subtree:true});}el.onerror=()=>{host.append(make('p','muted','Bu dosya biçimi veya bağlantı tarayıcıda oynatılamıyor.'));};};
+  if(item.blob){get6('media',item.blob).then(b=>{if(b instanceof Blob)show(item.kind,URL.createObjectURL(b));else host.textContent='Yerel dosya bulunamadı.';}).catch(()=>host.textContent='Dosya okunamadı.');return;}
+  const u=safeURL(item.url);if(!u)return;const external=make('a','','Bağlantıyı aç ↗');external.href=u.href;external.target='_blank';external.rel='noopener noreferrer';host.append(external);
+  const drive=u.hostname==='drive.google.com'&&(u.pathname.match(/\/file\/d\/([\w-]+)/)?.[1]||u.searchParams.get('id'));
+  const embed=pathVideoMX(u.href);
+  if(drive&&/^[\w-]+$/.test(drive)||embed?.kind==='embed'){const frame=make('iframe','mx46-media');frame.src=drive?'https://drive.google.com/file/d/'+drive+'/preview':embed.src;frame.title=item.name;frame.allow='autoplay; fullscreen; encrypted-media';frame.allowFullscreen=true;host.append(frame);}
+  else if(['image','video','audio'].includes(item.kind))show(item.kind,u.href);
+ }
+ function attachments(k,title){modal(title,'<div id="mx46-attachments"></div><form id="mx46-attach"><label>Bağlantı<input name="url" type="url" placeholder="Drive, YouTube veya web adresi"></label><label>Dosya / galeri<input name="files" type="file" accept="image/*,video/*,audio/*" multiple></label><label>Fotoğraf çek<input name="camera" type="file" accept="image/*" capture="environment"></label><label>Ad (isteğe bağlı)<input name="title" maxlength="200"></label><button class="primary">Ekle</button><p role="status"></p></form>');
+  const list=document.querySelector('#mx46-attachments'),f=document.querySelector('#mx46-attach'),items=P().attachments[k]??=[];
+  function paint(){list.replaceChildren();for(const item of items){const row=make('div','mx46-attachment-row'),label=make('span','',item.name),host=make('div');row.append(label);addButton(row,'Aç',()=>mediaOpen(item,host));addButton(row,'✎',()=>{const name=prompt('Ek adı',item.name);if(name?.trim()){item.name=name.trim().slice(0,200);save();paint();}});addButton(row,'×',async()=>{if(!confirm('Bu ek kaldırılsın mı?'))return;try{if(item.blob)await put6('media',item.blob,null);items.splice(items.indexOf(item),1);save();paint();}catch(e){toast('Ek kaldırılamadı.');}});list.append(row,host);}}
+  f.onsubmit=async e=>{e.preventDefault();const status=f.querySelector('[role=status]'),button=f.querySelector('.primary');button.disabled=true;const created=[];try{const title=f.elements.title.value.trim(),raw=f.elements.url.value.trim(),files=[...f.elements.files.files,...f.elements.camera.files],staged=[];if(raw){const u=safeURL(raw);if(!u)throw Error('Geçerli HTTP/HTTPS bağlantısı gir.');staged.push({id:String(uid()),name:title||u.hostname,url:u.href,kind:mediaKind(u)});}for(const file of files){const kind=file.type.split('/')[0];if(!['image','video','audio'].includes(kind)||file.size>300*1024*1024)throw Error('Desteklenen medya dosyası seç (en fazla 300 MB).');const blob='mx-lesson-'+uid();await put6('media',blob,file);created.push(blob);const stored=await get6('media',blob);if(!(stored instanceof Blob)||stored.size!==file.size)throw Error('Dosya kaydı doğrulanamadı.');staged.push({id:String(uid()),name:title||file.name,blob,kind});}if(!staged.length)throw Error('Bağlantı veya dosya seç.');items.push(...staged);save();f.reset();paint();status.textContent='Kaydedildi.';}catch(err){for(const b of created)try{await put6('media',b,null);}catch{}status.textContent=err.message;}finally{button.disabled=false;}};
+  paint();
+ }
+ window.mxAttachments46=attachments;
+ function menuExtras(rid,nid,host){if(!host||host.querySelector('.mx46-path-menu'))return;const {r,n}=scope(rid,nid);if(!r||nid&&!n)return;const box=make('div','mx46-path-menu');addButton(box,'✎ Başlığı düzenle',()=>edit(rid,nid));addButton(box,'＋ Bölüm / alt bölüm aktar',()=>openOutline(rid,nid));addButton(box,'▧ İçerik / dosya / bağlantı',()=>attachments('resource:'+key(rid,nid),n?.title||r.title));addButton(box,'Not / yorum',()=>comments(rid,nid));addButton(box,'◷ SRS tarihi',()=>review(rid,nid));host.append(box);}
+ const oldOpen=window.mxPalacePathOpen;window.mxPalacePathOpen=function(rk,nk='',locked=false){const rid=D(rk),nid=D(nk);if(!nid){const {r}=scope(rid);if(!r)return;modal(r.title,'<div id="mx46-root-menu"></div>');const host=document.querySelector('#mx46-root-menu');addButton(host,'Yolu aç',()=>{close5();window.mxPalaceOpen(rk,nk,false);});menuExtras(rid,nid,host);return;}oldOpen(rk,nk,locked);menuExtras(rid,nid,document.querySelector('.mx-path-actions')?.parentElement);};
+ const goalOpen=window.mxActivityGoal31;if(typeof goalOpen==='function')window.mxActivityGoal31=function(k){goalOpen(k);const g=v5().challenges.find(x=>String(x.id)===String(D(k)));if(g)addButton(document.querySelector('#mx-am-goal31')?.parentElement,'▧ Ekler',()=>attachments('goal:'+g.id,g.title));};
+ function paint(){const app=document.querySelector('#app');if(!app)return;
+  if(view==='resources'){for(const box of app.querySelectorAll('.mx-ef-panel')){box.querySelector('.mx-ef-toolbar')?.remove();if(!box.querySelector('figure'))box.remove();}
+   const rid=String(sourceSelected||'').split('~')[0],nid=S.mxPalace?.nodes?.[rid]||'',hero=app.querySelector('.mx-palace-hero'),host=hero||app;
+   if(!app.querySelector('.mx46-resource-tools')){const bar=make('div','mx46-resource-tools');addButton(bar,'＋ Kaynak / içerik aktar',()=>openOutline());if(rid){addButton(bar,'⋯ Yol seçenekleri',()=>window.mxPalacePathOpen(K(rid),K(nid),false));}if(hero)hero.after(bar);else host.prepend(bar);}
+  }
+  if(view==='calendar'){const head=app.querySelector('.mx-hour-header')||app; if(!head.querySelector('.mx46-day-attach')){const b=addButton(head,'▧',()=>attachments('day:'+(selected||today()),'Gün ekleri'));b.classList.add('mx46-day-attach');b.title='Gün ekleri';}
+   for(const row of app.querySelectorAll('[data-mx-hour-task],[data-p1-task],[data-mx-list-key35]')){if(row.querySelector('.mx46-task-attach'))continue;const k=row.dataset.mxHourTask||row.dataset.p1Task||row.dataset.mxListKey35;const t=S.tasks.find(x=>String(x.id)===String(k)||K(x.id)===k);if(!t)continue;const b=addButton(row,'▧',e=>{e?.stopPropagation();attachments('task:'+t.id,t.title);});b.classList.add('mx46-task-attach');b.title='Görev ekleri';b.addEventListener('pointerdown',e=>e.stopPropagation());}
+  }
+ }
+ const style=make('style');style.textContent='.mx46-resource-tools,.mx46-path-menu,.mx46-attachment-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:8px 0}.mx46-path-menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}.mx46-media{display:block;width:100%;max-height:55vh;object-fit:contain;border:0}.mx46-media:is(iframe){aspect-ratio:16/9;min-height:200px}.mx46-attachment-row span{flex:1;overflow-wrap:anywhere}.mx46-task-attach{font-size:11px!important;min-width:24px!important;padding:2px!important}.mx-stop-label b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}input[type=date],input[type=time]{color-scheme:light;color:var(--ink);background:var(--paper)}body[data-theme=dark] input[type=date],body[data-theme=dark] input[type=time]{color-scheme:dark}';document.head.append(style);
+ const oldRender=render;render=function(...args){const result=oldRender.apply(this,args);paint();return result;};paint();
+}
+const mxPreviousR46=installStudioP1;installStudioP1=function(){mxPreviousR46();installR46Resources();};
